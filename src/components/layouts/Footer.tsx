@@ -4,245 +4,321 @@ import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import Container from "@mui/material/Container";
+import IconButton from "@mui/material/IconButton";
 import Divider from "@mui/material/Divider";
-import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
-import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
-import { Facebook, Instagram, YoutubeIcon } from "@/components/icons/social";
-import MailOutlinedIcon from "@mui/icons-material/MailOutlined";
+import FacebookIcon from "@mui/icons-material/Facebook";
+import YouTubeIcon from "@mui/icons-material/YouTube";
+import InstagramIcon from "@mui/icons-material/Instagram";
+import XIcon from "@mui/icons-material/X";
 
-type SocialIcon = React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
+import { tokens } from "@/theme/theme";
 
-const socialLinks: { name: string; href: string; icon: SocialIcon }[] = [
-  { name: "Facebook", href: "https://www.facebook.com/BongoNexbd", icon: Facebook },
-  { name: "Youtube", href: "https://www.youtube.com/@BongoNexbd", icon: YoutubeIcon },
-  { name: "Instagram", href: "https://www.instagram.com/yourprofile", icon: Instagram },
-];
-
-const navigationGroups = {
-  shop: [
-    { label: "All Products", href: "/products" },
-    { label: "Collections", href: "/collection" },
-    { label: "Shopping Cart", href: "/cart" },
-    { label: "Checkout", href: "/checkout" },
-    { label: "Top Selling", href: "/top-selling" },
-  ],
-  company: [
-    { label: "About Us", href: "/about" },
-    { label: "Contact Us", href: "/contact-us" },
-  ],
-  legal: [
-    { label: "Privacy Policy", href: "/privacy" },
-    { label: "Terms of Service", href: "/terms" },
-    { label: "Cookie Policy", href: "/cookies" },
-  ],
+const FOOTER_GROUPS = {
+  shop: {
+    title: "Shop",
+    links: [
+      { label: "All Categories", href: "/products" },
+      { label: "Laptops", href: "/products?category=laptops" },
+      { label: "Smartphones", href: "/products?category=smartphones" },
+      { label: "Accessories", href: "/products?category=accessories" },
+      { label: "Audio", href: "/products?category=audio" },
+      { label: "Gaming", href: "/products?category=gaming" },
+    ],
+  },
+  support: {
+    title: "Support",
+    links: [
+      { label: "Help Center", href: "/contact-us" },
+      { label: "Shipping Policy", href: "/terms" },
+      { label: "Return & Refund", href: "/terms" },
+      { label: "Warranty", href: "/terms" },
+      { label: "Contact Us", href: "/contact-us" },
+    ],
+  },
+  company: {
+    title: "Company",
+    links: [
+      { label: "About Us", href: "/about" },
+      { label: "Blog / Journal", href: "/about" },
+      { label: "Careers", href: "/about" },
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms & Conditions", href: "/terms" },
+    ],
+  },
 };
-
-const linkSx = {
-  display: "flex",
-  alignItems: "center",
-  gap: 1,
-  fontSize: 14,
-  color: "#aaaaaa",
-  textDecoration: "none",
-  width: "fit-content",
-  transition: "color 200ms",
-  "&:hover": { color: "#ff7319" },
-  "&:hover .footer-bullet": { borderColor: "#ff7319" },
-} as const;
-
-const sectionTitleSx = {
-  fontSize: 12,
-  fontWeight: 700,
-  letterSpacing: "0.15em",
-  textTransform: "uppercase",
-  color: "#ffffff",
-} as const;
-
-function FooterLinkGroup({ items }: { items: { label: string; href: string }[] }) {
-  return (
-    <Box component='nav' sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
-      {items.map((item) => (
-        <Box key={item.href} component={NextLink} href={item.href} sx={linkSx}>
-          <Box
-            className='footer-bullet'
-            component='span'
-            sx={{
-              display: "inline-block",
-              width: 6,
-              height: 6,
-              flexShrink: 0,
-              borderTop: "1px solid #777777",
-              borderRight: "1px solid #777777",
-              transform: "rotate(45deg)",
-              transition: "border-color 200ms",
-            }}
-          />
-          {item.label}
-        </Box>
-      ))}
-    </Box>
-  );
-}
 
 export function Footer() {
   const pathname = usePathname();
-  const currentYear = new Date().getFullYear();
-
-  if (pathname?.startsWith("/checkout")) return null;
-  if (pathname?.startsWith("/products")) return null;
-
-  const contactItems = [
-    { Icon: PlaceOutlinedIcon, text: "Dhaka, Bangladesh", href: null as string | null },
-    { Icon: PhoneOutlinedIcon, text: "+8801576641142", href: "tel:+8801576641142" },
-    { Icon: MailOutlinedIcon, text: "support@bongonex.com", href: "mailto:support@bongonex.com" },
-  ];
+  if (pathname.startsWith("/admin")) return null;
 
   return (
-    <Box component='footer' sx={{ fontFamily: "system-ui, sans-serif", pb: { xs: 10, md: 0 } }}>
-      <Box sx={{ bgcolor: "#2d2d2d" }}>
-        <Container maxWidth={false} sx={{ px: { xs: 3, lg: 8 }, pt: 6, pb: 4, maxWidth: 1400, mx: "auto" }}>
-          <Box
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)", lg: "repeat(12, 1fr)" },
-              gap: 5,
-              mb: 5,
-            }}
-          >
-            {/* Brand */}
-            <Box sx={{ gridColumn: { lg: "span 4" }, display: "flex", flexDirection: "column", gap: 2.5 }}>
-              <Box
-                component={NextLink}
-                href='/'
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                  flexShrink: 0,
-                  textDecoration: "none",
-                }}
-              >
-                <Box sx={{ width: 80, height: 80, overflow: "hidden" }}>
-                  <Box component='img' src='/logo.png' alt='BongoNex logo' sx={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                </Box>
-              </Box>
-              <Typography
-                sx={{
-                  fontSize: 14,
-                  lineHeight: 1.65,
-                  color: "#aaaaaa",
-                  maxWidth: 320,
-                }}
-              >
-                Discover cutting-edge gadgets and components designed to power the future. Innovation meets quality at BONGO NEX.
-              </Typography>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
-                {socialLinks.map(({ name, href, icon: Icon }) => (
-                  <Box
-                    key={name}
-                    component={NextLink}
-                    href={href}
-                    target='_blank'
-                    rel='noopener noreferrer'
-                    aria-label={name}
-                    sx={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: "4px",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      bgcolor: "#3a3a3a",
-                      color: "#cccccc",
-                      transition: "background-color 200ms",
-                      textDecoration: "none",
-                      "&:hover": { bgcolor: "#ff7319" },
-                    }}
-                  >
-                    <Icon className='w-4 h-4' />
-                  </Box>
-                ))}
-              </Box>
-            </Box>
-
-            {/* Shop */}
-            <Box sx={{ gridColumn: { lg: "span 4" }, display: "flex", flexDirection: "column", gap: 2 }}>
-              <Typography component='h3' sx={sectionTitleSx}>
-                Shop
-              </Typography>
-              <FooterLinkGroup items={navigationGroups.shop} />
-            </Box>
-
-            {/* Company + Legal */}
-            <Box sx={{ gridColumn: { lg: "span 4" }, display: "flex", flexDirection: "column", gap: 2 }}>
-              <Typography component='h3' sx={sectionTitleSx}>
-                Company
-              </Typography>
-              <FooterLinkGroup items={navigationGroups.company} />
-
-              <Typography component='h3' sx={{ ...sectionTitleSx, pt: 2 }}>
-                Legal
-              </Typography>
-              <FooterLinkGroup items={navigationGroups.legal} />
-            </Box>
-          </Box>
-
-          <Divider sx={{ borderColor: "#3d3d3d" }} />
-
-          <Box
-            sx={{
-              pt: 3,
-              display: "flex",
-              flexDirection: { xs: "column", lg: "row" },
-              justifyContent: "space-between",
-              gap: 2,
-            }}
-          >
+    <Box
+      component="footer"
+      sx={{
+        bgcolor: tokens.bgDark,
+        color: tokens.textWhite,
+        pt: { xs: 8, md: 10 },
+        pb: 4,
+        borderTop: `1px solid ${tokens.borderDark}`,
+      }}
+    >
+      <Box
+        sx={{
+          maxWidth: 1440,
+          mx: "auto",
+          px: { xs: 2.5, md: 4, lg: 5 },
+        }}
+      >
+        {/* Main 5-column layout */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "repeat(2, 1fr)",
+              md: "2fr 1fr 1fr 1fr",
+            },
+            gap: { xs: 4, md: 5, lg: 6 },
+            mb: { xs: 6, md: 8 },
+          }}
+        >
+          {/* 1. Brand column */}
+          <Box sx={{ maxWidth: 320 }}>
             <Box
+              component={NextLink}
+              href="/"
               sx={{
                 display: "flex",
-                flexDirection: { xs: "column", sm: "row" },
-                alignItems: { md: "center" },
-                gap: { xs: 2, sm: 3 },
+                alignItems: "center",
+                gap: 1.2,
+                textDecoration: "none",
+                mb: 1.5,
               }}
             >
-              {contactItems.map(({ Icon, text, href }) => {
-                const inner = (
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Icon sx={{ fontSize: 14, color: "#ff7319", flexShrink: 0 }} />
-                    <Typography sx={{ fontSize: 12, color: "#aaaaaa" }}>{text}</Typography>
-                  </Box>
-                );
-                return href ? (
-                  <Box
-                    key={text}
-                    component='a'
-                    href={href}
-                    sx={{
-                      textDecoration: "none",
-                      transition: "opacity 200ms",
-                      "&:hover": { opacity: 0.8 },
-                    }}
-                  >
-                    {inner}
-                  </Box>
-                ) : (
-                  <Box key={text}>{inner}</Box>
-                );
-              })}
+              {/* Clover / Sparkle icon */}
+              <Box
+                sx={{
+                  width: 30,
+                  height: 30,
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "3px",
+                  p: "3px",
+                  alignItems: "center",
+                  justifyItems: "center",
+                }}
+              >
+                <Box sx={{ width: 9, height: 9, bgcolor: tokens.accent, borderRadius: "50% 50% 0 50%" }} />
+                <Box sx={{ width: 9, height: 9, bgcolor: tokens.primary, borderRadius: "50% 50% 50% 0" }} />
+                <Box sx={{ width: 9, height: 9, bgcolor: tokens.primary, borderRadius: "50% 0 50% 50%" }} />
+                <Box sx={{ width: 9, height: 9, bgcolor: tokens.accent, borderRadius: "0 50% 50% 50%" }} />
+              </Box>
+
+              <Typography
+                sx={{
+                  fontWeight: 800,
+                  fontSize: 18,
+                  color: tokens.textWhite,
+                  letterSpacing: "-0.02em",
+                }}
+              >
+                We Gadget BD
+              </Typography>
             </Box>
 
-            <Typography sx={{ fontSize: 12, color: "#888888" }}>
-              © {currentYear}{" "}
-              <Box component='span' sx={{ fontWeight: { md: 700 }, color: "#ffffff" }}>
-                BONGO NEX
-              </Box>
-              . All rights reserved.
+            <Typography
+              sx={{
+                fontSize: 13.5,
+                color: tokens.textDarkMuted,
+                mb: 2.5,
+                lineHeight: 1.6,
+              }}
+            >
+              Smarter Tech • Brighter Days
             </Typography>
+
+            {/* Social Icons */}
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <IconButton
+                component="a"
+                href="https://facebook.com"
+                target="_blank"
+                rel="noreferrer"
+                size="small"
+                sx={{
+                  color: tokens.textDarkMuted,
+                  border: `1px solid ${tokens.borderDark}`,
+                  "&:hover": { color: tokens.textWhite, bgcolor: "rgba(255, 255, 255, 0.08)" },
+                }}
+              >
+                <FacebookIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+              <IconButton
+                component="a"
+                href="https://youtube.com"
+                target="_blank"
+                rel="noreferrer"
+                size="small"
+                sx={{
+                  color: tokens.textDarkMuted,
+                  border: `1px solid ${tokens.borderDark}`,
+                  "&:hover": { color: tokens.textWhite, bgcolor: "rgba(255, 255, 255, 0.08)" },
+                }}
+              >
+                <YouTubeIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+              <IconButton
+                component="a"
+                href="https://instagram.com"
+                target="_blank"
+                rel="noreferrer"
+                size="small"
+                sx={{
+                  color: tokens.textDarkMuted,
+                  border: `1px solid ${tokens.borderDark}`,
+                  "&:hover": { color: tokens.textWhite, bgcolor: "rgba(255, 255, 255, 0.08)" },
+                }}
+              >
+                <InstagramIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+              <IconButton
+                component="a"
+                href="https://twitter.com"
+                target="_blank"
+                rel="noreferrer"
+                size="small"
+                sx={{
+                  color: tokens.textDarkMuted,
+                  border: `1px solid ${tokens.borderDark}`,
+                  "&:hover": { color: tokens.textWhite, bgcolor: "rgba(255, 255, 255, 0.08)" },
+                }}
+              >
+                <XIcon sx={{ fontSize: 16 }} />
+              </IconButton>
+            </Box>
           </Box>
-        </Container>
+
+          {/* 2. Shop links */}
+          <Box>
+            <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: tokens.textWhite,
+                mb: 2,
+              }}
+            >
+              {FOOTER_GROUPS.shop.title}
+            </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
+              {FOOTER_GROUPS.shop.links.map((link) => (
+                <Box
+                  key={link.label}
+                  component={NextLink}
+                  href={link.href}
+                  sx={{
+                    fontSize: 13.5,
+                    color: tokens.textDarkMuted,
+                    textDecoration: "none",
+                    transition: "color 0.2s ease",
+                    "&:hover": { color: tokens.primary },
+                  }}
+                >
+                  {link.label}
+                </Box>
+              ))}
+            </Box>
+          </Box>
+
+          {/* 3. Support links */}
+          <Box>
+            <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: tokens.textWhite,
+                mb: 2,
+              }}
+            >
+              {FOOTER_GROUPS.support.title}
+            </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
+              {FOOTER_GROUPS.support.links.map((link) => (
+                <Box
+                  key={link.label}
+                  component={NextLink}
+                  href={link.href}
+                  sx={{
+                    fontSize: 13.5,
+                    color: tokens.textDarkMuted,
+                    textDecoration: "none",
+                    transition: "color 0.2s ease",
+                    "&:hover": { color: tokens.primary },
+                  }}
+                >
+                  {link.label}
+                </Box>
+              ))}
+            </Box>
+          </Box>
+
+          {/* 4. Company links */}
+          <Box>
+            <Typography
+              sx={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: tokens.textWhite,
+                mb: 2,
+              }}
+            >
+              {FOOTER_GROUPS.company.title}
+            </Typography>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
+              {FOOTER_GROUPS.company.links.map((link) => (
+                <Box
+                  key={link.label}
+                  component={NextLink}
+                  href={link.href}
+                  sx={{
+                    fontSize: 13.5,
+                    color: tokens.textDarkMuted,
+                    textDecoration: "none",
+                    transition: "color 0.2s ease",
+                    "&:hover": { color: tokens.primary },
+                  }}
+                >
+                  {link.label}
+                </Box>
+              ))}
+            </Box>
+          </Box>
+        </Box>
+
+        {/* Divider */}
+        <Divider sx={{ borderColor: tokens.borderDark, mb: 3 }} />
+
+        {/* Bottom bar */}
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 1.5,
+          }}
+        >
+          <Typography sx={{ fontSize: 12.5, color: tokens.textDarkMuted }}>
+            © {new Date().getFullYear()} We Gadget BD. All rights reserved.
+          </Typography>
+
+          <Typography sx={{ fontSize: 12.5, color: tokens.textDarkMuted }}>
+            Made with 💚 for tech lovers
+          </Typography>
+        </Box>
       </Box>
     </Box>
   );
 }
+
+export default Footer;

@@ -28,16 +28,15 @@ export function HotDealsSection() {
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <LocalFireDepartmentIcon sx={{ fontSize: 20, color: "orange", fill: "orange" }} />
+          <LocalFireDepartmentIcon sx={{ fontSize: 24, color: "#ff7319" }} />
           <Typography
             component='h2'
             className='bricolage'
             sx={{
-              fontFamily: "serif",
-              fontWeight: 900,
+              fontWeight: 700,
               letterSpacing: "-0.02em",
               color: "text.primary",
-              fontSize: { xs: "1.125rem", md: "1.5rem" },
+              fontSize: { xs: "1.25rem", md: "1.5rem" },
               lineHeight: 1.2,
             }}
           >
@@ -48,23 +47,23 @@ export function HotDealsSection() {
         <Button
           component={NextLink}
           href='/products'
-          className='roboto'
           size='small'
           variant='outlined'
           sx={{
-            textTransform: "uppercase",
-            fontWeight: 700,
-            letterSpacing: "0.05em",
-            fontSize: "0.75rem",
-            color: "orange",
-            borderColor: "violet.200",
-            borderRadius: 1,
+            fontWeight: 600,
+            fontSize: "0.85rem",
+            color: "#ff7319",
+            borderColor: "divider",
+            borderRadius: "6px",
+            textTransform: "none",
             px: 2,
-            py: 0.75,
+            py: 0.6,
             minWidth: 0,
+            transition: "all 200ms",
             "&:hover": {
-              borderColor: "violet.200",
-              bgcolor: "violet.50",
+              borderColor: "#ff7319",
+              bgcolor: "#ff7319",
+              color: "#fff",
             },
           }}
         >

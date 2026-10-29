@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Stack, Typography, TextField, InputAdornment, type TextFieldProps, type SxProps, type Theme } from "@mui/material";
-import { studioTokens } from "../../theme/theme";
+import { tokens } from "../../theme/theme";
 
 export interface InputProps extends Omit<TextFieldProps, "variant"> {
   label?: string;
@@ -11,24 +11,28 @@ export interface InputProps extends Omit<TextFieldProps, "variant"> {
   containerSx?: SxProps<Theme>;
 }
 
-export const Input: React.FC<InputProps> = ({
-  label,
-  labelIcon,
-  startIcon,
-  endIcon,
-  headerRight,
-  containerSx,
-  fullWidth = true,
-  size = "small",
-  placeholder,
-  value,
-  onChange,
-  disabled,
-  error,
-  helperText,
-  sx,
-  ...rest
-}) => {
+export const Input = React.forwardRef<any, InputProps>(function Input(
+  {
+    label,
+    labelIcon,
+    startIcon,
+    endIcon,
+    headerRight,
+    containerSx,
+    fullWidth = true,
+    size = "small",
+    placeholder,
+    value,
+    onChange,
+    disabled,
+    error,
+    helperText,
+    sx,
+    inputRef,
+    ...rest
+  },
+  ref
+) {
   return (
     <Box sx={{ width: fullWidth ? "100%" : "auto", ...containerSx }}>
       {(label || headerRight) && (
@@ -44,7 +48,7 @@ export const Input: React.FC<InputProps> = ({
           {label && (
             <Stack direction='row' spacing={1} sx={{ alignItems: "center" }}>
               {labelIcon}
-              <Typography variant='body2' sx={{ fontWeight: 700, color: studioTokens.textPrimary }}>
+              <Typography variant='body2' sx={{ fontWeight: 600, fontSize: "0.86rem", color: tokens.textPrimary }}>
                 {label}
               </Typography>
             </Stack>
@@ -54,6 +58,7 @@ export const Input: React.FC<InputProps> = ({
       )}
 
       <TextField
+        inputRef={inputRef || ref}
         fullWidth={fullWidth}
         size={size}
         placeholder={placeholder}
@@ -71,17 +76,19 @@ export const Input: React.FC<InputProps> = ({
         }}
         sx={{
           "& .MuiInputBase-root": {
-            bgcolor: studioTokens.bgInput,
-            color: studioTokens.textPrimary,
-            borderRadius: `${studioTokens.radiusMd}px`,
+            bgcolor: tokens.bgInput,
+            color: tokens.textPrimary,
+            borderRadius: `${tokens.radiusMd}px`,
             fontSize: "0.88rem",
-            border: `1px solid ${error ? studioTokens.error : studioTokens.borderDefault}`,
-            transition: "border-color 0.15s ease",
+            border: `1px solid ${error ? tokens.error : tokens.borderDefault}`,
+            transition: "all 0.15s ease",
+            overflow: "hidden",
             "&:hover": {
-              borderColor: error ? studioTokens.error : studioTokens.borderHover,
+              borderColor: error ? tokens.error : tokens.borderHover,
             },
             "&.Mui-focused": {
-              borderColor: error ? studioTokens.error : studioTokens.primary,
+              borderColor: error ? tokens.error : tokens.primary,
+              boxShadow: error ? "0 0 0 3px rgba(239, 68, 68, 0.15)" : "0 0 0 3px rgba(16, 185, 129, 0.15)",
             },
           },
           "& .MuiOutlinedInput-notchedOutline": {
@@ -89,16 +96,26 @@ export const Input: React.FC<InputProps> = ({
           },
           "& .MuiInputBase-input": {
             py: 1,
+            background: "transparent !important",
+            backgroundColor: "transparent !important",
             "&::placeholder": {
-              color: studioTokens.textMuted,
+              color: tokens.textMuted,
               opacity: 1,
+            },
+            "&:-webkit-autofill, &:-webkit-autofill:hover, &:-webkit-autofill:focus, &:-webkit-autofill:active, &:autofill, &:autofill:hover, &:autofill:focus, &:autofill:active": {
+              WebkitBoxShadow: `0 0 0 1000px ${tokens.bgInput || "#ffffff"} inset !important`,
+              boxShadow: `0 0 0 1000px ${tokens.bgInput || "#ffffff"} inset !important`,
+              WebkitTextFillColor: `${tokens.textPrimary} !important`,
+              caretColor: `${tokens.textPrimary} !important`,
+              transition: "background-color 5000s ease-in-out 0s",
+              borderRadius: "inherit",
             },
           },
           "& .MuiFormHelperText-root": {
             mx: 0.5,
             mt: 0.5,
             fontSize: "0.74rem",
-            color: error ? studioTokens.error : studioTokens.textMuted,
+            color: error ? tokens.error : tokens.textMuted,
           },
           ...sx,
         }}
@@ -106,4 +123,6 @@ export const Input: React.FC<InputProps> = ({
       />
     </Box>
   );
-};
+});
+
+Input.displayName = "Input";

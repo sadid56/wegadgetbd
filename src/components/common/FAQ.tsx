@@ -1,11 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
-import { Box, Typography } from "@mui/material";
-import { studioTokens } from "@/theme/theme";
+import { Box, Typography, Collapse } from "@mui/material";
+import { tokens } from "@/theme/theme";
 
 interface FAQItem {
   question: string;
@@ -48,7 +47,7 @@ export function FAQ({ className }: FAQProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <Box component="section" sx={{ py: { xs: 6, md: 10 }, position: "relative" }} className={className}>
+    <Box component='section' sx={{ py: { xs: 6, md: 10 }, position: "relative" }} className={className}>
       <Box sx={{ maxWidth: 840, mx: "auto", px: 2 }}>
         {/* Header */}
         <Box sx={{ textAlign: "center", mb: 6 }}>
@@ -60,22 +59,22 @@ export function FAQ({ className }: FAQProps) {
               width: 56,
               height: 56,
               borderRadius: 3,
-              bgcolor: studioTokens.primarySubtle,
-              color: studioTokens.primary,
+              bgcolor: tokens.primarySubtle,
+              color: tokens.primary,
               mb: 2,
             }}
           >
             <ChatBubbleOutlineIcon sx={{ fontSize: 28 }} />
           </Box>
 
-          <Typography variant="h4" sx={{ fontWeight: 800, mb: 1.5, color: studioTokens.textPrimary }}>
+          <Typography variant='h4' sx={{ fontWeight: 800, mb: 1.5, color: tokens.textPrimary }}>
             Frequently Asked{" "}
-            <Typography component="span" variant="inherit" sx={{ color: studioTokens.primary }}>
+            <Typography component='span' variant='inherit' sx={{ color: tokens.primary }}>
               Questions
             </Typography>
           </Typography>
 
-          <Typography variant="body1" sx={{ color: studioTokens.textMuted }}>
+          <Typography variant='body1' sx={{ color: tokens.textMuted }}>
             Quick answers to common questions about your experience.
           </Typography>
         </Box>
@@ -89,12 +88,12 @@ export function FAQ({ className }: FAQProps) {
               <Box
                 key={index}
                 sx={{
-                  borderRadius: `${studioTokens.radiusLg}px`,
-                  border: `1px solid ${isOpen ? studioTokens.primaryBorder : studioTokens.borderDefault}`,
-                  bgcolor: isOpen ? studioTokens.bgElevated : studioTokens.bgPanel,
+                  borderRadius: `${tokens.radiusLg}px`,
+                  border: `1px solid ${isOpen ? tokens.primaryBorder : tokens.borderDefault}`,
+                  bgcolor: isOpen ? tokens.bgElevated : tokens.bgPanel,
                   overflow: "hidden",
                   transition: "all 0.25s ease",
-                  boxShadow: isOpen ? studioTokens.shadowMd : "none",
+                  boxShadow: isOpen ? tokens.shadowMd : "none",
                 }}
               >
                 {/* Question */}
@@ -126,18 +125,18 @@ export function FAQ({ className }: FAQProps) {
                         justifyContent: "center",
                         fontSize: "0.78rem",
                         fontWeight: 700,
-                        bgcolor: isOpen ? studioTokens.primary : studioTokens.bgSubtle,
-                        color: isOpen ? studioTokens.bgCanvas : studioTokens.textMuted,
+                        bgcolor: isOpen ? tokens.primary : tokens.bgSubtle,
+                        color: isOpen ? tokens.textWhite : tokens.textMuted,
                       }}
                     >
                       {(index + 1).toString().padStart(2, "0")}
                     </Box>
 
                     <Typography
-                      variant="subtitle1"
+                      variant='subtitle1'
                       sx={{
                         fontWeight: 600,
-                        color: isOpen ? studioTokens.textPrimary : studioTokens.textSecondary,
+                        color: isOpen ? tokens.textPrimary : tokens.textSecondary,
                       }}
                     >
                       {item.question}
@@ -152,8 +151,8 @@ export function FAQ({ className }: FAQProps) {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      bgcolor: isOpen ? studioTokens.primarySubtle : studioTokens.bgSubtle,
-                      color: isOpen ? studioTokens.primary : studioTokens.textMuted,
+                      bgcolor: isOpen ? tokens.primarySubtle : tokens.bgSubtle,
+                      color: isOpen ? tokens.primary : tokens.textMuted,
                       transform: isOpen ? "rotate(180deg)" : "rotate(0deg)",
                       transition: "transform 0.25s ease",
                     }}
@@ -163,23 +162,13 @@ export function FAQ({ className }: FAQProps) {
                 </button>
 
                 {/* Answer */}
-                <AnimatePresence initial={false}>
-                  {isOpen && (
-                    <motion.div
-                      key="content"
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.25 }}
-                    >
-                      <Box sx={{ px: 2.5, pb: 2.5, pl: { xs: 2.5, sm: 8 } }}>
-                        <Typography variant="body2" sx={{ color: studioTokens.textSecondary, lineHeight: 1.7 }}>
-                          {item.answer}
-                        </Typography>
-                      </Box>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                <Collapse in={isOpen} timeout={250} unmountOnExit>
+                  <Box sx={{ px: 2.5, pb: 2.5, pl: { xs: 2.5, sm: 8 } }}>
+                    <Typography variant='body2' sx={{ color: tokens.textSecondary, lineHeight: 1.7 }}>
+                      {item.answer}
+                    </Typography>
+                  </Box>
+                </Collapse>
               </Box>
             );
           })}

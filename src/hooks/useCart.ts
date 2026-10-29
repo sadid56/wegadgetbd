@@ -3,117 +3,81 @@
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/context/toast-context";
 
+const CART_KEY = "cart";
+
 export interface CartItem {
   id: string;
   title: string;
   price: string | number;
-  discountPrice?: string | number;
+  discountPrice?: string | number | null;
   images: string[];
   slug: string;
   qty: number;
 }
 
+function readCart(): CartItem[] {
+  if (typeof window === "undefined") return [];
+  const raw = localStorage.getItem(CART_KEY);
+  if (!raw) return [];
+  try {
+    return JSON.parse(raw) as CartItem[];
+  } catch (e) {
+    console.error("Failed to parse cart", e);
+    return [];
+  }
+}
+
 export function useCart() {
   const toast = useToast();
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    if (typeof window !== "undefined") {
-      const savedCart = localStorage.getItem("cart");
-      if (savedCart) {
-        try {
-          return JSON.parse(savedCart);
-        } catch (e) {
-          console.error("Failed to parse cart", e);
-        }
-      }
-    }
-    return [];
-  });
+  const [cart, setCart] = useState<CartItem[]>(readCart);
 
-  // Stay in sync with other instances/tabs
   useEffect(() => {
-    const handleStorageChange = () => {
-      const updatedCart = localStorage.getItem("cart");
-      if (updatedCart) {
-        try {
-          setCart(JSON.parse(updatedCart));
-        } catch (e) {
-          console.error("Failed to parse updated cart", e);
-        }
-      } else {
-        setCart([]);
-      }
-    };
-
+    const handleStorageChange = () => setCart(readCart());
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
-  const saveCart = (newCart: CartItem[]) => {
+  const saveCart = useCallback((newCart: CartItem[]) => {
     setCart(newCart);
-    localStorage.setItem("cart", JSON.stringify(newCart));
-    // Trigger storage event for other instances/tabs
+    localStorage.setItem(CART_KEY, JSON.stringify(newCart));
     window.dispatchEvent(new Event("storage"));
-  };
+  }, []);
 
   const addItem = useCallback(
-    (item: any, qty: number = 1) => {
-      const existingItem = cart.find((i) => i.id === item.id);
-
-      if (existingItem) {
+    (item: Omit<CartItem, "qty">, qty = 1) => {
+      if (cart.some((i) => i.id === item.id)) {
         toast.error(`${item.title} is already in the cart`);
         return;
       }
-
-      const newItem: CartItem = {
-        id: item.id,
-        title: item.title,
-        price: item.price,
-        discountPrice: item.discountPrice,
-        images: item.images,
-        slug: item.slug,
-        qty: qty,
-      };
-
-      const newCart = [...cart, newItem];
-      setCart(newCart);
-      localStorage.setItem("cart", JSON.stringify(newCart));
-      window.dispatchEvent(new Event("storage"));
+      saveCart([...cart, { ...item, qty }]);
       toast.success(`${item.title} added to cart!`);
     },
-    [cart, toast]
+    [cart, saveCart, toast],
   );
 
-  const removeItem = (id: string) => {
-    const newCart = cart.filter((item) => item.id !== id);
-    saveCart(newCart);
-    toast.info("Item removed from cart");
-  };
+  const removeItem = useCallback(
+    (id: string) => {
+      saveCart(cart.filter((item) => item.id !== id));
+      toast.info("Item removed from cart");
+    },
+    [cart, saveCart, toast],
+  );
 
-  const updateQty = (id: string, qty: number) => {
-    if (qty < 1) return;
-    const newCart = cart.map((item) => (item.id === id ? { ...item, qty } : item));
-    saveCart(newCart);
-  };
+  const updateQty = useCallback(
+    (id: string, qty: number) => {
+      if (qty < 1) return;
+      saveCart(cart.map((item) => (item.id === id ? { ...item, qty } : item)));
+    },
+    [cart, saveCart],
+  );
 
-  const clearCart = () => {
+  const clearCart = useCallback(() => {
     saveCart([]);
     toast.info("Cart cleared");
-  };
+  }, [saveCart, toast]);
 
   const totalCount = cart.reduce((acc, item) => acc + item.qty, 0);
+  const totalPrice = cart.reduce((acc, item) => acc + Number(item.discountPrice || item.price) * item.qty, 0);
 
-  const totalPrice = cart.reduce((acc, item) => {
-    const price = item.discountPrice || item.price;
-    return acc + Number(price) * item.qty;
-  }, 0);
-
-  return {
-    cart,
-    addItem,
-    removeItem,
-    updateQty,
-    clearCart,
-    totalCount,
-    totalPrice,
-  };
+  return { cart, addItem, removeItem, updateQty, clearCart, totalCount, totalPrice };
 }

@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Stack, Typography, TextField, type TextFieldProps, type SxProps, type Theme } from "@mui/material";
-import { studioTokens } from "../../theme/theme";
+import { tokens } from "../../theme/theme";
 
 export interface TextareaProps extends Omit<TextFieldProps, "variant"> {
   label?: string;
@@ -33,7 +33,7 @@ export const Textarea = React.forwardRef<HTMLDivElement, TextareaProps>(
       <Box sx={{ width: fullWidth ? "100%" : "auto", ...containerSx }}>
         {(label || headerRight) && (
           <Stack
-            direction="row"
+            direction='row'
             spacing={1}
             sx={{
               alignItems: "center",
@@ -42,9 +42,9 @@ export const Textarea = React.forwardRef<HTMLDivElement, TextareaProps>(
             }}
           >
             {label && (
-              <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+              <Stack direction='row' spacing={1} sx={{ alignItems: "center" }}>
                 {labelIcon}
-                <Typography variant="body2" sx={{ fontWeight: 700, color: studioTokens.textPrimary }}>
+                <Typography variant='body2' sx={{ fontWeight: 700, color: tokens.textPrimary }}>
                   {label}
                 </Typography>
               </Stack>
@@ -64,20 +64,20 @@ export const Textarea = React.forwardRef<HTMLDivElement, TextareaProps>(
           disabled={disabled}
           error={error}
           helperText={helperText}
-          variant="outlined"
+          variant='outlined'
           sx={{
             "& .MuiInputBase-root": {
-              bgcolor: studioTokens.bgInput,
-              color: studioTokens.textPrimary,
-              borderRadius: `${studioTokens.radiusMd}px`,
+              bgcolor: tokens.bgInput,
+              color: tokens.textPrimary,
+              borderRadius: `${tokens.radiusMd}px`,
               fontSize: "0.88rem",
-              border: `1px solid ${error ? studioTokens.error : studioTokens.borderDefault}`,
+              border: `1px solid ${error ? tokens.error : tokens.borderDefault}`,
               transition: "border-color 0.15s ease",
               "&:hover": {
-                borderColor: error ? studioTokens.error : studioTokens.borderHover,
+                borderColor: error ? tokens.error : tokens.borderHover,
               },
               "&.Mui-focused": {
-                borderColor: error ? studioTokens.error : studioTokens.primary,
+                borderColor: error ? tokens.error : tokens.primary,
               },
             },
             "& .MuiOutlinedInput-notchedOutline": {
@@ -85,7 +85,7 @@ export const Textarea = React.forwardRef<HTMLDivElement, TextareaProps>(
             },
             "& .MuiInputBase-input": {
               "&::placeholder": {
-                color: studioTokens.textMuted,
+                color: tokens.textMuted,
                 opacity: 1,
               },
             },

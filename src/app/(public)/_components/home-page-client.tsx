@@ -2,20 +2,24 @@
 
 import { useMemo } from "react";
 import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
 import { useProducts } from "@/query-client/products";
-import { Hero } from "./Hero";
-import { HotDealsSection } from "./HotDealsSection";
-import { FAQ } from "@/components/common/FAQ";
-import { NewArrivalsSection } from "./NewArrivalsSection";
-import { WhyChooseUsSection } from "./WhyChooseUsSection";
+import { tokens } from "@/theme/theme";
 
-const LATEST_LIMIT = 8;
+import { Hero } from "./Hero";
+import { CategoryRibbon } from "./CategoryRibbon";
+import { TopPicksSection } from "./TopPicksSection";
+import { WhyChooseUsBanner } from "./WhyChooseUsBanner";
+import { LatestArrivalsSection } from "./LatestArrivalsSection";
+import { JournalSection } from "./JournalSection";
+import { TestimonialsSection } from "./TestimonialsSection";
+import { FAQ } from "@/components/common/FAQ";
 
 export default function LandingPage() {
-  const { data, isLoading } = useProducts({ limit: 20, sort: "newest" });
+  const { data } = useProducts({ limit: 20, sort: "newest" });
 
-  const latestProducts = useMemo(() => data?.products?.slice(0, LATEST_LIMIT) ?? [], [data?.products]);
+  const products = useMemo(() => data?.products ?? [], [data?.products]);
+  const topPicks = useMemo(() => products.slice(0, 4), [products]);
+  const latestArrivals = useMemo(() => products.slice(4, 8), [products]);
 
   return (
     <Box
@@ -25,22 +29,31 @@ export default function LandingPage() {
         flexDirection: "column",
         minHeight: "100vh",
         overflowX: "hidden",
-        background: "linear-gradient(to bottom, #FFF7ED33, #FFFFFF)",
+        bgcolor: tokens.bgCanvas,
       }}
     >
+      {/* 1. Dark Ambient Lifestyle Hero Section */}
       <Hero />
 
-      <Container maxWidth='xl' sx={{ px: { xs: 1, md: 2 }, py: { xs: 2, md: 3 } }}>
-        <HotDealsSection />
-      </Container>
+      {/* 2. Floating Curved Category Ribbon */}
+      <CategoryRibbon />
 
-      <NewArrivalsSection products={latestProducts} isLoading={isLoading} />
+      {/* 3. Featured Products: Top Picks for You */}
+      <TopPicksSection products={topPicks} />
 
-      <WhyChooseUsSection />
+      {/* 4. Why Choose Us: More Than Just a Store */}
+      <WhyChooseUsBanner />
 
-      <Box component='section' sx={{ bgcolor: "#fff", pb: 0 }}>
-        <FAQ />
-      </Box>
+      {/* 5. Latest Arrivals */}
+      <LatestArrivalsSection products={latestArrivals} />
+
+      {/* 6. Journal: Tech Tips & Real Experiences */}
+      <JournalSection />
+
+      {/* 7. Testimonials: Loved by Thousands */}
+      <TestimonialsSection />
+
+      <FAQ />
     </Box>
   );
 }

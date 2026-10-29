@@ -8,7 +8,7 @@ import ButtonBase from "@mui/material/ButtonBase";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { type SxProps, type Theme } from "@mui/material/styles";
-import { studioTokens } from "@/theme/theme";
+import { tokens } from "@/theme/theme";
 
 export interface CalendarProps {
   mode?: "single" | "multiple" | "range";
@@ -91,7 +91,7 @@ export function Calendar({
     <Box
       sx={{
         p: 2,
-        borderRadius: `${studioTokens.radiusMd}px`,
+        borderRadius: `${tokens.radiusMd}px`,
         border: "1px solid",
         borderColor: "divider",
         bgcolor: "background.paper",
@@ -102,9 +102,7 @@ export function Calendar({
     >
       {/* Month Navigation Header */}
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-        <Typography sx={{ fontSize: "0.95rem", fontWeight: 700, color: "text.primary" }}>
-          {monthLabel}
-        </Typography>
+        <Typography sx={{ fontSize: "0.95rem", fontWeight: 700, color: "text.primary" }}>{monthLabel}</Typography>
         <Box sx={{ display: "flex", gap: 0.5 }}>
           <IconButton size='small' onClick={prevMonth} sx={{ p: 0.5, color: "text.secondary" }}>
             <ChevronLeftIcon sx={{ fontSize: 20 }} />
@@ -136,9 +134,7 @@ export function Calendar({
       {/* Days Grid */}
       <Box sx={{ display: "grid", gridTemplateColumns: "repeat(7, 36px)", gap: 0.5 }}>
         {days.map(({ date, isCurrentMonth }, idx) => {
-          const isSelected = Array.isArray(selected)
-            ? selected.some((s) => isSameDay(s, date))
-            : isSameDay(selected, date);
+          const isSelected = Array.isArray(selected) ? selected.some((s) => isSameDay(s, date)) : isSameDay(selected, date);
 
           const isToday = isSameDay(date, today);
           const isDisabled = disabled ? disabled(date) : false;
@@ -155,21 +151,11 @@ export function Calendar({
               sx={{
                 width: 36,
                 height: 36,
-                borderRadius: `${studioTokens.radiusSm}px`,
+                borderRadius: `${tokens.radiusSm}px`,
                 fontSize: "0.82rem",
                 fontWeight: isSelected || isToday ? 700 : 500,
-                color: isSelected
-                  ? studioTokens.bgCanvas
-                  : !isCurrentMonth
-                    ? "text.disabled"
-                    : isToday
-                      ? "primary.main"
-                      : "text.primary",
-                bgcolor: isSelected
-                  ? "primary.main"
-                  : isToday
-                    ? "action.hover"
-                    : "transparent",
+                color: isSelected ? tokens.textWhite : !isCurrentMonth ? "text.disabled" : isToday ? "primary.main" : "text.primary",
+                bgcolor: isSelected ? "primary.main" : isToday ? "action.hover" : "transparent",
                 border: isToday && !isSelected ? "1px solid" : "none",
                 borderColor: isToday && !isSelected ? "primary.main" : "transparent",
                 opacity: isDisabled ? 0.35 : 1,

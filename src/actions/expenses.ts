@@ -3,25 +3,13 @@
 import { db } from "@/db";
 import { expense } from "@/db/schema";
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/admin-auth";
+import { requireAdmin } from "@/lib/auth";
 import { desc, gte, sql } from "drizzle-orm";
+import { ok, fail } from "./_utils";
 
-const EXPENSE_PASSWORD = "Ttttt5656";
-
-export async function verifyExpensePassword(password: string) {
+export async function createExpense(input: { amount: number; note?: string; date?: Date }) {
   const session = await requireAdmin();
-  if (!session) return { success: false, message: "Unauthorized" };
-
-  if (password !== EXPENSE_PASSWORD) {
-    return { success: false, message: "Invalid password" };
-  }
-
-  return { success: true };
-}
-
-export async function createExpense(input: { amount: number; note?: string; date?: Date; password: string }) {
-  const auth = await verifyExpensePassword(input.password);
-  if (!auth.success) return auth;
+  if (!session) return fail("Unauthorized");
 
   try {
     await db.insert(expense).values({
@@ -31,18 +19,21 @@ export async function createExpense(input: { amount: number; note?: string; date
     });
 
     revalidatePath("/admin/expenses");
-    return { success: true };
+    return ok();
   } catch (error) {
     console.error("Failed to create expense", error);
-    return { success: false, message: "Failed to create expense" };
+    return fail("Failed to create expense");
   }
 }
 
-export async function getExpenseSummary(password: string) {
-  const auth = await verifyExpensePassword(password);
-  if (!auth.success) return { success: false, message: auth.message };
+export async function getExpenseSummary() {
+  const session = await requireAdmin();
+  if (!session) return fail("Unauthorized");
 
   const now = new Date();
+  const last7Days = new Date(now);
+  last7Days.setDate(now.getDate() - 7);
+
   const last30Days = new Date(now);
   last30Days.setDate(now.getDate() - 30);
 
@@ -50,7 +41,11 @@ export async function getExpenseSummary(password: string) {
   lastYear.setFullYear(now.getFullYear() - 1);
 
   try {
-    const [[{ sum30 }], [{ sumYear }], recent] = await Promise.all([
+    const [[{ sum7 }], [{ sum30 }], [{ sumYear }], recent] = await Promise.all([
+      db
+        .select({ sum7: sql<string>`COALESCE(SUM(${expense.amount}), 0)` })
+        .from(expense)
+        .where(gte(expense.date, last7Days)),
       db
         .select({ sum30: sql<string>`COALESCE(SUM(${expense.amount}), 0)` })
         .from(expense)
@@ -67,6 +62,7 @@ export async function getExpenseSummary(password: string) {
 
     return {
       success: true,
+      last7DaysExpense: Number(sum7) || 0,
       last30DaysExpense: Number(sum30) || 0,
       lastYearExpense: Number(sumYear) || 0,
       recent: recent.map((item) => ({

@@ -11,6 +11,7 @@ import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 import { BN } from "./checkout-constants";
+import { getAssetUrl } from "@/lib/storage";
 
 interface OrderSummaryProps {
   products: any[];
@@ -138,7 +139,7 @@ export function OrderSummary({
               >
                 <Box
                   component='img'
-                  src={item.images?.[0] || ""}
+                  src={getAssetUrl(item.images?.[0]) || ""}
                   alt={item.title}
                   sx={{
                     width: "100%",

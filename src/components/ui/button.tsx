@@ -1,6 +1,6 @@
 import React from "react";
 import { Button as MuiButton, CircularProgress, type ButtonProps as MuiButtonProps } from "@mui/material";
-import { studioTokens } from "../../theme/theme";
+import { tokens } from "../../theme/theme";
 
 export type ButtonVariant =
   | "primary"
@@ -47,19 +47,19 @@ export const Button: React.FC<ButtonProps> = ({
       case "primary":
       case "default":
         return {
-          bgcolor: studioTokens.primary,
-          color: studioTokens.bgCanvas,
+          bgcolor: tokens.primary,
+          color: tokens.textWhite,
           border: "1px solid transparent",
           fontWeight: 700,
-          boxShadow: studioTokens.shadowPrimary,
+          boxShadow: tokens.shadowPrimary,
           "&:hover": {
-            bgcolor: studioTokens.primaryHover,
-            color: studioTokens.bgCanvas,
-            boxShadow: studioTokens.shadowPrimaryHover,
+            bgcolor: tokens.primaryHover,
+            color: tokens.textWhite,
+            boxShadow: tokens.shadowPrimaryHover,
           },
           "&.Mui-disabled": {
-            bgcolor: studioTokens.primaryDisabled,
-            color: studioTokens.textDisabled,
+            bgcolor: tokens.primaryDisabled,
+            color: tokens.textDisabled,
             boxShadow: "none",
           },
         };
@@ -68,21 +68,21 @@ export const Button: React.FC<ButtonProps> = ({
       case "outlined":
       case "outline":
         return {
-          bgcolor: studioTokens.bgPanel,
-          color: studioTokens.textPrimary,
-          border: `1px solid ${studioTokens.borderDefault}`,
-          boxShadow: studioTokens.shadowSm,
+          bgcolor: tokens.bgPanel,
+          color: tokens.textPrimary,
+          border: `1px solid ${tokens.borderDefault}`,
+          boxShadow: tokens.shadowSm,
           fontWeight: 500,
           "&:hover": {
-            bgcolor: studioTokens.bgSubtle,
-            borderColor: studioTokens.primaryLight,
-            color: studioTokens.textPrimary,
-            boxShadow: studioTokens.shadowMd,
+            bgcolor: tokens.bgSubtle,
+            borderColor: tokens.primaryLight,
+            color: tokens.textPrimary,
+            boxShadow: tokens.shadowMd,
           },
           "&.Mui-disabled": {
-            bgcolor: studioTokens.bgInput,
-            color: studioTokens.textDisabled,
-            borderColor: studioTokens.borderDisabled,
+            bgcolor: tokens.bgInput,
+            color: tokens.textDisabled,
+            borderColor: tokens.borderDisabled,
             boxShadow: "none",
           },
         };
@@ -90,29 +90,29 @@ export const Button: React.FC<ButtonProps> = ({
       case "ghost":
         return {
           bgcolor: "transparent",
-          color: studioTokens.textSecondary,
+          color: tokens.textSecondary,
           border: "1px solid transparent",
           fontWeight: 500,
           boxShadow: "none",
           "&:hover": {
-            bgcolor: studioTokens.bgSubtle,
-            color: studioTokens.textPrimary,
+            bgcolor: tokens.bgSubtle,
+            color: tokens.textPrimary,
           },
           "&.Mui-disabled": {
-            color: studioTokens.textDisabled,
+            color: tokens.textDisabled,
           },
         };
 
       case "link":
         return {
           bgcolor: "transparent",
-          color: studioTokens.primary,
+          color: tokens.primary,
           border: "none",
           textDecoration: "underline",
           fontWeight: 500,
           "&:hover": {
             bgcolor: "transparent",
-            color: studioTokens.primaryLight,
+            color: tokens.primaryLight,
             textDecoration: "underline",
           },
         };
@@ -120,21 +120,21 @@ export const Button: React.FC<ButtonProps> = ({
       case "danger":
       case "destructive":
         return {
-          bgcolor: studioTokens.dangerSubtle,
-          color: studioTokens.danger,
-          border: `1px solid ${studioTokens.dangerBorder}`,
+          bgcolor: tokens.dangerSubtle,
+          color: tokens.danger,
+          border: `1px solid ${tokens.dangerBorder}`,
           fontWeight: 600,
-          boxShadow: studioTokens.shadowSm,
+          boxShadow: tokens.shadowSm,
           "&:hover": {
-            bgcolor: studioTokens.errorSubtle,
-            borderColor: studioTokens.error,
-            color: studioTokens.textPrimary,
-            boxShadow: studioTokens.shadowMd,
+            bgcolor: tokens.errorSubtle,
+            borderColor: tokens.error,
+            color: tokens.textPrimary,
+            boxShadow: tokens.shadowMd,
           },
           "&.Mui-disabled": {
-            bgcolor: studioTokens.bgInput,
-            borderColor: studioTokens.borderDisabled,
-            color: studioTokens.textDisabled,
+            bgcolor: tokens.bgInput,
+            borderColor: tokens.borderDisabled,
+            color: tokens.textDisabled,
             boxShadow: "none",
           },
         };
@@ -156,7 +156,7 @@ export const Button: React.FC<ButtonProps> = ({
       startIcon={loading ? <CircularProgress size={spinnerSize} color='inherit' /> : startIcon}
       endIcon={loading ? undefined : endIcon}
       sx={{
-        borderRadius: `${studioTokens.radiusMd}px`,
+        borderRadius: `${tokens.radiusMd}px`,
         textTransform: "none",
         fontSize: isSmall ? "0.82rem" : isLarge ? "0.98rem" : "0.88rem",
         py: isIcon ? 0.8 : isSmall ? 0.6 : isLarge ? 1.2 : 0.9,

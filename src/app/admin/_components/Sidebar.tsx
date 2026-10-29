@@ -1,9 +1,6 @@
 "use client";
 
-import NextLink from "next/link";
-import { usePathname } from "next/navigation";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
+import type { Navigation } from "@toolpad/core/AppProvider";
 
 import SpaceDashboardOutlinedIcon from "@mui/icons-material/SpaceDashboardOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
@@ -16,6 +13,82 @@ import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
+
+export const NAVIGATION: Navigation = [
+  {
+    kind: "header",
+    title: "Main items",
+  },
+  {
+    segment: "admin",
+    title: "Overview",
+    icon: <SpaceDashboardOutlinedIcon />,
+  },
+  {
+    segment: "admin/products",
+    title: "Products",
+    icon: <Inventory2OutlinedIcon />,
+  },
+  {
+    segment: "admin/categories",
+    title: "Categories",
+    icon: <LayersOutlinedIcon />,
+  },
+  {
+    segment: "admin/orders",
+    title: "Orders",
+    icon: <LocalMallOutlinedIcon />,
+  },
+  {
+    segment: "admin/users",
+    title: "Users",
+    icon: <PeopleOutlinedIcon />,
+  },
+  {
+    segment: "admin/reviews",
+    title: "Reviews",
+    icon: <StarBorderIcon />,
+  },
+  {
+    kind: "divider",
+  },
+  {
+    kind: "header",
+    title: "Finance & Analytics",
+  },
+  {
+    segment: "admin/sales",
+    title: "Sale's report",
+    icon: <BarChartOutlinedIcon />,
+  },
+  {
+    segment: "admin/expenses",
+    title: "Expense summary",
+    icon: <TrendingDownIcon />,
+  },
+  {
+    segment: "admin/payments",
+    title: "Payment history",
+    icon: <CreditCardOutlinedIcon />,
+  },
+  {
+    kind: "divider",
+  },
+  {
+    kind: "header",
+    title: "System & Security",
+  },
+  {
+    segment: "admin/sessions",
+    title: "Sessions",
+    icon: <HistoryIcon />,
+  },
+  {
+    segment: "admin/audit-logs",
+    title: "Audit logs",
+    icon: <AssignmentOutlinedIcon />,
+  },
+];
 
 export const sidebarItems = [
   { href: "/admin", label: "Overview", icon: SpaceDashboardOutlinedIcon },
@@ -31,115 +104,10 @@ export const sidebarItems = [
   { href: "/admin/audit-logs", label: "Audit logs", icon: AssignmentOutlinedIcon },
 ];
 
-interface SidebarContentProps {
-  onItemClick?: () => void;
-}
-
-export function SidebarContent({ onItemClick }: SidebarContentProps) {
-  const pathname = usePathname();
-
-  return (
-    <Box
-      component='nav'
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "stretch",
-        gap: 0.5,
-        px: { xs: 1, lg: 2 },
-        fontSize: 14,
-        fontWeight: 500,
-      }}
-    >
-      {sidebarItems.map((item) => {
-        const Icon = item.icon;
-        const isActive = pathname === item.href;
-        return (
-          <Box
-            key={item.href}
-            component={NextLink}
-            href={item.href}
-            onClick={onItemClick}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1.5,
-              px: 1.5,
-              py: 1,
-              borderRadius: "8px",
-              textDecoration: "none",
-              color: isActive ? "primary.main" : "text.secondary",
-              bgcolor: isActive ? "action.hover" : "transparent",
-              transition: "all 150ms",
-              "&:hover": {
-                color: "primary.main",
-                bgcolor: isActive ? "action.hover" : "action.hover",
-              },
-            }}
-          >
-            <Icon sx={{ fontSize: 16 }} />
-            <Box component='span'>{item.label}</Box>
-          </Box>
-        );
-      })}
-    </Box>
-  );
+export function SidebarContent(_props: { onItemClick?: () => void }) {
+  return null;
 }
 
 export function Sidebar() {
-  return (
-    <Box
-      component='aside'
-      sx={{
-        display: { xs: "none", md: "block" },
-        width: 256,
-        borderRight: "1px solid",
-        borderColor: "divider",
-        bgcolor: "action.hover",
-      }}
-    >
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 1,
-          height: "100%",
-          maxHeight: "100vh",
-        }}
-      >
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            height: { xs: 56, lg: 60 },
-            borderBottom: "1px solid",
-            borderColor: "divider",
-            px: { xs: 2, lg: 3 },
-          }}
-        >
-          <Box
-            component={NextLink}
-            href='/'
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              fontWeight: 600,
-              textDecoration: "none",
-              color: "text.primary",
-            }}
-          >
-            <Inventory2OutlinedIcon sx={{ fontSize: 24 }} />
-            <Typography component='span' sx={{ fontSize: 15, fontWeight: 600, color: "text.primary" }}>
-              Bongo Admin
-            </Typography>
-          </Box>
-        </Box>
-
-        <Box sx={{ flex: 1, py: 1 }}>
-          <SidebarContent />
-        </Box>
-      </Box>
-    </Box>
-  );
+  return null;
 }

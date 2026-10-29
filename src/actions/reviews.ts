@@ -4,6 +4,9 @@ import { db } from "@/db";
 import { customerReview, product, type ReviewStatus } from "@/db/schema";
 import { eq, and, desc, asc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { ok, fail, type ActionResult } from "./_utils";
+
+export { type ActionResult };
 
 export type CreateReviewInput = {
   customerName: string;
@@ -18,7 +21,7 @@ export type CreateReviewInput = {
 
 export type UpdateReviewInput = Partial<CreateReviewInput>;
 
-export async function getReviews() {
+export async function getReviews(): Promise<ActionResult<any[]>> {
   try {
     const reviews = await db.query.customerReview.findMany({
       orderBy: [desc(customerReview.createdAt)],
@@ -28,14 +31,14 @@ export async function getReviews() {
         },
       },
     });
-    return { success: true, data: reviews };
+    return ok(reviews);
   } catch (error) {
     console.error("Error fetching reviews:", error);
-    return { success: false, error: "Failed to fetch reviews" };
+    return fail("Failed to fetch reviews");
   }
 }
 
-export async function getApprovedReviews() {
+export async function getApprovedReviews(): Promise<ActionResult<any[]>> {
   try {
     const reviews = await db.query.customerReview.findMany({
       where: eq(customerReview.status, "APPROVED"),
@@ -46,30 +49,27 @@ export async function getApprovedReviews() {
         },
       },
     });
-    return { success: true, data: reviews };
+    return ok(reviews);
   } catch (error) {
     console.error("Error fetching approved reviews:", error);
-    return { success: false, error: "Failed to fetch reviews" };
+    return fail("Failed to fetch reviews");
   }
 }
 
-export async function getProductReviews(productId: string) {
+export async function getProductReviews(productId: string): Promise<ActionResult<any[]>> {
   try {
     const reviews = await db.query.customerReview.findMany({
-      where: and(
-        eq(customerReview.productId, productId),
-        eq(customerReview.status, "APPROVED")
-      ),
+      where: and(eq(customerReview.productId, productId), eq(customerReview.status, "APPROVED")),
       orderBy: [desc(customerReview.createdAt)],
     });
-    return { success: true, data: reviews };
+    return ok(reviews);
   } catch (error) {
     console.error("Error fetching product reviews:", error);
-    return { success: false, error: "Failed to fetch reviews" };
+    return fail("Failed to fetch reviews");
   }
 }
 
-export async function createReview(data: CreateReviewInput) {
+export async function createReview(data: CreateReviewInput): Promise<ActionResult<any>> {
   try {
     const [review] = await db
       .insert(customerReview)
@@ -87,14 +87,14 @@ export async function createReview(data: CreateReviewInput) {
 
     revalidatePath("/admin/reviews");
     revalidatePath("/");
-    return { success: true, data: review };
+    return ok(review);
   } catch (error) {
     console.error("Error creating review:", error);
-    return { success: false, error: "Failed to create review" };
+    return fail("Failed to create review");
   }
 }
 
-export async function updateReview(id: string, data: UpdateReviewInput) {
+export async function updateReview(id: string, data: UpdateReviewInput): Promise<ActionResult<any>> {
   try {
     const [review] = await db
       .update(customerReview)
@@ -113,39 +113,35 @@ export async function updateReview(id: string, data: UpdateReviewInput) {
 
     revalidatePath("/admin/reviews");
     revalidatePath("/");
-    return { success: true, data: review };
+    return ok(review);
   } catch (error) {
     console.error("Error updating review:", error);
-    return { success: false, error: "Failed to update review" };
+    return fail("Failed to update review");
   }
 }
 
-export async function deleteReview(id: string) {
+export async function deleteReview(id: string): Promise<ActionResult<void>> {
   try {
     await db.delete(customerReview).where(eq(customerReview.id, id));
     revalidatePath("/admin/reviews");
     revalidatePath("/");
-    return { success: true };
+    return ok();
   } catch (error) {
     console.error("Error deleting review:", error);
-    return { success: false, error: "Failed to delete review" };
+    return fail("Failed to delete review");
   }
 }
 
-export async function toggleReviewStatus(id: string, status: ReviewStatus) {
+export async function toggleReviewStatus(id: string, status: ReviewStatus): Promise<ActionResult<any>> {
   try {
-    const [review] = await db
-      .update(customerReview)
-      .set({ status })
-      .where(eq(customerReview.id, id))
-      .returning();
+    const [review] = await db.update(customerReview).set({ status }).where(eq(customerReview.id, id)).returning();
 
     revalidatePath("/admin/reviews");
     revalidatePath("/");
-    return { success: true, data: review };
+    return ok(review);
   } catch (error) {
     console.error("Error updating review status:", error);
-    return { success: false, error: "Failed to update status" };
+    return fail("Failed to update status");
   }
 }
 

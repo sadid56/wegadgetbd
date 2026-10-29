@@ -2,55 +2,57 @@ import { useAppMutation } from "@/hooks/useAppMutation";
 import { orpcClient, orpc } from "@/lib/orpc/client";
 import { useQuery } from "@tanstack/react-query";
 
-// Types
 export type ProductsResponse = Awaited<ReturnType<typeof orpcClient.products.list>>;
 export type SingleProductResponse = Awaited<ReturnType<typeof orpcClient.products.bySlug>>;
 export type Product = ProductsResponse["products"][number];
 
-// API Endpoints powered by oRPC
-export const ProductEndpoints = {
-  getProducts: (params?: any) => orpcClient.products.list(params ?? {}),
-  getProductCallback: (slug: string) => orpcClient.products.bySlug({ slug }),
+type ListParams = Parameters<typeof orpcClient.products.list>[0];
+type AdminListParams = Parameters<typeof orpcClient.products.adminList>[0];
+type CreatePayload = Parameters<typeof orpcClient.products.create>[0];
+type UpdatePayload = Parameters<typeof orpcClient.products.update>[0];
 
-  // Admin
-  createProduct: (data: any) => orpcClient.products.create(data),
-  updateProduct: ({ id, data }: { id: string; data: any }) => orpcClient.products.update({ id, data }),
+const productKeys = orpc.products.list.queryOptions({ input: {} }).queryKey;
+const adminProductKeys = orpc.products.adminList.queryOptions({ input: {} }).queryKey;
+const singleProductKeys = orpc.products.bySlug.queryOptions({ input: { slug: "" } }).queryKey;
+
+export const ProductEndpoints = {
+  getProducts: (params?: ListParams) => orpcClient.products.list(params ?? {}),
+  getProduct: (slug: string) => orpcClient.products.bySlug({ slug }),
+  createProduct: (data: CreatePayload) => orpcClient.products.create(data),
+  updateProduct: (data: UpdatePayload) => orpcClient.products.update(data),
   deleteProduct: (id: string) => orpcClient.products.delete({ id }),
 };
 
-// Hooks
-export const useProducts = (params?: any) => {
-  return useQuery(orpc.products.list.queryOptions({ input: params ?? {} }));
-};
+export const useProducts = (params?: ListParams) => useQuery(orpc.products.list.queryOptions({ input: params ?? {} }));
 
-export const useProduct = (slug: string) => {
-  return useQuery({
+export const useProduct = (slug: string) =>
+  useQuery({
     ...orpc.products.bySlug.queryOptions({ input: { slug } }),
     enabled: !!slug,
   });
-};
 
-export const useAdminProducts = (params?: any) => {
-  return useQuery(orpc.products.adminList.queryOptions({ input: params }));
-};
+export const useAdminProducts = (params?: AdminListParams) => useQuery(orpc.products.adminList.queryOptions({ input: params ?? {} }));
 
-export const useCreateProduct = () =>
+export const useCreateProduct = (options?: Record<string, unknown>) =>
   useAppMutation({
     mutationFn: ProductEndpoints.createProduct,
-    invalidateKeys: [["adminProducts"], ["products"]],
+    invalidateKeys: [adminProductKeys, productKeys],
     successMessage: "Product created successfully",
+    ...options,
   });
 
-export const useUpdateProduct = () =>
+export const useUpdateProduct = (options?: Record<string, unknown>) =>
   useAppMutation({
     mutationFn: ProductEndpoints.updateProduct,
-    invalidateKeys: [["adminProducts"], ["products"], ["product"]],
+    invalidateKeys: [adminProductKeys, productKeys, singleProductKeys],
     successMessage: "Product updated successfully",
+    ...options,
   });
 
-export const useDeleteProduct = () =>
+export const useDeleteProduct = (options?: Record<string, unknown>) =>
   useAppMutation({
     mutationFn: ProductEndpoints.deleteProduct,
-    invalidateKeys: [["adminProducts"], ["products"]],
+    invalidateKeys: [adminProductKeys, productKeys],
     successMessage: "Product deleted successfully",
+    ...options,
   });

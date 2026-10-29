@@ -1,10 +1,11 @@
-import Box from "@mui/material/Box";
+import * as React from "react";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
+import Box from "@mui/material/Box";
+import CircularProgress from "@mui/material/CircularProgress";
 
-import { requireAdmin } from "@/lib/admin-auth";
-import { Sidebar } from "./_components/Sidebar";
-import { AdminHeader } from "./_components/AdminHeader";
+import { requireAdmin } from "@/lib/auth";
+import { AdminDashboardLayout } from "../../components/layouts/admin-dashboard-layout";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard | BongoNex",
@@ -26,39 +27,24 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        minHeight: "100vh",
-        width: "100%",
-        bgcolor: "background.default",
-      }}
-    >
-      <Sidebar />
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          minWidth: 0,
-        }}
-      >
-        <AdminHeader user={session.user} />
+    <React.Suspense
+      fallback={
         <Box
-          component='main'
           sx={{
             display: "flex",
-            flex: 1,
-            flexDirection: "column",
-            gap: { xs: 2, lg: 3 },
-            p: { xs: 2, lg: 3 },
-            overflowY: "auto",
-            maxHeight: "calc(100vh - 64px)",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: "100vh",
+            bgcolor: "background.default",
           }}
         >
-          {children}
+          <CircularProgress size={36} sx={{ color: "primary.main" }} />
         </Box>
-      </Box>
-    </Box>
+      }
+    >
+      <AdminDashboardLayout user={session.user}>
+        {children}
+      </AdminDashboardLayout>
+    </React.Suspense>
   );
 }

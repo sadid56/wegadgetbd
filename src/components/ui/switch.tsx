@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Switch as MuiSwitch, type SwitchProps as MuiSwitchProps } from "@mui/material";
-import { studioTokens } from "@/theme/theme";
+import { tokens } from "@/theme/theme";
 
 export interface SwitchProps extends Omit<MuiSwitchProps, "onChange"> {
   onCheckedChange?: (checked: boolean) => void;
@@ -43,15 +43,15 @@ export const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
             padding: 2,
             "&.Mui-checked": {
               transform: "translateX(20px)",
-              color: studioTokens.bgCanvas,
+              color: "#fff",
               "& + .MuiSwitch-track": {
                 opacity: 1,
-                backgroundColor: studioTokens.primary,
+                backgroundColor: tokens.primary,
               },
             },
           },
           "& .MuiSwitch-thumb": {
-            boxShadow: studioTokens.shadowSm,
+            boxShadow: tokens.shadowSm,
             width: 20,
             height: 20,
             borderRadius: 10,
@@ -61,7 +61,7 @@ export const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
           "& .MuiSwitch-track": {
             borderRadius: 12,
             opacity: 1,
-            backgroundColor: studioTokens.bgSubtle,
+            backgroundColor: tokens.bgSubtle,
             boxSizing: "border-box",
           },
           ...sx,

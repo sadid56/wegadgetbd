@@ -1,6 +1,6 @@
 import React from "react";
 import { Box, Stack, Typography, Select, MenuItem, type SelectChangeEvent, type SxProps, type Theme } from "@mui/material";
-import { studioTokens } from "../../theme/theme";
+import { tokens } from "../../theme/theme";
 
 export interface DropdownOption<T = string | number> {
   value: T;
@@ -51,7 +51,7 @@ export function Dropdown<T extends string | number = string>({
     const selectedOption = options.find((opt) => opt.value === selectedVal);
     if (!selectedOption) {
       return (
-        <Typography variant='body2' sx={{ color: studioTokens.textMuted }}>
+        <Typography variant='body2' sx={{ color: tokens.textMuted }}>
           {placeholder || "Select..."}
         </Typography>
       );
@@ -64,7 +64,7 @@ export function Dropdown<T extends string | number = string>({
           sx={{
             fontSize: "0.86rem",
             fontWeight: 500,
-            color: studioTokens.textPrimary,
+            color: tokens.textPrimary,
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
@@ -94,7 +94,7 @@ export function Dropdown<T extends string | number = string>({
           {label && (
             <Stack direction='row' spacing={1} sx={{ alignItems: "center" }}>
               {icon}
-              <Typography variant='body2' sx={{ fontWeight: 700, color: studioTokens.textPrimary }}>
+              <Typography variant='body2' sx={{ fontWeight: 700, color: tokens.textPrimary }}>
                 {label}
               </Typography>
             </Stack>
@@ -118,11 +118,11 @@ export function Dropdown<T extends string | number = string>({
               sx: {
                 width: menuWidth,
                 boxSizing: "border-box",
-                bgcolor: `${studioTokens.bgElevated} !important`,
+                bgcolor: `${tokens.bgElevated} !important`,
                 backgroundImage: "none !important",
-                border: `1px solid ${studioTokens.borderElevated} !important`,
-                boxShadow: `${studioTokens.shadowPopover}, 0 0 0 1px ${studioTokens.borderDefault} !important`,
-                borderRadius: `${studioTokens.radiusLg}px !important`,
+                border: `1px solid ${tokens.borderElevated} !important`,
+                boxShadow: `${tokens.shadowPopover}, 0 0 0 1px ${tokens.borderDefault} !important`,
+                borderRadius: `${tokens.radiusLg}px !important`,
                 mt: 0.6,
                 p: 0.5,
               },
@@ -130,14 +130,14 @@ export function Dropdown<T extends string | number = string>({
           },
         }}
         sx={{
-          bgcolor: studioTokens.bgInput,
-          color: studioTokens.textPrimary,
-          borderRadius: `${studioTokens.radiusMd}px`,
+          bgcolor: tokens.bgInput,
+          color: tokens.textPrimary,
+          borderRadius: `${tokens.radiusMd}px`,
           fontSize: "0.88rem",
-          border: `1px solid ${studioTokens.borderDefault}`,
+          border: `1px solid ${tokens.borderDefault}`,
           "& .MuiOutlinedInput-notchedOutline": { border: "none" },
-          "&:hover": { borderColor: studioTokens.borderHover },
-          "&.Mui-focused": { borderColor: studioTokens.primary },
+          "&:hover": { borderColor: tokens.borderHover },
+          "&.Mui-focused": { borderColor: tokens.primary },
           "& .MuiSelect-select": {
             py: 1,
             overflow: "hidden",
@@ -155,19 +155,19 @@ export function Dropdown<T extends string | number = string>({
             sx={{
               fontSize: "0.85rem",
               py: option.subtitle ? 1 : 0.8,
-              borderRadius: `${studioTokens.radiusSm}px`,
+              borderRadius: `${tokens.radiusSm}px`,
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
               display: "block",
               "&:hover": {
-                bgcolor: studioTokens.bgSubtle,
+                bgcolor: tokens.bgSubtle,
               },
               "&.Mui-selected": {
-                bgcolor: `${studioTokens.primarySubtle} !important`,
-                color: `${studioTokens.primaryLight} !important`,
+                bgcolor: `${tokens.primarySubtle} !important`,
+                color: `${tokens.primaryLight} !important`,
                 "&:hover": {
-                  bgcolor: `${studioTokens.primarySubtle} !important`,
+                  bgcolor: `${tokens.primarySubtle} !important`,
                 },
               },
             }}
@@ -180,7 +180,7 @@ export function Dropdown<T extends string | number = string>({
                   sx={{
                     fontSize: "0.85rem",
                     fontWeight: 500,
-                    color: studioTokens.textPrimary,
+                    color: tokens.textPrimary,
                     overflow: truncate ? "hidden" : "visible",
                     textOverflow: truncate ? "ellipsis" : "clip",
                     whiteSpace: truncate ? "nowrap" : "normal",
@@ -194,7 +194,7 @@ export function Dropdown<T extends string | number = string>({
                     variant='caption'
                     noWrap={truncate}
                     sx={{
-                      color: studioTokens.textMuted,
+                      color: tokens.textMuted,
                       display: "block",
                       fontSize: "0.72rem",
                       overflow: truncate ? "hidden" : "visible",

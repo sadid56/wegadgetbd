@@ -64,7 +64,7 @@ function ShopPageContent() {
   const { data: productsData, isLoading } = useProducts({
     search: debouncedSearch,
     category: category === "all" ? undefined : category,
-    sort,
+    sort: (sort || undefined) as any,
     limit: 20,
   });
 

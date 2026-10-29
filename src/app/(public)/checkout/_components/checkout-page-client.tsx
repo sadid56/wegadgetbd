@@ -29,6 +29,7 @@ import { BN } from "./checkout-constants";
 import { CheckoutForm } from "./checkout-form";
 import { OrderSummary } from "./order-summary";
 import { useToast } from "@/context/toast-context";
+import { getAssetUrl } from "@/lib/storage";
 
 // ─── Keyframes ──────────────────────────────────────────────
 const fadeIn = keyframes`
@@ -186,7 +187,7 @@ function ConfirmDialog({ open, onCancel, onConfirm, img, title, count, totalAmou
                 {img ? (
                   <Box
                     component='img'
-                    src={img}
+                    src={getAssetUrl(img)}
                     alt={title}
                     sx={{
                       width: 56,

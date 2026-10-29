@@ -29,9 +29,9 @@ import VideocamOutlinedIcon from "@mui/icons-material/VideocamOutlined";
 import { useCreateProduct, useUpdateProduct } from "@/query-client/products";
 import { useCategories } from "@/query-client/categories";
 import { useToast } from "@/context/toast-context";
-import { uploadFileToStorage } from "@/lib/storage";
+import { uploadFileToStorage, getAssetUrl, stripAssetDomain } from "@/lib/storage";
 import { normalizeVideoInput } from "@/lib/video-links";
-import { studioTokens } from "@/theme/theme";
+import { tokens } from "@/theme/theme";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
@@ -153,6 +153,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
   const onSubmit = (values: ProductFormValues) => {
     const payload = {
       ...values,
+      featuredBanner: values.featuredBanner ? stripAssetDomain(values.featuredBanner) : null,
+      images: (values.images || []).map((img) => stripAssetDomain(img)),
       price: parseFloat(values.price),
       discountPrice: values.discountPrice ? parseFloat(values.discountPrice) : null,
       rating: parseFloat(values.rating || "5.0"),
@@ -678,7 +680,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
           <Box sx={{ position: "relative", width: "100%", maxHeight: 220, borderRadius: "10px", overflow: "hidden", border: "1px solid", borderColor: "divider" }}>
             <Box
               component='img'
-              src={form.watch("featuredBanner") || ""}
+              src={getAssetUrl(form.watch("featuredBanner"))}
               alt='Hero Banner'
               sx={{ width: "100%", maxHeight: 220, objectFit: "cover" }}
             />
@@ -748,7 +750,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
                 borderColor: idx === 0 ? "primary.main" : "divider",
               }}
             >
-              <Box component='img' src={url} alt={`img-${idx}`} sx={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <Box component='img' src={getAssetUrl(url)} alt={`img-${idx}`} sx={{ width: "100%", height: "100%", objectFit: "cover" }} />
               <IconButton
                 size='small'
                 onClick={() => {

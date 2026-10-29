@@ -54,7 +54,7 @@ export function NewArrivalsSection({ products, isLoading }: NewArrivalsSectionPr
           mb: 3,
           pb: 2,
           borderBottom: "2px solid",
-          borderColor: "orange.200",
+          borderColor: "#fed7aa",
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>

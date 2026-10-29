@@ -30,7 +30,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined";
 
 import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from "@/query-client/categories";
-import { uploadFileToStorage } from "@/lib/storage";
+import { uploadFileToStorage, getAssetUrl, stripAssetDomain } from "@/lib/storage";
 
 const categorySchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -79,9 +79,13 @@ export default function CategoriesPage() {
   });
 
   const onSubmit = (values: CategoryFormValues) => {
+    const payload = {
+      ...values,
+      icon: values.icon ? stripAssetDomain(values.icon) : undefined,
+    };
     if (editingId) {
       updateCategory(
-        { id: editingId, data: values },
+        { id: editingId, data: payload },
         {
           onSuccess: () => {
             setIsOpen(false);
@@ -91,7 +95,7 @@ export default function CategoriesPage() {
         },
       );
     } else {
-      createCategory(values, {
+      createCategory(payload, {
         onSuccess: () => {
           setIsOpen(false);
           form.reset();
@@ -284,7 +288,7 @@ export default function CategoriesPage() {
                   {watchedIcon && (
                     <Box
                       component='img'
-                      src={watchedIcon}
+                      src={getAssetUrl(watchedIcon)}
                       alt='Preview'
                       sx={{
                         width: 64,
@@ -446,7 +450,7 @@ export default function CategoriesPage() {
                     {cat.icon ? (
                       <Box
                         component='img'
-                        src={cat.icon}
+                        src={getAssetUrl(cat.icon)}
                         alt={cat.name}
                         sx={{
                           width: 32,

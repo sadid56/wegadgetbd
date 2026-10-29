@@ -7,79 +7,64 @@ import {
   updateReview,
   deleteReview,
   toggleReviewStatus,
-  CreateReviewInput,
-  UpdateReviewInput,
+  type CreateReviewInput,
+  type UpdateReviewInput,
 } from "@/actions/reviews";
 import type { ReviewStatus } from "@/db/schema";
 
-// Adapters for Server Actions to throw on error for React Query
-const fetchReviews = async () => {
-  const res = await getReviews();
-  if (!res.success) throw new Error(res.error);
-  return res.data;
+async function unwrap<T>(fn: () => Promise<{ success: boolean; data?: T; error?: any }>): Promise<T> {
+  const res = await fn();
+  if (!res.success) throw new Error(res.error ?? "Request failed");
+  return res.data as T;
+}
+
+const reviewKeys = {
+  all: ["reviews"] as const,
+  approved: ["approvedReviews"] as const,
 };
 
-const fetchApprovedReviews = async () => {
-  const res = await getApprovedReviews();
-  if (!res.success) throw new Error(res.error);
-  return res.data;
-};
+const invalidateReviews = [reviewKeys.all, reviewKeys.approved];
 
-// Hooks
-export const useReviews = () => {
-  return useQuery({
-    queryKey: ["reviews"],
-    queryFn: fetchReviews,
+export const useReviews = () =>
+  useQuery({
+    queryKey: reviewKeys.all,
+    queryFn: () => unwrap(getReviews),
   });
-};
 
-export const useApprovedReviews = () => {
-  return useQuery({
-    queryKey: ["approvedReviews"],
-    queryFn: fetchApprovedReviews,
+export const useApprovedReviews = () =>
+  useQuery({
+    queryKey: reviewKeys.approved,
+    queryFn: () => unwrap(getApprovedReviews),
   });
-};
 
-export const useCreateReview = () =>
+export const useCreateReview = (options?: Record<string, unknown>) =>
   useAppMutation({
-    mutationFn: async (data: CreateReviewInput) => {
-      const res = await createReview(data);
-      if (!res.success) throw new Error(res.error);
-      return res.data;
-    },
-    invalidateKeys: [["reviews"], ["approvedReviews"]],
+    mutationFn: (data: CreateReviewInput) => unwrap(() => createReview(data)),
+    invalidateKeys: invalidateReviews,
     successMessage: "Review created successfully",
+    ...options,
   });
 
-export const useUpdateReview = () =>
+export const useUpdateReview = (options?: Record<string, unknown>) =>
   useAppMutation({
-    mutationFn: async ({ id, data }: { id: string; data: UpdateReviewInput }) => {
-      const res = await updateReview(id, data);
-      if (!res.success) throw new Error(res.error);
-      return res.data;
-    },
-    invalidateKeys: [["reviews"], ["approvedReviews"]],
+    mutationFn: ({ id, data }: { id: string; data: UpdateReviewInput }) => unwrap(() => updateReview(id, data)),
+    invalidateKeys: invalidateReviews,
     successMessage: "Review updated successfully",
+    ...options,
   });
 
-export const useDeleteReview = () =>
+export const useDeleteReview = (options?: Record<string, unknown>) =>
   useAppMutation({
-    mutationFn: async (id: string) => {
-      const res = await deleteReview(id);
-      if (!res.success) throw new Error(res.error);
-      return res.success;
-    },
-    invalidateKeys: [["reviews"], ["approvedReviews"]],
+    mutationFn: (id: string) => unwrap(() => deleteReview(id)),
+    invalidateKeys: invalidateReviews,
     successMessage: "Review deleted successfully",
+    ...options,
   });
 
-export const useToggleReviewStatus = () =>
+export const useToggleReviewStatus = (options?: Record<string, unknown>) =>
   useAppMutation({
-    mutationFn: async ({ id, status }: { id: string; status: ReviewStatus }) => {
-      const res = await toggleReviewStatus(id, status);
-      if (!res.success) throw new Error(res.error);
-      return res.data;
-    },
-    invalidateKeys: [["reviews"], ["approvedReviews"]],
+    mutationFn: ({ id, status }: { id: string; status: ReviewStatus }) => unwrap(() => toggleReviewStatus(id, status)),
+    invalidateKeys: invalidateReviews,
     successMessage: "Review status updated",
+    ...options,
   });

@@ -1,5 +1,6 @@
 import NextImage from "next/image";
 import Box from "@mui/material/Box";
+import { getAssetUrl } from "@/lib/storage";
 
 interface ProductGalleryProps {
   images: string[];
@@ -47,7 +48,7 @@ export default function ProductGallery({ images, activeImg, setActiveImg, discou
                 },
               }}
             >
-              <NextImage src={img} alt='' fill sizes='60px' style={{ objectFit: "cover" }} />
+              <NextImage src={getAssetUrl(img)} alt='' fill sizes='60px' style={{ objectFit: "cover" }} />
             </Box>
           ))}
         </Box>
@@ -68,7 +69,7 @@ export default function ProductGallery({ images, activeImg, setActiveImg, discou
         {images?.[activeImg] ? (
           <NextImage
             className='product-main-img'
-            src={images[activeImg]}
+            src={getAssetUrl(images[activeImg])}
             alt={productTitle}
             fill
             style={{ objectFit: "cover", transition: "transform 500ms" }}

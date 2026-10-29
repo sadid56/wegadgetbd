@@ -34,6 +34,7 @@ import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import StarIcon from "@mui/icons-material/Star";
 
 import { useAdminProducts, useDeleteProduct, useUpdateProduct } from "@/query-client/products";
+import { getAssetUrl } from "@/lib/storage";
 
 const tableHeadSx = {
   fontSize: 12,
@@ -277,7 +278,7 @@ export default function AdminProductsPage() {
                       {product.images?.[0] ? (
                         <Box
                           component='img'
-                          src={product.images[0]}
+                          src={getAssetUrl(product.images[0])}
                           alt={product.title}
                           sx={{
                             height: 40,

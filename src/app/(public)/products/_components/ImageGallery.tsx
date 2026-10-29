@@ -9,6 +9,7 @@ import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import ReplayIcon from "@mui/icons-material/Replay";
 import { calculateDiscount } from "@/lib/utils";
+import { getAssetUrl } from "@/lib/storage";
 
 interface ImageGalleryProps {
   images: string[];
@@ -110,7 +111,7 @@ export function ImageGallery({ images, title, discountPrice, price }: ImageGalle
               >
                 <TransformComponent wrapperStyle={{ width: "100%", height: "100%" }} contentStyle={{ width: "100%", height: "100%" }}>
                   <NextImage
-                    src={selectedImage || images[0]}
+                    src={getAssetUrl(selectedImage || images[0])}
                     alt={title}
                     width={800}
                     height={800}
@@ -233,7 +234,7 @@ export function ImageGallery({ images, title, discountPrice, price }: ImageGalle
                   "&:hover": { opacity: 1, transform: "scale(1.05)" },
                 }}
               >
-                <NextImage src={img} alt={`View ${i + 1}`} fill sizes='80px' style={{ objectFit: "cover" }} />
+                <NextImage src={getAssetUrl(img)} alt={`View ${i + 1}`} fill sizes='80px' style={{ objectFit: "cover" }} />
               </Box>
             );
           })}

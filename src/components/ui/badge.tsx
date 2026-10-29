@@ -1,8 +1,22 @@
 import * as React from "react";
 import { Chip, type ChipProps, type SxProps, type Theme } from "@mui/material";
-import { studioTokens } from "@/theme/theme";
+import { tokens } from "@/theme/theme";
 
-export type BadgeVariant = "default" | "secondary" | "destructive" | "danger" | "outline" | "success" | "warning";
+export type BadgeVariant =
+  | "default"
+  | "secondary"
+  | "destructive"
+  | "danger"
+  | "outline"
+  | "success"
+  | "warning"
+  | "new"
+  | "sale"
+  | "gaming"
+  | "accent"
+  | "guide"
+  | "review"
+  | "tips";
 
 export interface BadgeProps extends Omit<ChipProps, "variant" | "color"> {
   variant?: BadgeVariant;
@@ -19,43 +33,80 @@ export function Badge({
 }: BadgeProps) {
   const getStyles = () => {
     switch (variant) {
+      case "new":
+        return {
+          bgcolor: tokens.badgeNewSubtle,
+          color: tokens.badgeNew,
+          border: `1px solid rgba(14, 165, 233, 0.25)`,
+        };
+      case "sale":
+        return {
+          bgcolor: tokens.badgeSaleSubtle,
+          color: tokens.badgeSale,
+          border: `1px solid rgba(249, 115, 22, 0.25)`,
+        };
+      case "gaming":
+        return {
+          bgcolor: tokens.badgeGamingSubtle,
+          color: tokens.badgeGaming,
+          border: `1px solid rgba(139, 92, 246, 0.25)`,
+        };
+      case "guide":
+      case "accent":
+        return {
+          bgcolor: tokens.accentSubtle,
+          color: tokens.primaryHover,
+          border: `1px solid ${tokens.primaryBorder}`,
+        };
+      case "review":
+        return {
+          bgcolor: "rgba(14, 165, 233, 0.12)",
+          color: "#0284c7",
+          border: "1px solid rgba(14, 165, 233, 0.22)",
+        };
+      case "tips":
+        return {
+          bgcolor: "rgba(16, 185, 129, 0.12)",
+          color: "#059669",
+          border: "1px solid rgba(16, 185, 129, 0.22)",
+        };
       case "secondary":
         return {
-          bgcolor: studioTokens.bgSubtle,
-          color: studioTokens.textSecondary,
-          border: `1px solid ${studioTokens.borderDefault}`,
+          bgcolor: tokens.bgSubtle,
+          color: tokens.textSecondary,
+          border: `1px solid ${tokens.borderDefault}`,
         };
       case "destructive":
       case "danger":
         return {
-          bgcolor: studioTokens.dangerSubtle,
-          color: studioTokens.danger,
-          border: `1px solid ${studioTokens.dangerBorder}`,
+          bgcolor: tokens.dangerSubtle,
+          color: tokens.danger,
+          border: `1px solid ${tokens.dangerBorder}`,
         };
       case "success":
         return {
-          bgcolor: studioTokens.successSubtle,
-          color: studioTokens.successText,
-          border: `1px solid ${studioTokens.successBorder}`,
+          bgcolor: tokens.successSubtle,
+          color: tokens.successText,
+          border: `1px solid ${tokens.successBorder}`,
         };
       case "warning":
         return {
-          bgcolor: studioTokens.warningSubtle,
-          color: studioTokens.warning,
-          border: `1px solid ${studioTokens.warningBorder}`,
+          bgcolor: tokens.warningSubtle,
+          color: tokens.warning,
+          border: `1px solid ${tokens.warningBorder}`,
         };
       case "outline":
         return {
           bgcolor: "transparent",
-          color: studioTokens.textPrimary,
-          border: `1px solid ${studioTokens.borderElevated}`,
+          color: tokens.textPrimary,
+          border: `1px solid ${tokens.borderElevated}`,
         };
       case "default":
       default:
         return {
-          bgcolor: studioTokens.primarySubtle,
-          color: studioTokens.primary,
-          border: `1px solid ${studioTokens.primaryBorder}`,
+          bgcolor: tokens.primarySubtle,
+          color: tokens.primary,
+          border: `1px solid ${tokens.primaryBorder}`,
         };
     }
   };
@@ -68,7 +119,7 @@ export function Badge({
         fontWeight: 600,
         fontSize: "0.75rem",
         height: 24,
-        borderRadius: `${studioTokens.radiusPill}px`,
+        borderRadius: `${tokens.radiusPill}px`,
         ...getStyles(),
         ...sx,
       }}

@@ -5,7 +5,7 @@ import MoreHorizontalIcon from "@mui/icons-material/MoreHoriz";
 import Box, { type BoxProps } from "@mui/material/Box";
 import ButtonBase, { type ButtonBaseProps } from "@mui/material/ButtonBase";
 import Typography from "@mui/material/Typography";
-import { studioTokens } from "@/theme/theme";
+import { tokens } from "@/theme/theme";
 
 function Pagination({ sx, ...props }: BoxProps<"nav">) {
   return (
@@ -68,20 +68,20 @@ function PaginationLink({
         display: "inline-flex",
         alignItems: "center",
         justifyContent: "center",
-        borderRadius: `${studioTokens.radiusMd}px`,
+        borderRadius: `${tokens.radiusMd}px`,
         fontSize: "0.85rem",
         fontWeight: 600,
         height: 36,
         minWidth: 36,
         px: size === "default" ? 1.75 : 1,
-        color: isActive ? studioTokens.primaryLight : "text.secondary",
-        bgcolor: isActive ? studioTokens.primarySubtle : "transparent",
+        color: isActive ? tokens.primary : "text.secondary",
+        bgcolor: isActive ? tokens.primarySubtle : "transparent",
         border: "1px solid",
-        borderColor: isActive ? studioTokens.primaryBorder : "transparent",
+        borderColor: isActive ? tokens.primaryBorder : "transparent",
         transition: "all 0.15s ease",
         "&:hover": {
-          bgcolor: isActive ? studioTokens.primarySubtle : "action.hover",
-          color: isActive ? studioTokens.primaryLight : "text.primary",
+          bgcolor: isActive ? tokens.primarySubtle : "action.hover",
+          color: isActive ? tokens.primary : "text.primary",
         },
         ...sx,
       }}

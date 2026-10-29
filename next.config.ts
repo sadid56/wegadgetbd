@@ -5,7 +5,23 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "qbtrnvczvftepzcbfwbg.supabase.co",
+        hostname: "*.supabase.co",
+      },
+      {
+        protocol: "https",
+        hostname: "bftjqobykjnrtaaqzokb.supabase.co",
+      },
+      {
+        protocol: "https",
+        hostname: "placehold.co",
+      },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "upload.wikimedia.org",
       },
     ],
   },
@@ -13,8 +29,9 @@ const nextConfig: NextConfig = {
     optimizePackageImports: [
       "@mui/material",
       "@mui/icons-material",
+      "@emotion/styled",
+      "@emotion/react",
       "recharts",
-      "motion",
       "date-fns",
       "@tanstack/react-query",
       "@uiw/react-md-editor",

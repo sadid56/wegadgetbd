@@ -44,6 +44,7 @@ import { toVideoEmbedUrl } from "@/lib/video-links";
 import { formatBnNumber } from "@/lib/utils";
 import { useMarkdownComponents } from "@/components/common/MarkdownContent";
 import { ProductCard } from "../../../_components/ProductCard";
+import { getAssetUrl } from "@/lib/storage";
 
 const BN = { fontFamily: "'Hind Siliguri','Noto Sans Bengali',sans-serif" };
 
@@ -382,7 +383,7 @@ function ConfirmDialog({
                 {img ? (
                   <Box
                     component='img'
-                    src={img}
+                    src={getAssetUrl(img)}
                     alt={title}
                     sx={{ width: 56, height: 56, borderRadius: "8px", objectFit: "cover", border: "1px solid #e5e7eb", flexShrink: 0 }}
                   />
@@ -780,7 +781,7 @@ function ProductReviews({ productId }: { productId: string }) {
                         {review.mediaType === "video" ? (
                           <Box
                             component='video'
-                            src={review.mediaUrl}
+                            src={getAssetUrl(review.mediaUrl)}
                             controls
                             playsInline
                             sx={{ width: "100%", maxHeight: 160, objectFit: "cover", borderRadius: "32px" }}
@@ -788,7 +789,7 @@ function ProductReviews({ productId }: { productId: string }) {
                         ) : (
                           <Box
                             component='img'
-                            src={review.mediaUrl}
+                            src={getAssetUrl(review.mediaUrl)}
                             alt='review'
                             sx={{ width: "100%", maxHeight: 176, objectFit: "cover", px: 0.5, py: 0.5, borderRadius: "32px" }}
                           />
@@ -821,7 +822,7 @@ function ProductReviews({ productId }: { productId: string }) {
                         {review.customerPic ? (
                           <Box
                             component='img'
-                            src={review.customerPic}
+                            src={getAssetUrl(review.customerPic)}
                             alt={review.customerName}
                             sx={{
                               width: 44,
@@ -1155,7 +1156,7 @@ export default function ProductDetailsPage() {
   const totalDiscount = discountAmount * qty;
   const totalAmount = totalPrice + codShipping;
 
-  const images: string[] = (product as any).images || [];
+  const images: string[] = ((product as any).images || []).map(getAssetUrl);
   const videoLinks: string[] = ((product as any).videoLinks || []).filter((l: string) => l.trim() !== "");
 
   const scrollToVideos = () => videoSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });

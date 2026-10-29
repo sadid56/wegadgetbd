@@ -2,11 +2,16 @@
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
+import NextLink from "next/link";
 
-import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
+import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
+import LocalMallOutlinedIcon from "@mui/icons-material/LocalMallOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
+import AddIcon from "@mui/icons-material/Add";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 import { useDashboardStats } from "@/query-client/admin/dashboard";
 import { SalesChart } from "./_components/sales-chart";
@@ -16,17 +21,17 @@ import { StatsCard } from "@/components/common/StatsCard";
 
 const statGridSx = {
   display: "grid",
-  gap: 2,
+  gap: { xs: 2, sm: 2.5 },
   gridTemplateColumns: {
     xs: "1fr",
-    md: "repeat(2, minmax(0, 1fr))",
+    sm: "repeat(2, minmax(0, 1fr))",
     lg: "repeat(4, minmax(0, 1fr))",
   },
 } as const;
 
 const sevenColGridSx = {
   display: "grid",
-  gap: 2,
+  gap: { xs: 2, sm: 2.5 },
   gridTemplateColumns: {
     xs: "1fr",
     md: "repeat(2, minmax(0, 1fr))",
@@ -41,55 +46,129 @@ export default function AdminDashboard() {
     return (
       <Box
         sx={{
-          minHeight: "100%",
+          minHeight: "60vh",
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
+          gap: 2,
         }}
       >
-        <CircularProgress size={32} sx={{ color: "primary.main" }} />
+        <CircularProgress size={36} sx={{ color: "primary.main" }} />
+        <Typography sx={{ color: "text.secondary", fontSize: 14 }}>
+          Loading dashboard metrics...
+        </Typography>
       </Box>
     );
   }
 
+  const revenue = Number(stats?.totalRevenue ?? 0);
+  const totalOrders = Number(stats?.totalOrders ?? 0);
+  const totalProducts = Number(stats?.totalProducts ?? 0);
+  const activeProducts = Number(stats?.activeProducts ?? 0);
+  const pendingProducts = Number(stats?.pendingProducts ?? 0);
+  const totalUsers = Number(stats?.totalUsers ?? 0);
+
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      {/* Header */}
+    <Box sx={{ display: "flex", flexDirection: "column", gap: { xs: 2.5, sm: 3 }, pb: { xs: 6, sm: 8, md: 10 } }}>
+      {/* Dashboard Top Header */}
       <Box
         sx={{
           display: "flex",
-          alignItems: "center",
+          flexDirection: { xs: "column", sm: "row" },
+          alignItems: { xs: "flex-start", sm: "center" },
           justifyContent: "space-between",
           gap: 2,
         }}
       >
-        <Typography
-          component='h1'
-          sx={{
-            fontSize: 30,
-            fontWeight: 700,
-            letterSpacing: "-0.02em",
-            color: "text.primary",
-            lineHeight: 1.2,
-          }}
-        >
-          Dashboard
-        </Typography>
+        <Box>
+          <Typography
+            component='h1'
+            sx={{
+              fontSize: { xs: 24, sm: 28 },
+              fontWeight: 800,
+              letterSpacing: "-0.025em",
+              color: "text.primary",
+              lineHeight: 1.2,
+            }}
+          >
+            Dashboard
+          </Typography>
+          <Typography sx={{ fontSize: 13.5, color: "text.secondary", mt: 0.5 }}>
+            Welcome to BongoNex admin overview and real-time business metrics.
+          </Typography>
+        </Box>
+
+        {/* Quick Actions */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, flexWrap: "wrap" }}>
+          <Button
+            component={NextLink}
+            href='/admin/products/new'
+            variant='contained'
+            size='small'
+            startIcon={<AddIcon />}
+            sx={{
+              borderRadius: "10px",
+              px: 2,
+              py: 0.9,
+              fontWeight: 600,
+              fontSize: 13,
+              boxShadow: "none",
+            }}
+          >
+            Add Product
+          </Button>
+          <Button
+            component={NextLink}
+            href='/admin/orders'
+            variant='outlined'
+            size='small'
+            endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
+            sx={{
+              borderRadius: "10px",
+              px: 2,
+              py: 0.9,
+              fontWeight: 600,
+              fontSize: 13,
+              borderColor: "divider",
+              color: "text.primary",
+              "&:hover": { borderColor: "primary.main", color: "primary.main" },
+            }}
+          >
+            View Orders
+          </Button>
+        </Box>
       </Box>
 
-      {/* Stats cards */}
+      {/* 4 Stats Cards */}
       <Box sx={statGridSx}>
-        <StatsCard title='Total Users' value={stats?.totalUsers || 0} icon={GroupOutlinedIcon} />
         <StatsCard
-          title='Active Products'
-          value={stats?.activeProducts || 0}
-          icon={Inventory2OutlinedIcon}
-          description={`of ${stats?.totalProducts ?? 0} total`}
+          title='Total Revenue'
+          value={`৳${revenue.toLocaleString()}`}
+          icon={AccountBalanceWalletOutlinedIcon}
+          description='All-time store revenue'
         />
-        <StatsCard title='Pending Products' value={stats?.pendingProducts || 0} icon={TrendingUpIcon} />
+        <StatsCard
+          title='Total Orders'
+          value={totalOrders.toLocaleString()}
+          icon={LocalMallOutlinedIcon}
+          description='Lifetime customer orders'
+        />
+        <StatsCard
+          title='Products'
+          value={totalProducts.toLocaleString()}
+          icon={Inventory2OutlinedIcon}
+          description={`${activeProducts} active, ${pendingProducts} pending`}
+        />
+        <StatsCard
+          title='Total Customers'
+          value={totalUsers.toLocaleString()}
+          icon={PeopleOutlinedIcon}
+          description='Registered user accounts'
+        />
       </Box>
 
-      {/* Chart + Recent users */}
+      {/* Sales Chart + Recent users */}
       <Box sx={sevenColGridSx}>
         <Box sx={{ gridColumn: { xs: "1 / -1", md: "1 / -1", lg: "span 4" }, minWidth: 0 }}>
           <SalesChart data={stats?.salesChartData || []} />

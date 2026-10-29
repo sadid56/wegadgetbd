@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { useToast } from "@/context/toast-context";
 
@@ -16,7 +16,7 @@ import TableContainer from "@mui/material/TableContainer";
 import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 
-import { createExpense, getExpenseSummary, verifyExpensePassword } from "@/actions/expenses";
+import { createExpense, getExpenseSummary } from "@/actions/expenses";
 
 const inputSx = {
   "& .MuiOutlinedInput-root": {
@@ -27,14 +27,6 @@ const inputSx = {
     "&:hover fieldset": { borderColor: "text.disabled" },
     "&.Mui-focused fieldset": { borderColor: "primary.main" },
   },
-} as const;
-
-const labelSx = {
-  display: "block",
-  fontSize: 14,
-  fontWeight: 500,
-  color: "text.primary",
-  mb: 1,
 } as const;
 
 const cardSx = {
@@ -70,36 +62,27 @@ const primaryButtonSx = {
 
 export default function ExpenseSummaryPage() {
   const toast = useToast();
-  const [password, setPassword] = useState("");
-  const [verified, setVerified] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [summary, setSummary] = useState<any>(null);
 
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [date, setDate] = useState("");
 
-  const loadSummary = async (pass: string) => {
-    const result = await getExpenseSummary(pass);
+  const loadSummary = async () => {
+    const result = await getExpenseSummary();
     if (!result.success) {
       toast.error(result.message || "Failed to load expenses");
-      return;
+    } else {
+      setSummary(result);
     }
-    setSummary(result);
-  };
-
-  const handleVerify = async () => {
-    setLoading(true);
-    const res = await verifyExpensePassword(password);
-    if (!res.success) {
-      toast.error(res.message || "Invalid password");
-      setLoading(false);
-      return;
-    }
-    setVerified(true);
-    await loadSummary(password);
     setLoading(false);
   };
+
+  useEffect(() => {
+    loadSummary();
+  }, []);
 
   const handleAddExpense = async () => {
     if (!amount) {
@@ -107,12 +90,13 @@ export default function ExpenseSummaryPage() {
       return;
     }
 
+    setSaving(true);
     const res = await createExpense({
       amount: Number(amount),
       note,
       date: date ? new Date(date) : new Date(),
-      password,
     });
+    setSaving(false);
 
     if (!res.success) {
       toast.error(res.message || "Failed to add expense");
@@ -123,52 +107,17 @@ export default function ExpenseSummaryPage() {
     setAmount("");
     setNote("");
     setDate("");
-    await loadSummary(password);
+    await loadSummary();
   };
 
-  // ── Password gate ──────────────────────────────────────────
-  if (!verified) {
+  if (loading && !summary) {
     return (
-      <Box sx={{ maxWidth: 448, mx: "auto", ...cardSx, display: "flex", flexDirection: "column", gap: 2 }}>
-        <Typography component='h1' sx={{ fontSize: 24, fontWeight: 900, color: "text.primary", letterSpacing: "-0.02em" }}>
-          Daily Expense Summary
-        </Typography>
-        <Typography sx={{ fontSize: 14, color: "text.secondary" }}>This section is password protected.</Typography>
-
-        <Box>
-          <Box component='label' htmlFor='expense-password' sx={labelSx}>
-            Password
-          </Box>
-          <TextField
-            id='expense-password'
-            type='password'
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder='Enter password'
-            fullWidth
-            size='small'
-            sx={inputSx}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !loading) handleVerify();
-            }}
-          />
-        </Box>
-
-        <Button
-          onClick={handleVerify}
-          disabled={loading}
-          disableElevation
-          fullWidth
-          startIcon={loading ? <CircularProgress size={14} sx={{ color: "inherit" }} /> : undefined}
-          sx={primaryButtonSx}
-        >
-          {loading ? "Checking..." : "Unlock"}
-        </Button>
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 300 }}>
+        <CircularProgress size={32} />
       </Box>
     );
   }
 
-  // ── Verified view ──────────────────────────────────────────
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       {/* Header */}
@@ -264,8 +213,14 @@ export default function ExpenseSummaryPage() {
             fullWidth
             sx={inputSx}
           />
-          <Button onClick={handleAddExpense} disableElevation sx={{ ...primaryButtonSx, height: "100%", minHeight: 40 }}>
-            Save
+          <Button
+            onClick={handleAddExpense}
+            disabled={saving}
+            disableElevation
+            startIcon={saving ? <CircularProgress size={14} sx={{ color: "inherit" }} /> : undefined}
+            sx={{ ...primaryButtonSx, height: "100%", minHeight: 40 }}
+          >
+            {saving ? "Saving..." : "Save"}
           </Button>
         </Box>
       </Box>

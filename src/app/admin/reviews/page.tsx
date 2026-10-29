@@ -31,6 +31,7 @@ import StarIcon from "@mui/icons-material/Star";
 
 import { useReviews, useDeleteReview, useToggleReviewStatus } from "@/query-client/reviews/index";
 import { ReviewForm } from "./_components/review-form";
+import { getAssetUrl } from "@/lib/storage";
 
 const tableHeadSx = {
   fontSize: 12,
@@ -241,7 +242,7 @@ export default function AdminReviewsPage() {
                       {review.customerPic ? (
                         <Box
                           component='img'
-                          src={review.customerPic}
+                          src={getAssetUrl(review.customerPic)}
                           alt={review.customerName}
                           sx={{
                             height: 32,

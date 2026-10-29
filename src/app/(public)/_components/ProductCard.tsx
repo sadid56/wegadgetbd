@@ -10,6 +10,7 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import BoltIcon from "@mui/icons-material/Bolt";
 import { useCart } from "@/hooks/useCart";
 import { calculateDiscount } from "@/lib/utils";
+import { getAssetUrl } from "@/lib/storage";
 
 const BN = {
   fontFamily: "'Hind Siliguri','Noto Sans Bengali',sans-serif",
@@ -25,7 +26,7 @@ export function ProductCard({ product }: any) {
 
   const finalPrice = product.discountPrice ?? product.price ?? 0;
 
-  const imgSrc = product.images?.[0] || "https://placehold.co/400x400/f3f4f6/9ca3af?text=No+Image";
+  const imgSrc = getAssetUrl(product.images?.[0]) || "https://placehold.co/400x400/f3f4f6/9ca3af?text=No+Image";
 
   return (
     <Box

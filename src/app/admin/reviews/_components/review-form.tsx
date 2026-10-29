@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { createClient } from "@supabase/supabase-js";
 
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
@@ -22,8 +21,7 @@ import VideocamOutlinedIcon from "@mui/icons-material/VideocamOutlined";
 
 import { useCreateReview, useUpdateReview } from "@/query-client/reviews/index";
 import { getProductsForSelect } from "@/actions/reviews";
-
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
+import { uploadFileToStorage, getAssetUrl, stripAssetDomain } from "@/lib/storage";
 
 const reviewSchema = z.object({
   customerName: z.string().min(1, "Name is required"),
@@ -135,13 +133,9 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
   ) => {
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop();
-      const fileName = `${folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error } = await supabase.storage.from("bongo-nex").upload(fileName, file, { upsert: true });
-      if (error) throw error;
-      const { data: urlData } = supabase.storage.from("bongo-nex").getPublicUrl(fileName);
+      const { url } = await uploadFileToStorage({ file, folder });
       const type = file.type.startsWith("video") ? "video" : "image";
-      onDone(urlData.publicUrl, type);
+      onDone(url, type);
     } catch (err) {
       console.error("Upload error:", err);
     } finally {
@@ -152,8 +146,9 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
   const onSubmit = (data: ReviewFormValues) => {
     const payload = {
       ...data,
+      customerPic: data.customerPic ? stripAssetDomain(data.customerPic) : undefined,
       productId: data.productId === "none" || !data.productId ? undefined : data.productId,
-      mediaUrl: data.mediaUrl || undefined,
+      mediaUrl: data.mediaUrl ? stripAssetDomain(data.mediaUrl) : undefined,
       mediaType: data.mediaType || undefined,
     };
 
@@ -304,7 +299,7 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
             <Box sx={{ position: "relative", width: 64, height: 64 }}>
               <Box
                 component='img'
-                src={picPreview}
+                src={getAssetUrl(picPreview)}
                 alt='pic'
                 sx={{
                   width: 64,
@@ -429,14 +424,14 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
               {mediaTypeState === "video" ? (
                 <Box
                   component='video'
-                  src={mediaPreview}
+                  src={getAssetUrl(mediaPreview)}
                   controls
                   sx={{ width: "100%", maxHeight: 192, objectFit: "cover", display: "block" }}
                 />
               ) : (
                 <Box
                   component='img'
-                  src={mediaPreview}
+                  src={getAssetUrl(mediaPreview)}
                   alt='media'
                   sx={{ width: "100%", maxHeight: 192, objectFit: "cover", display: "block" }}
                 />

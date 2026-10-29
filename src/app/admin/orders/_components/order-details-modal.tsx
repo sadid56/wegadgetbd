@@ -23,6 +23,7 @@ import LocalMallOutlinedIcon from "@mui/icons-material/LocalMallOutlined";
 import { format } from "date-fns";
 import { orderStatusEnum, type OrderStatus } from "@/db/schema";
 import { parseDevice } from "@/lib/parse-device";
+import { getAssetUrl } from "@/lib/storage";
 
 interface OrderDetailsModalProps {
   open: boolean;
@@ -295,7 +296,7 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
                           {item.image && (
                             <Box
                               component='img'
-                              src={item.image}
+                              src={getAssetUrl(item.image)}
                               alt={item.title}
                               sx={{
                                 height: 32,

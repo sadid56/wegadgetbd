@@ -1,5 +1,5 @@
 import { Skeleton as MuiSkeleton, type SkeletonProps as MuiSkeletonProps } from "@mui/material";
-import { studioTokens } from "@/theme/theme";
+import { tokens } from "@/theme/theme";
 
 export interface SkeletonProps extends MuiSkeletonProps {
   className?: string;
@@ -10,8 +10,8 @@ export function Skeleton({ sx, ...props }: SkeletonProps) {
     <MuiSkeleton
       animation='wave'
       sx={{
-        bgcolor: studioTokens.bgSubtle,
-        borderRadius: `${studioTokens.radiusMd}px`,
+        bgcolor: tokens.bgSubtle,
+        borderRadius: `${tokens.radiusMd}px`,
         ...sx,
       }}
       {...props}

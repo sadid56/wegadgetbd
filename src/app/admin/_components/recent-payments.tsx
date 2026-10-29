@@ -85,9 +85,14 @@ export function RecentPayments({ payments }: RecentPaymentsProps) {
       />
 
       <CardContent>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          {payments.map((payment) => (
-            <Box key={payment.id} sx={{ display: "flex", alignItems: "center" }}>
+        {payments.length === 0 ? (
+          <Box sx={{ py: 4, textAlign: "center", color: "text.secondary" }}>
+            <Typography sx={{ fontSize: 14 }}>No recent payments recorded.</Typography>
+          </Box>
+        ) : (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            {payments.map((payment) => (
+              <Box key={payment.id} sx={{ display: "flex", alignItems: "center" }}>
               <Avatar
                 src={payment.user?.image || "/avatars/01.png"}
                 alt={payment.user?.name || "Avatar"}
@@ -147,6 +152,7 @@ export function RecentPayments({ payments }: RecentPaymentsProps) {
             </Box>
           ))}
         </Box>
+        )}
       </CardContent>
     </Card>
   );

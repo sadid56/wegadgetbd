@@ -3,7 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { ThemeProvider, CssBaseline } from "@mui/material";
-import { darkTheme } from "@/theme/theme";
+import { theme } from "@/theme/theme";
 import { ToastProvider } from "@/context/toast-context";
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
@@ -20,7 +20,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={darkTheme}>
+      <ThemeProvider theme={theme}>
         <CssBaseline />
         <ToastProvider>{children}</ToastProvider>
       </ThemeProvider>

@@ -5,7 +5,6 @@ import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import { alpha } from "@mui/material/styles";
 import { keyframes } from "@emotion/react";
-import { useTheme } from "next-themes";
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import MailOutlinedIcon from "@mui/icons-material/MailOutlined";
 import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
@@ -43,9 +42,6 @@ const contactInfo = [
 ] as const;
 
 export default function ContactUsPage() {
-  const { theme } = useTheme();
-  const isDark = theme === "dark";
-
   return (
     <Box
       sx={{
@@ -64,7 +60,7 @@ export default function ContactUsPage() {
           right: 0,
           width: 500,
           height: 500,
-          bgcolor: (theme) => alpha(theme.palette.primary.main, isDark ? 0.1 : 0.05),
+          bgcolor: (theme) => alpha(theme.palette.primary.main, 0.06),
           filter: "blur(120px)",
           borderRadius: "50%",
           pointerEvents: "none",
@@ -77,7 +73,7 @@ export default function ContactUsPage() {
           left: 0,
           width: 500,
           height: 500,
-          bgcolor: (theme) => alpha(theme.palette.primary.main, isDark ? 0.1 : 0.05),
+          bgcolor: (theme) => alpha(theme.palette.primary.main, 0.06),
           filter: "blur(120px)",
           borderRadius: "50%",
           pointerEvents: "none",
@@ -149,17 +145,20 @@ export default function ContactUsPage() {
               sx={{
                 display: "block",
                 p: 5,
-                bgcolor: (theme) => alpha(theme.palette.text.primary, isDark ? 0.06 : 0.04),
+                bgcolor: "background.paper",
                 border: "1px solid",
                 borderColor: "divider",
-                borderRadius: "40px",
+                borderRadius: "24px",
+                boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.05)",
                 position: "relative",
                 overflow: "hidden",
                 textDecoration: "none",
-                transition: "background-color 300ms",
+                transition: "all 300ms",
                 animation: `${fadeUp} 500ms ease-out ${index * 100}ms both`,
                 "&:hover": {
-                  bgcolor: (theme) => alpha(theme.palette.text.primary, isDark ? 0.04 : 0.06),
+                  boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.08)",
+                  transform: "translateY(-4px)",
+                  borderColor: "primary.main",
                   "& .contact-decorative-icon": {
                     transform: "scale(1.1)",
                   },

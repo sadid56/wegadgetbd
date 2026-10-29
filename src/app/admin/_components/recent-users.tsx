@@ -49,9 +49,14 @@ export function RecentUsers({ users }: RecentUsersProps) {
       />
 
       <CardContent>
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
-          {users.map((user) => (
-            <Box key={user.id} sx={{ display: "flex", alignItems: "center" }}>
+        {users.length === 0 ? (
+          <Box sx={{ py: 4, textAlign: "center", color: "text.secondary" }}>
+            <Typography sx={{ fontSize: 14 }}>No recent users found.</Typography>
+          </Box>
+        ) : (
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+            {users.map((user) => (
+              <Box key={user.id} sx={{ display: "flex", alignItems: "center" }}>
               <Avatar
                 src={user.image || IMAGES.default_avatar}
                 alt={user.name || "Avatar"}
@@ -116,6 +121,7 @@ export function RecentUsers({ users }: RecentUsersProps) {
             </Box>
           ))}
         </Box>
+        )}
       </CardContent>
     </Card>
   );

@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { product, customerReview } from "@/db/schema";
 import { eq, or, and, desc } from "drizzle-orm";
 import { getSiteUrl } from "@/lib/seo";
+import { getAssetUrl } from "@/lib/storage";
 import ProductDetailsPage from "./_components/product-details-page-client";
 
 type ProductPageProps = {
@@ -47,7 +48,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const pageTitle = `${foundProduct.title} - Best Price in BD | BongoNex`;
   const pageDescription = `Buy authentic ${brandName}${foundProduct.title} in Bangladesh at ৳${effectivePrice.toLocaleString("en-BD")}. 100% genuine quality, official warranty, fast delivery & cash on delivery from BongoNex.`;
   const productUrl = `${siteUrl}/products/${foundProduct.slug}`;
-  const ogImage = foundProduct.images?.[0] || `${siteUrl}/images/default.png`;
+  const ogImage = foundProduct.images?.[0] ? getAssetUrl(foundProduct.images[0]) : `${siteUrl}/images/default.png`;
 
   const keywords = [
     foundProduct.title,
@@ -143,7 +144,7 @@ export default async function ProductDetails({ params }: ProductPageProps) {
             "@id": `${productUrl}#product`,
             name: foundProduct.title,
             description: foundProduct.description || `Buy ${foundProduct.title} online in Bangladesh with official warranty from BongoNex.`,
-            image: foundProduct.images && foundProduct.images.length > 0 ? foundProduct.images : [`${siteUrl}/images/default.png`],
+            image: foundProduct.images && foundProduct.images.length > 0 ? foundProduct.images.map(getAssetUrl) : [`${siteUrl}/images/default.png`],
             sku: foundProduct.id,
             mpn: foundProduct.model || foundProduct.id,
             brand: {

@@ -26,6 +26,7 @@ import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import StarIcon from "@mui/icons-material/Star";
 
 import { useCart } from "@/hooks/useCart";
+import { getAssetUrl } from "@/lib/storage";
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(24px); }
@@ -394,7 +395,7 @@ export default function CartPage() {
                         <Box
                           component='img'
                           className='cart-img'
-                          src={item.images[0]}
+                          src={getAssetUrl(item.images[0])}
                           alt={item.title}
                           sx={{ width: "100%", height: "100%", objectFit: "contain", p: 0.5, transition: "transform 300ms" }}
                         />
@@ -568,7 +569,7 @@ export default function CartPage() {
                           <Box
                             component='img'
                             className='cart-img'
-                            src={item.images[0]}
+                            src={getAssetUrl(item.images[0])}
                             alt={item.title}
                             sx={{ width: "100%", height: "100%", objectFit: "contain", p: 0.75, transition: "transform 300ms" }}
                           />

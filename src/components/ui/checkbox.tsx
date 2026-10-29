@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { Checkbox as MuiCheckbox, type CheckboxProps as MuiCheckboxProps } from "@mui/material";
-import { studioTokens } from "@/theme/theme";
+import { tokens } from "@/theme/theme";
 
 export interface CheckboxProps extends Omit<MuiCheckboxProps, "onChange"> {
   onCheckedChange?: (checked: boolean) => void;
@@ -26,15 +26,15 @@ export const Checkbox = React.forwardRef<HTMLButtonElement, CheckboxProps>(
         checked={checked}
         disabled={disabled}
         onChange={handleChange}
-        size="small"
+        size='small'
         sx={{
-          color: studioTokens.borderDefault,
+          color: tokens.borderDefault,
           p: 0.5,
           "&.Mui-checked": {
-            color: studioTokens.primary,
+            color: tokens.primary,
           },
           "&.Mui-disabled": {
-            color: studioTokens.borderDisabled,
+            color: tokens.borderDisabled,
           },
           ...sx,
         }}

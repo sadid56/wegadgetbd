@@ -4,6 +4,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 import StarIcon from "@mui/icons-material/Star";
+import { getAssetUrl } from "@/lib/storage";
 
 interface ReviewCardProps {
   review: {
@@ -66,7 +67,7 @@ export function ReviewCard({ review, className, sx }: ReviewCardProps) {
           <Box
             component='img'
             className='review-avatar'
-            src={review.customerPic}
+            src={getAssetUrl(review.customerPic)}
             alt={review.customerName}
             sx={{
               width: 48,
