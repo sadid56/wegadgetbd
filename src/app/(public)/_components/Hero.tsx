@@ -18,6 +18,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
 import { tokens } from "@/theme/theme";
 import { Button } from "@/components/ui/button";
+import { SectionContainer } from "@/components/common/SectionContainer";
 
 const SPOTLIGHT_PRODUCTS = [
   {
@@ -98,7 +99,7 @@ export function Hero() {
         borderBottom: "1px solid rgba(16, 185, 129, 0.2)",
         overflow: "hidden",
         pt: { xs: 9, md: 10.5 },
-        pb: { xs: 8, md: 10 },
+        pb: { xs: 10, md: 12 },
       }}
     >
       {/* ═══ 1. BACKGROUND IMAGE & AMBIENT OVERLAY ═══ */}
@@ -128,14 +129,11 @@ export function Hero() {
       />
 
       {/* ═══ 2. MAIN CONTAINER ═══ */}
-      <Box
+      <SectionContainer
+        component="div"
         sx={{
           position: "relative",
           zIndex: 3,
-          width: "100%",
-          maxWidth: 1440,
-          mx: "auto",
-          px: { xs: 2.5, md: 4, lg: 5 },
           display: "grid",
           gridTemplateColumns: { xs: "1fr", md: "1.15fr 0.85fr", lg: "1.2fr 0.8fr" },
           alignItems: "center",
@@ -482,7 +480,7 @@ export function Hero() {
             </Box>
           </Box>
         </Box>
-      </Box>
+      </SectionContainer>
     </Box>
   );
 }

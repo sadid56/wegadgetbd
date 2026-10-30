@@ -30,6 +30,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { useSession, signOut } from "@/lib/auth-client";
 import { useCart } from "@/hooks/useCart";
 import { tokens } from "@/theme/theme";
+import { SectionContainer } from "@/components/common/SectionContainer";
 
 const NAV_LINKS = [
   { name: "Home", href: "/" },
@@ -142,11 +143,9 @@ function NavbarContent() {
         transition: "all 0.25s ease",
       }}
     >
-      <Box
+      <SectionContainer
+        component="div"
         sx={{
-          maxWidth: 1440,
-          mx: "auto",
-          px: { xs: 2, md: 3 },
           height: { xs: 64, md: 70 },
           display: "flex",
           alignItems: "center",
@@ -433,7 +432,7 @@ function NavbarContent() {
             <MenuIcon />
           </IconButton>
         </Box>
-      </Box>
+      </SectionContainer>
 
       {/* ═══ SEARCH MODAL ═══ */}
       <Modal open={searchOpen} onClose={() => setSearchOpen(false)} closeAfterTransition>

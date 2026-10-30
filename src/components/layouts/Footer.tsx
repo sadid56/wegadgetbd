@@ -12,6 +12,7 @@ import InstagramIcon from "@mui/icons-material/Instagram";
 import XIcon from "@mui/icons-material/X";
 
 import { tokens } from "@/theme/theme";
+import { SectionContainer } from "@/components/common/SectionContainer";
 
 const FOOTER_GROUPS = {
   shop: {
@@ -59,16 +60,13 @@ export function Footer() {
         color: tokens.textWhite,
         pt: { xs: 8, md: 10 },
         pb: 4,
-        borderTop: `1px solid ${tokens.borderDark}`,
+        borderTopLeftRadius: { xs: 24, md: 36 },
+        borderTopRightRadius: { xs: 24, md: 36 },
+        borderTop: "1px solid rgba(16, 185, 129, 0.2)",
+        overflow: "hidden",
       }}
     >
-      <Box
-        sx={{
-          maxWidth: 1440,
-          mx: "auto",
-          px: { xs: 2.5, md: 4, lg: 5 },
-        }}
-      >
+      <SectionContainer component="div">
         {/* Main 5-column layout */}
         <Box
           sx={{
@@ -316,7 +314,7 @@ export function Footer() {
             Made with 💚 for tech lovers
           </Typography>
         </Box>
-      </Box>
+      </SectionContainer>
     </Box>
   );
 }

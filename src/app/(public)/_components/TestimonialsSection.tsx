@@ -10,6 +10,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
 import { tokens } from "@/theme/theme";
+import { SectionContainer } from "@/components/common/SectionContainer";
 
 const REVIEWS = [
   {
@@ -53,12 +54,8 @@ export function TestimonialsSection() {
   };
 
   return (
-    <Box
-      component="section"
+    <SectionContainer
       sx={{
-        maxWidth: 1440,
-        mx: "auto",
-        px: { xs: 2, md: 3 },
         py: { xs: 3, md: 5 },
       }}
     >
@@ -200,7 +197,7 @@ export function TestimonialsSection() {
           </Box>
         ))}
       </Box>
-    </Box>
+    </SectionContainer>
   );
 }
 

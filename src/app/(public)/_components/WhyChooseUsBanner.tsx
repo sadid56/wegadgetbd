@@ -11,6 +11,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 import { tokens } from "@/theme/theme";
 import { Button } from "@/components/ui/button";
+import { SectionContainer } from "@/components/common/SectionContainer";
 
 const PILLARS = [
   {
@@ -37,12 +38,8 @@ const PILLARS = [
 
 export function WhyChooseUsBanner() {
   return (
-    <Box
-      component="section"
+    <SectionContainer
       sx={{
-        maxWidth: 1440,
-        mx: "auto",
-        px: { xs: 2, md: 3 },
         py: { xs: 3, md: 5 },
       }}
     >
@@ -222,7 +219,7 @@ export function WhyChooseUsBanner() {
           })}
         </Box>
       </Box>
-    </Box>
+    </SectionContainer>
   );
 }
 

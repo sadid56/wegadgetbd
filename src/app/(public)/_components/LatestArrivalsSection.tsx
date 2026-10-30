@@ -12,6 +12,7 @@ import StarIcon from "@mui/icons-material/Star";
 import { tokens } from "@/theme/theme";
 import { Badge } from "@/components/ui/badge";
 import { useCart } from "@/hooks/useCart";
+import { SectionContainer } from "@/components/common/SectionContainer";
 
 interface ProductItem {
   id: string | number;
@@ -100,12 +101,8 @@ export function LatestArrivalsSection({ products = [] }: { products?: any[] }) {
   })) : DEFAULT_LATEST;
 
   return (
-    <Box
-      component="section"
+    <SectionContainer
       sx={{
-        maxWidth: 1440,
-        mx: "auto",
-        px: { xs: 2, md: 3 },
         py: { xs: 3, md: 5 },
       }}
     >
@@ -357,7 +354,7 @@ export function LatestArrivalsSection({ products = [] }: { products?: any[] }) {
           </Box>
         ))}
       </Box>
-    </Box>
+    </SectionContainer>
   );
 }
 

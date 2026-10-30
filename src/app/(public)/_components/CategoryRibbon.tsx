@@ -16,6 +16,7 @@ import VideocamOutlinedIcon from "@mui/icons-material/VideocamOutlined";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 import { tokens } from "@/theme/theme";
+import { SectionContainer } from "@/components/common/SectionContainer";
 
 const CATEGORIES = [
   { name: "Laptops", slug: "laptops", icon: LaptopMacOutlinedIcon },
@@ -31,45 +32,45 @@ const CATEGORIES = [
 
 export function CategoryRibbon() {
   return (
-    <Box
+    <SectionContainer
       sx={{
         position: "relative",
         zIndex: 10,
-        maxWidth: 1440,
-        mx: "auto",
-        px: { xs: 2, md: 3 },
-        mt: { xs: -2, md: -3.5 },
-        mb: { xs: 4, md: 5 },
+        mt: { xs: -4.5, md: -6.5 },
+        mb: { xs: 3, md: 4 },
       }}
     >
       <Box
         sx={{
+          width: "fit-content",
+          maxWidth: "100%",
+          mx: "auto",
           bgcolor: tokens.bgPanel,
-          borderRadius: { xs: "20px", md: "28px" },
+          borderRadius: { xs: "18px", md: "24px" },
           border: `1px solid ${tokens.borderDefault}`,
           boxShadow: tokens.shadowLg,
-          p: { xs: 2.5, md: "20px 28px" },
+          p: { xs: 2, md: "16px 28px" },
           display: "flex",
           flexDirection: { xs: "column", lg: "row" },
           alignItems: { xs: "flex-start", lg: "center" },
-          justifyContent: "space-between",
-          gap: { xs: 2.5, lg: 3 },
+          justifyContent: "center",
+          gap: { xs: 2, lg: 3.5 },
           overflow: "hidden",
         }}
       >
         {/* Left Label */}
-        <Box sx={{ flexShrink: 0, minWidth: 170 }}>
+        <Box sx={{ flexShrink: 0, pr: { lg: 1 } }}>
           <Typography
             sx={{
               fontWeight: 800,
-              fontSize: { xs: 15, md: 17 },
+              fontSize: { xs: 14.5, md: 16 },
               color: tokens.textPrimary,
               lineHeight: 1.2,
             }}
           >
             Shop by Category
           </Typography>
-          <Typography sx={{ fontSize: 12.5, color: tokens.textMuted, mt: 0.25 }}>
+          <Typography sx={{ fontSize: 12, color: tokens.textMuted, mt: 0.25 }}>
             Find what you need, faster.
           </Typography>
         </Box>
@@ -79,12 +80,12 @@ export function CategoryRibbon() {
           sx={{
             display: "flex",
             alignItems: "center",
-            gap: { xs: 1.5, sm: 2, md: 2.5 },
+            gap: { xs: 1.5, sm: 2, md: 2.25 },
             overflowX: "auto",
-            width: "100%",
+            maxWidth: "100%",
             scrollbarWidth: "none",
             "&::-webkit-scrollbar": { display: "none" },
-            py: 0.5,
+            py: 0.25,
           }}
         >
           {CATEGORIES.map((cat) => {
@@ -98,7 +99,7 @@ export function CategoryRibbon() {
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  gap: 1,
+                  gap: 0.75,
                   textDecoration: "none",
                   flexShrink: 0,
                   group: "cat",
@@ -116,9 +117,9 @@ export function CategoryRibbon() {
                 <Box
                   className="cat-box"
                   sx={{
-                    width: { xs: 54, sm: 60 },
-                    height: { xs: 54, sm: 60 },
-                    borderRadius: "16px",
+                    width: { xs: 48, sm: 52 },
+                    height: { xs: 48, sm: 52 },
+                    borderRadius: "14px",
                     bgcolor: tokens.bgSubtle,
                     border: `1px solid ${tokens.borderSubtle}`,
                     display: "flex",
@@ -127,12 +128,12 @@ export function CategoryRibbon() {
                     transition: "all 0.25s ease",
                   }}
                 >
-                  <Icon sx={{ fontSize: 24, color: tokens.textPrimary }} />
+                  <Icon sx={{ fontSize: 22, color: tokens.textPrimary }} />
                 </Box>
                 <Typography
                   className="cat-name"
                   sx={{
-                    fontSize: 12,
+                    fontSize: 11.5,
                     fontWeight: 600,
                     color: tokens.textSecondary,
                     textAlign: "center",
@@ -153,7 +154,7 @@ export function CategoryRibbon() {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 1,
+              gap: 0.75,
               textDecoration: "none",
               flexShrink: 0,
               "&:hover .more-btn": {
@@ -166,8 +167,8 @@ export function CategoryRibbon() {
             <Box
               className="more-btn"
               sx={{
-                width: { xs: 54, sm: 60 },
-                height: { xs: 54, sm: 60 },
+                width: { xs: 48, sm: 52 },
+                height: { xs: 48, sm: 52 },
                 borderRadius: "50%",
                 bgcolor: tokens.bgSubtle,
                 border: `1px solid ${tokens.borderDefault}`,
@@ -178,15 +179,15 @@ export function CategoryRibbon() {
                 transition: "all 0.25s ease",
               }}
             >
-              <ArrowForwardIcon sx={{ fontSize: 20 }} />
+              <ArrowForwardIcon sx={{ fontSize: 18 }} />
             </Box>
-            <Typography sx={{ fontSize: 12, fontWeight: 600, color: tokens.textMuted }}>
+            <Typography sx={{ fontSize: 11.5, fontWeight: 600, color: tokens.textMuted }}>
               More
             </Typography>
           </Box>
         </Box>
       </Box>
-    </Box>
+    </SectionContainer>
   );
 }
 

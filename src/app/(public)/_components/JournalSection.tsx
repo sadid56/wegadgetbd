@@ -8,6 +8,7 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
 import { tokens } from "@/theme/theme";
 import { Badge } from "@/components/ui/badge";
+import { SectionContainer } from "@/components/common/SectionContainer";
 
 const ARTICLES = [
   {
@@ -50,12 +51,8 @@ const ARTICLES = [
 
 export function JournalSection() {
   return (
-    <Box
-      component="section"
+    <SectionContainer
       sx={{
-        maxWidth: 1440,
-        mx: "auto",
-        px: { xs: 2, md: 3 },
         py: { xs: 3, md: 5 },
       }}
     >
@@ -238,7 +235,7 @@ export function JournalSection() {
           </Box>
         ))}
       </Box>
-    </Box>
+    </SectionContainer>
   );
 }
 
