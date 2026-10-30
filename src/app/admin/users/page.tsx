@@ -5,22 +5,18 @@ import { useState } from "react";
 import { format } from "date-fns";
 
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import InputBase from "@mui/material/InputBase";
 import Typography from "@mui/material/Typography";
-import Chip from "@mui/material/Chip";
-import CircularProgress from "@mui/material/CircularProgress";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
+import { Button } from "@/components/ui/button";
+import { InputBase } from "@/components/ui/input";
+import { Chip } from "@/components/ui/badge";
+import { CircularProgress } from "@/components/ui/spinner";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@/components/ui/table";
 
 import SearchIcon from "@mui/icons-material/Search";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 
 import { useUsers } from "@/query-client/users";
+import { tokens } from "@/theme/theme";
 
 const tableHeadSx = {
   fontSize: 12,
@@ -234,9 +230,9 @@ export default function UsersPage() {
                           height: 22,
                           fontSize: 11,
                           fontWeight: 700,
-                          bgcolor: "#f0fdf4",
-                          color: "#16a34a",
-                          borderColor: "#bbf7d0",
+                          bgcolor: tokens.accentLight,
+                          color: tokens.successText,
+                          borderColor: tokens.successBorder,
                           "& .MuiChip-label": { px: 1.25 },
                         }}
                       />

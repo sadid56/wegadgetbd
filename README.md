@@ -64,7 +64,7 @@ Clone the repository and install project dependencies:
 
 ```bash
 git clone <repository-url>
-cd bongo-nex
+cd wegadgetbd
 pnpm install
 ```
 

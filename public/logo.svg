@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 64" fill="none">
+  <svg x="4" y="4" width="56" height="56" viewBox="0 0 512 512" fill="none">
+    <defs>
+      <!-- Outer Broken Ring Gradient -->
+      <linearGradient id="ringGrad" x1="80" y1="60" x2="430" y2="450" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#60a5fa" />
+        <stop offset="45%" stop-color="#3b82f6" />
+        <stop offset="100%" stop-color="#1d4ed8" />
+      </linearGradient>
+
+      <!-- Segment 1 (Front Left) -->
+      <linearGradient id="seg1Grad" x1="105" y1="190" x2="215" y2="395" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#93c5fd" />
+        <stop offset="45%" stop-color="#3b82f6" />
+        <stop offset="100%" stop-color="#1d4ed8" />
+      </linearGradient>
+
+      <!-- Segment 2 (Back Center-Left Fold Shadow) -->
+      <linearGradient id="seg2Grad" x1="195" y1="365" x2="255" y2="255" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#090e1c" />
+        <stop offset="55%" stop-color="#1e3a8a" />
+        <stop offset="100%" stop-color="#090e1c" />
+      </linearGradient>
+
+      <!-- Segment 3 (Front Center-Right) -->
+      <linearGradient id="seg3Grad" x1="245" y1="220" x2="345" y2="395" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#60a5fa" />
+        <stop offset="38%" stop-color="#3b82f6" />
+        <stop offset="100%" stop-color="#1d4ed8" />
+      </linearGradient>
+
+      <!-- Segment 4 (Back Right Fold Shadow to Light Cap) -->
+      <linearGradient id="seg4Grad" x1="330" y1="365" x2="425" y2="200" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#090e1c" />
+        <stop offset="30%" stop-color="#1e3a8a" />
+        <stop offset="68%" stop-color="#3b82f6" />
+        <stop offset="100%" stop-color="#93c5fd" />
+      </linearGradient>
+
+      <!-- Cursor Arrow Upper-Left Facet -->
+      <linearGradient id="arrowTopGrad" x1="125" y1="145" x2="220" y2="110" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#38bdf8" />
+        <stop offset="100%" stop-color="#93c5fd" />
+      </linearGradient>
+
+      <!-- Cursor Arrow Lower-Right Facet -->
+      <linearGradient id="arrowBotGrad" x1="168" y1="152" x2="215" y2="195" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="#2563eb" />
+        <stop offset="100%" stop-color="#1d4ed8" />
+      </linearGradient>
+
+      <!-- W Silhouette Mask -->
+      <mask id="wRibbonMask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+        <rect x="0" y="0" width="512" height="512" fill="black" />
+        <path
+          d="M 122 232 L 194 358 L 262 262 L 330 358 L 402 232"
+          stroke="white"
+          stroke-width="84"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </mask>
+    </defs>
+
+    <!-- Outer Broken Sapphire Ring -->
+    <path
+      d="M 483.5 202.5 A 236 236 0 1 0 488.5 224.5 L 476.5 215.5 L 460.5 246.5 A 204 204 0 1 1 441.5 170.5 L 483.5 202.5 Z"
+      fill="url(#ringGrad)"
+    />
+
+    <!-- Navigation Pointer -->
+    <path
+      d="M 218 110 L 124 146 C 120 147.5 120.5 151.5 124.5 152.5 L 168 161 L 218 110 Z"
+      fill="url(#arrowTopGrad)"
+    />
+    <path
+      d="M 218 110 L 168 161 L 176.5 201 C 177.5 205 181.5 205.5 183 201.5 L 218 110 Z"
+      fill="url(#arrowBotGrad)"
+    />
+
+    <!-- Folded Ribbon W -->
+    <g mask="url(#wRibbonMask)">
+      <line x1="194" y1="358" x2="262" y2="262" stroke="url(#seg2Grad)" stroke-width="88" stroke-linecap="round" />
+      <line x1="330" y1="358" x2="402" y2="232" stroke="url(#seg4Grad)" stroke-width="88" stroke-linecap="round" />
+      <circle cx="122" cy="232" r="44" fill="url(#seg1Grad)" />
+      <path d="M 75 253 L 159.5 211 L 231.5 337 L 208 408 L 75 408 Z" fill="url(#seg1Grad)" />
+      <path
+        d="M 205 270 L 227 236 C 242 214 282 214 297 236 L 365.5 335 L 343 408 L 278 408 L 246 314 C 235 270 218 256 205 270 Z"
+        fill="url(#seg3Grad)"
+      />
+    </g>
+  </svg>
+
+  <!-- Wordmark -->
+  <text x="72" y="35" font-family="Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif" font-weight="800" font-size="24" letter-spacing="-0.03em" fill="#090e1c">
+    We Gadget <tspan fill="#2563eb">BD</tspan>
+  </text>
+  <text x="73" y="51" font-family="Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif" font-weight="600" font-size="10.5" letter-spacing="0.14em" fill="#475569">
+    SMARTER TECH • BRIGHTER DAYS
+  </text>
+</svg>

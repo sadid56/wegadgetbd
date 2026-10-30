@@ -1,0 +1,83 @@
+:root {
+  --font-roboto: "Roboto", sans-serif;
+  --font-monserat: "Montserrat", sans-serif;
+  --font-bricolage: "Bricolage Grotesque", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: clip;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  background-color: #f0f4f9;
+  color: #0f172a;
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Custom Scrollbars for inner containers */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.45);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(37, 99, 235, 0.75);
+}
+
+.montserrat {
+  font-family: var(--font-monserat);
+}
+.bricolage {
+  font-family: "Bricolage Grotesque", sans-serif;
+}
+.roboto {
+  font-family: var(--font-roboto);
+}
+
+/* Prevent Chrome/Safari/Edge autofill from creating a central blue/gray background box */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+input:autofill,
+input:autofill:hover,
+input:autofill:focus,
+input:autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #0f172a !important;
+  caret-color: #0f172a !important;
+  transition: background-color 5000s ease-in-out 0s;
+  border-radius: inherit !important;
+}
+

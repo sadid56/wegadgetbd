@@ -4,6 +4,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 import StarIcon from "@mui/icons-material/Star";
+import { tokens } from "@/theme/theme";
 import { getAssetUrl } from "@/lib/storage";
 
 interface ReviewCardProps {
@@ -27,10 +28,10 @@ export function ReviewCard({ review, className, sx }: ReviewCardProps) {
         position: "relative",
         p: 4,
         borderRadius: "24px",
-        bgcolor: "background.paper",
+        bgcolor: tokens.bgPanel,
         border: "1px solid",
-        borderColor: "divider",
-        boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+        borderColor: tokens.borderDefault,
+        boxShadow: tokens.shadowSm,
         display: "flex",
         flexDirection: "column",
         gap: 3,
@@ -40,10 +41,10 @@ export function ReviewCard({ review, className, sx }: ReviewCardProps) {
         transition: "transform 300ms, box-shadow 300ms",
         "&:hover": {
           transform: "translateY(-5px)",
-          boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-          "& .review-quote": { color: "primary.main", opacity: 0.2 },
-          "& .review-avatar": { borderColor: "primary.main" },
-          "& .review-initial": { borderColor: "primary.main" },
+          boxShadow: tokens.shadowElevated,
+          "& .review-quote": { color: tokens.primary, opacity: 0.2 },
+          "& .review-avatar": { borderColor: tokens.primary },
+          "& .review-initial": { borderColor: tokens.primary },
         },
         ...sx,
       }}
@@ -54,7 +55,7 @@ export function ReviewCard({ review, className, sx }: ReviewCardProps) {
           position: "absolute",
           top: 24,
           right: 32,
-          color: "primary.main",
+          color: tokens.primary,
           opacity: 0.1,
           transition: "color 300ms, opacity 300ms",
         }}
@@ -75,7 +76,7 @@ export function ReviewCard({ review, className, sx }: ReviewCardProps) {
               borderRadius: "50%",
               objectFit: "cover",
               border: "2px solid",
-              borderColor: "rgba(59,130,246,0.2)",
+              borderColor: tokens.primaryBorder,
               transition: "border-color 300ms",
             }}
           />
@@ -86,15 +87,15 @@ export function ReviewCard({ review, className, sx }: ReviewCardProps) {
               width: 48,
               height: 48,
               borderRadius: "50%",
-              bgcolor: "rgba(59,130,246,0.1)",
+              bgcolor: tokens.primarySubtle,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "primary.main",
+              color: tokens.primary,
               fontWeight: 700,
               fontSize: 18,
               border: "2px solid",
-              borderColor: "rgba(59,130,246,0.2)",
+              borderColor: tokens.primaryBorder,
               transition: "border-color 300ms",
             }}
           >
@@ -102,7 +103,7 @@ export function ReviewCard({ review, className, sx }: ReviewCardProps) {
           </Box>
         )}
         <Box>
-          <Typography component='h4' sx={{ fontWeight: 700, fontSize: 18, lineHeight: 1.2 }}>
+          <Typography component='h4' sx={{ fontWeight: 700, fontSize: 18, lineHeight: 1.2, color: tokens.textPrimary }}>
             {review.customerName}
           </Typography>
           <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mt: 0.5 }}>
@@ -111,7 +112,7 @@ export function ReviewCard({ review, className, sx }: ReviewCardProps) {
                 key={i}
                 sx={{
                   fontSize: 14,
-                  color: i < review.rating ? "#eab308" : "text.disabled",
+                  color: i < review.rating ? tokens.warning : tokens.textDisabled,
                   transition: "color 200ms",
                 }}
               />
@@ -122,7 +123,7 @@ export function ReviewCard({ review, className, sx }: ReviewCardProps) {
 
       <Typography
         sx={{
-          color: "text.secondary",
+          color: tokens.textSecondary,
           fontWeight: 300,
           lineHeight: 1.65,
           position: "relative",

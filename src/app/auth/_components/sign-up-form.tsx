@@ -8,18 +8,18 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
 import Box from "@mui/material/Box";
-import IconButton from "@mui/material/IconButton";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutlined";
 import MailOutlinedIcon from "@mui/icons-material/MailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import VisibilityOutlined from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlined from "@mui/icons-material/VisibilityOffOutlined";
 
+import { IconButton } from "@/components/ui/icon-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/context/toast-context";
-import { signUpAction } from "@/actions/auth";
+import { signUpAction } from "@/server/actions/auth.action";
 import { supabase } from "@/lib/supabase";
 import { tokens } from "@/theme/theme";
 import { SocialAuth } from "./social-auth";
@@ -34,10 +34,10 @@ type FormValues = z.infer<typeof formSchema>;
 
 const cardSx = {
   p: { xs: 3, sm: 4 },
-  borderRadius: "16px",
-  bgcolor: "#ffffff",
-  border: "1px solid #e2e8f0",
-  boxShadow: "0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.02)",
+  borderRadius: `${tokens.radiusLg}px`,
+  bgcolor: tokens.bgPanel,
+  border: `1px solid ${tokens.borderDefault}`,
+  boxShadow: tokens.shadowMd,
   position: "relative",
 };
 

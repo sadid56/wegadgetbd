@@ -5,6 +5,7 @@ import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { tokens } from "@/theme/theme";
 
 const FONT = "var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
@@ -73,9 +74,9 @@ export function CategoryExploreSection() {
           sx={{
             p: { xs: 2.5, sm: 3, md: 3.5 },
             borderRadius: "28px",
-            bgcolor: "#ffffff",
-            border: "1px solid #e2e8f0",
-            boxShadow: "0 10px 30px -10px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03)",
+            bgcolor: tokens.bgPanel,
+            border: `1px solid ${tokens.borderDefault}`,
+            boxShadow: tokens.shadowMd,
             display: "flex",
             flexDirection: { xs: "column", lg: "row" },
             alignItems: { xs: "flex-start", lg: "center" },
@@ -93,7 +94,7 @@ export function CategoryExploreSection() {
               textDecoration: "none",
               flexShrink: 0,
               minWidth: { lg: 180 },
-              "&:hover .explore-title": { color: "#ff7319" },
+              "&:hover .explore-title": { color: tokens.primary },
               "&:hover .explore-arrow": { transform: "translateX(4px)" },
             }}
           >
@@ -101,7 +102,7 @@ export function CategoryExploreSection() {
               sx={{
                 fontSize: 11,
                 fontWeight: 700,
-                color: "#64748b",
+                color: tokens.textMuted,
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
                 fontFamily: FONT,
@@ -116,7 +117,7 @@ export function CategoryExploreSection() {
                 sx={{
                   fontSize: { xs: 16, sm: 18 },
                   fontWeight: 800,
-                  color: "#0f172a",
+                  color: tokens.textPrimary,
                   fontFamily: FONT,
                   transition: "color 200ms",
                 }}
@@ -127,7 +128,7 @@ export function CategoryExploreSection() {
                 className="explore-arrow"
                 sx={{
                   fontSize: 16,
-                  color: "#0f172a",
+                  color: tokens.textPrimary,
                   transition: "transform 200ms ease",
                 }}
               />
@@ -164,11 +165,11 @@ export function CategoryExploreSection() {
                   "&:hover": {
                     transform: "translateY(-4px)",
                     "& .cat-circle": {
-                      borderColor: "#ff7319",
-                      boxShadow: "0 8px 16px -4px rgba(255, 115, 25, 0.2)",
+                      borderColor: tokens.primary,
+                      boxShadow: tokens.shadowPrimary,
                     },
                     "& .cat-label": {
-                      color: "#ff7319",
+                      color: tokens.primary,
                     },
                   },
                 }}
@@ -179,8 +180,8 @@ export function CategoryExploreSection() {
                     width: { xs: 56, sm: 64 },
                     height: { xs: 56, sm: 64 },
                     borderRadius: "20px",
-                    bgcolor: "#f8fafc",
-                    border: "1px solid #e2e8f0",
+                    bgcolor: tokens.bgCanvas,
+                    border: `1px solid ${tokens.borderDefault}`,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -210,7 +211,7 @@ export function CategoryExploreSection() {
                   sx={{
                     fontSize: 12,
                     fontWeight: 700,
-                    color: "#334155",
+                    color: tokens.textSecondary,
                     fontFamily: FONT,
                     textAlign: "center",
                     transition: "color 200ms",

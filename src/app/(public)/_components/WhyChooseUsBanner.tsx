@@ -188,7 +188,7 @@ export function WhyChooseUsBanner() {
                     width: 38,
                     height: 38,
                     borderRadius: "10px",
-                    bgcolor: "rgba(16, 185, 129, 0.12)",
+                    bgcolor: tokens.primarySubtle,
                     border: `1px solid ${tokens.borderDarkSubtle}`,
                     display: "flex",
                     alignItems: "center",

@@ -2,8 +2,9 @@
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import CircularProgress from "@mui/material/CircularProgress";
 import Container from "@mui/material/Container";
+import { CircularProgress } from "@/components/ui/spinner";
+import { tokens } from "@/theme/theme";
 import { useApprovedReviews } from "@/query-client/reviews/index";
 import { ReviewCard } from "./ReviewCard";
 
@@ -15,7 +16,7 @@ export function ReviewCarousel() {
   if (isLoading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", py: 12 }}>
-        <CircularProgress size={32} sx={{ color: "primary.main" }} />
+        <CircularProgress size={32} sx={{ color: tokens.primary }} />
       </Box>
     );
   }
@@ -27,10 +28,10 @@ export function ReviewCarousel() {
       component='section'
       sx={{
         py: 12,
-        background: "linear-gradient(to bottom, #fff, rgba(0,0,0,0.02))",
+        background: `linear-gradient(to bottom, ${tokens.bgPanel}, ${tokens.bgCanvas})`,
         borderTop: "1px solid",
         borderBottom: "1px solid",
-        borderColor: "divider",
+        borderColor: tokens.borderDefault,
         overflow: "hidden",
       }}
     >
@@ -44,7 +45,7 @@ export function ReviewCarousel() {
             mb: 2,
           }}
         >
-          <Box sx={{ height: 1, width: 32, bgcolor: "primary.main", mb: 1 }} />
+          <Box sx={{ height: 1, width: 32, bgcolor: tokens.primary, mb: 1 }} />
           <Typography
             component='span'
             sx={{
@@ -52,7 +53,7 @@ export function ReviewCarousel() {
               fontWeight: 900,
               letterSpacing: "0.15em",
               textTransform: "uppercase",
-              color: "primary.main",
+              color: tokens.primary,
             }}
           >
             Testimonials
@@ -65,10 +66,11 @@ export function ReviewCarousel() {
             fontWeight: 900,
             letterSpacing: "-0.03em",
             lineHeight: 1.1,
+            color: tokens.textPrimary,
           }}
         >
           TRUSTED BY{" "}
-          <Box component='span' sx={{ color: "primary.main" }}>
+          <Box component='span' sx={{ color: tokens.primary }}>
             GAMERS
           </Box>
         </Typography>
@@ -82,7 +84,7 @@ export function ReviewCarousel() {
             top: 0,
             bottom: 0,
             width: 96,
-            background: "linear-gradient(to right, #fff, transparent)",
+            background: `linear-gradient(to right, ${tokens.bgPanel}, transparent)`,
             zIndex: 10,
             pointerEvents: "none",
           }}
@@ -94,7 +96,7 @@ export function ReviewCarousel() {
             top: 0,
             bottom: 0,
             width: 96,
-            background: "linear-gradient(to left, #fff, transparent)",
+            background: `linear-gradient(to left, ${tokens.bgPanel}, transparent)`,
             zIndex: 10,
             pointerEvents: "none",
           }}

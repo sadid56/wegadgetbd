@@ -1,8 +1,8 @@
 import React, { type ComponentType, type ReactNode } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
+import { Card, CardContent } from "@/components/ui/card";
+import { tokens } from "@/theme/theme";
 
 export interface StatsCardProps {
   title: string;
@@ -24,7 +24,7 @@ export function StatsCard({
     if (!icon) return null;
     if (React.isValidElement(icon)) return icon;
     const IconComp = icon as ComponentType<any>;
-    return <IconComp sx={{ fontSize: 20, color: "text.secondary" }} />;
+    return <IconComp sx={{ fontSize: 20, color: tokens.textSecondary }} />;
   };
 
   return (
@@ -32,11 +32,10 @@ export function StatsCard({
       elevation={0}
       sx={{
         p: { xs: 2.25, sm: 2.5 },
-        borderRadius: "12px",
-        border: "1px solid",
-        borderColor: "divider",
-        bgcolor: "background.paper",
-        boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+        borderRadius: `${tokens.radiusLg}px`,
+        border: `1px solid ${tokens.borderDefault}`,
+        bgcolor: tokens.bgPanel,
+        boxShadow: tokens.shadowSm,
         ...sx,
       }}
     >
@@ -46,7 +45,7 @@ export function StatsCard({
             sx={{
               fontWeight: 600,
               fontSize: "0.875rem",
-              color: "text.secondary",
+              color: tokens.textSecondary,
             }}
           >
             {title}
@@ -59,7 +58,7 @@ export function StatsCard({
           sx={{
             fontWeight: 700,
             fontSize: { xs: "1.65rem", sm: "1.85rem" },
-            color: "text.primary",
+            color: tokens.textPrimary,
             lineHeight: 1.2,
           }}
         >
@@ -69,7 +68,7 @@ export function StatsCard({
         {description && (
           <Typography
             sx={{
-              color: "text.secondary",
+              color: tokens.textSecondary,
               fontSize: "0.75rem",
               mt: 0.5,
               display: "block",

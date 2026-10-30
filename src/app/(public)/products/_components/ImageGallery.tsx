@@ -3,11 +3,12 @@
 import { useState } from "react";
 import NextImage from "next/image";
 import Box from "@mui/material/Box";
-import IconButton from "@mui/material/IconButton";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import ReplayIcon from "@mui/icons-material/Replay";
+import { IconButton } from "@/components/ui/icon-button";
+import { tokens } from "@/theme/theme";
 import { calculateDiscount } from "@/lib/utils";
 import { getAssetUrl } from "@/lib/storage";
 
@@ -25,13 +26,13 @@ const zoomBtnSx = {
   bgcolor: "rgba(255,255,255,0.8)",
   backdropFilter: "blur(8px)",
   border: "1px solid",
-  borderColor: "divider",
-  boxShadow: "0 2px 4px rgba(0,0,0,0.08)",
-  color: "text.primary",
+  borderColor: tokens.borderDefault,
+  boxShadow: tokens.shadowSm,
+  color: tokens.textPrimary,
   transition: "all 200ms",
   "&:hover": {
-    bgcolor: "primary.main",
-    color: "primary.contrastText",
+    bgcolor: tokens.primary,
+    color: tokens.textWhite,
   },
 } as const;
 
@@ -57,17 +58,17 @@ export function ImageGallery({ images, title, discountPrice, price }: ImageGalle
           <Box
             sx={{
               aspectRatio: "1 / 1",
-              bgcolor: (theme) => (theme.palette.mode === "dark" ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)"),
+              bgcolor: tokens.bgSubtle,
               backdropFilter: "blur(20px)",
               border: "1px solid",
-              borderColor: "divider",
+              borderColor: tokens.borderDefault,
               borderRadius: { xs: "32px", md: "40px" },
               overflow: "hidden",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               position: "relative",
-              boxShadow: 4,
+              boxShadow: tokens.shadowMd,
               cursor: "zoom-in",
             }}
           >
@@ -130,7 +131,7 @@ export function ImageGallery({ images, title, discountPrice, price }: ImageGalle
             ) : (
               <Box
                 sx={{
-                  color: "text.secondary",
+                  color: tokens.textSecondary,
                   fontWeight: 300,
                   letterSpacing: "0.15em",
                   textTransform: "uppercase",
@@ -149,14 +150,14 @@ export function ImageGallery({ images, title, discountPrice, price }: ImageGalle
                   top: { xs: 24, md: 32 },
                   left: { xs: 24, md: 32 },
                   zIndex: 20,
-                  bgcolor: "primary.main",
-                  color: (theme) => (theme.palette.mode === "dark" ? "#000" : "primary.contrastText"),
+                  bgcolor: tokens.primary,
+                  color: tokens.textWhite,
                   fontSize: { xs: 12, md: 14 },
                   fontWeight: 900,
                   px: { xs: 1.5, md: 2 },
                   py: { xs: 0.5, md: 0.75 },
                   borderRadius: 999,
-                  boxShadow: 3,
+                  boxShadow: tokens.shadowSm,
                 }}
               >
                 -{discount}% ছাড়
@@ -182,7 +183,7 @@ export function ImageGallery({ images, title, discountPrice, price }: ImageGalle
                   height: { xs: 40, md: 48 },
                   borderRight: "2px solid",
                   borderBottom: "2px solid",
-                  borderColor: (theme) => (theme.palette.mode === "dark" ? "rgba(255,255,255,0.5)" : "rgba(0,0,0,0.5)"),
+                  borderColor: tokens.textPrimary,
                   borderBottomRightRadius: "16px",
                 }}
               />
@@ -221,9 +222,9 @@ export function ImageGallery({ images, title, discountPrice, price }: ImageGalle
                   borderRadius: "16px",
                   overflow: "hidden",
                   border: "1px solid",
-                  borderColor: isActive ? "primary.main" : "divider",
+                  borderColor: isActive ? tokens.primary : tokens.borderDefault,
                   outline: isActive ? "2px solid" : "none",
-                  outlineColor: "primary.main",
+                  outlineColor: tokens.primary,
                   outlineOffset: 2,
                   opacity: isActive ? 1 : 0.5,
                   transform: isActive ? "scale(1.05)" : "scale(1)",

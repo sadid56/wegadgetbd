@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-const DEFAULT_SITE_URL = "https://bongonex.com";
+const DEFAULT_SITE_URL = "https://wegadgetbd.com";
 const DEFAULT_OG_IMAGE = "/images/default.png";
 
 const stripTrailingSlash = (value: string) => value.replace(/\/$/, "");
@@ -41,7 +41,7 @@ export function buildPublicMetadata({
   const openGraphImage = toAbsoluteUrl(image);
 
   return {
-    title: `${title} | BongoNex`,
+    title: `${title} | We Gadget BD`,
     description,
     keywords,
     alternates: {
@@ -56,23 +56,23 @@ export function buildPublicMetadata({
       },
     },
     openGraph: {
-      title: `${title} | BongoNex`,
+      title: `${title} | We Gadget BD`,
       description,
       type: "website",
       url: canonical,
-      siteName: "BongoNex",
+      siteName: "We Gadget BD",
       images: [
         {
           url: openGraphImage,
           width: 1200,
           height: 630,
-          alt: `${title} | BongoNex`,
+          alt: `${title} | We Gadget BD`,
         },
       ],
     },
     twitter: {
       card: "summary_large_image",
-      title: `${title} | BongoNex`,
+      title: `${title} | We Gadget BD`,
       description,
       images: [openGraphImage],
     },

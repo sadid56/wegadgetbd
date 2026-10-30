@@ -6,11 +6,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
+import { Button } from "@/components/ui/button";
 import Typography from "@mui/material/Typography";
-import Modal from "@mui/material/Modal";
-import Fade from "@mui/material/Fade";
-import CircularProgress from "@mui/material/CircularProgress";
+import { Modal, Fade } from "@/components/ui/modal";
+import { CircularProgress } from "@/components/ui/spinner";
 import { keyframes } from "@emotion/react";
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -21,7 +20,7 @@ import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
 
 import { useCart } from "@/hooks/useCart";
 import { useProduct } from "@/query-client/products";
-import { createOrder } from "@/actions/orders";
+import { createOrder } from "@/server/actions/order.action";
 import { authClient } from "@/lib/auth-client";
 
 import { checkoutSchema, type CheckoutValues } from "./checkout-schema";
@@ -30,6 +29,7 @@ import { CheckoutForm } from "./checkout-form";
 import { OrderSummary } from "./order-summary";
 import { useToast } from "@/context/toast-context";
 import { getAssetUrl } from "@/lib/storage";
+import { tokens } from "@/theme/theme";
 
 // ─── Keyframes ──────────────────────────────────────────────
 const fadeIn = keyframes`
@@ -103,10 +103,10 @@ function ConfirmDialog({ open, onCancel, onConfirm, img, title, count, totalAmou
           <Box
             sx={{
               ...BN,
-              bgcolor: "#fff",
-              border: "1.5px solid #fed7aa",
+              bgcolor: tokens.bgPanel,
+              border: `1.5px solid ${tokens.primaryBorder}`,
               borderRadius: "24px",
-              boxShadow: "0 24px 64px rgba(249,115,22,0.18), 0 4px 16px rgba(0,0,0,0.1)",
+              boxShadow: "0 24px 64px rgba(16,185,129,0.18), 0 4px 16px rgba(0,0,0,0.1)",
               width: "100%",
               maxWidth: 400,
               position: "relative",
@@ -121,7 +121,7 @@ function ConfirmDialog({ open, onCancel, onConfirm, img, title, count, totalAmou
                 left: 0,
                 right: 0,
                 height: 4,
-                background: "linear-gradient(90deg,#fb923c,#f97316,#e11d48)",
+                background: `linear-gradient(90deg, ${tokens.accent}, ${tokens.primary}, ${tokens.primaryHover})`,
               }}
             />
 
@@ -133,13 +133,13 @@ function ConfirmDialog({ open, onCancel, onConfirm, img, title, count, totalAmou
                     height: 44,
                     borderRadius: "50%",
                     flexShrink: 0,
-                    background: "linear-gradient(135deg,#fff7ed,#ffedd5)",
-                    border: "2px solid #fed7aa",
+                    background: `linear-gradient(135deg, ${tokens.primaryLight}, ${tokens.accentLight})`,
+                    border: `2px solid ${tokens.primaryBorder}`,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     fontSize: 22,
-                    boxShadow: "0 2px 8px rgba(249,115,22,0.2)",
+                    boxShadow: "0 2px 8px rgba(16,185,129,0.2)",
                   }}
                 >
                   🛒
@@ -150,7 +150,7 @@ function ConfirmDialog({ open, onCancel, onConfirm, img, title, count, totalAmou
                       ...BN,
                       fontWeight: 800,
                       fontSize: 15.5,
-                      color: "#111827",
+                      color: tokens.textPrimary,
                       lineHeight: 1.3,
                     }}
                   >
@@ -160,7 +160,7 @@ function ConfirmDialog({ open, onCancel, onConfirm, img, title, count, totalAmou
                     sx={{
                       ...BN,
                       fontSize: 12,
-                      color: "#9ca3af",
+                      color: tokens.textDisabled,
                       fontWeight: 500,
                       mt: 0.25,
                     }}
@@ -170,18 +170,18 @@ function ConfirmDialog({ open, onCancel, onConfirm, img, title, count, totalAmou
                 </Box>
               </Box>
 
-              <Box sx={{ height: 1, bgcolor: "#f3f4f6", mb: 1.75 }} />
+              <Box sx={{ height: 1, bgcolor: tokens.bgSubtle, mb: 1.75 }} />
 
               <Box
                 sx={{
-                  background: "linear-gradient(135deg,#fafafa,#f9fafb)",
+                  background: `linear-gradient(135deg, ${tokens.bgCanvas}, ${tokens.bgSubtle})`,
                   borderRadius: "14px",
                   p: "10px 12px",
                   display: "flex",
                   alignItems: "center",
                   gap: 1.5,
                   mb: 2.25,
-                  border: "1px solid #f3f4f6",
+                  border: `1px solid ${tokens.borderSubtle}`,
                 }}
               >
                 {img ? (
@@ -194,7 +194,7 @@ function ConfirmDialog({ open, onCancel, onConfirm, img, title, count, totalAmou
                       height: 56,
                       borderRadius: "12px",
                       objectFit: "cover",
-                      border: "2px solid #e5e7eb",
+                      border: `2px solid ${tokens.borderDefault}`,
                       flexShrink: 0,
                       boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
                     }}
@@ -205,7 +205,7 @@ function ConfirmDialog({ open, onCancel, onConfirm, img, title, count, totalAmou
                       width: 56,
                       height: 56,
                       borderRadius: "12px",
-                      bgcolor: "#f3f4f6",
+                      bgcolor: tokens.bgSubtle,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
@@ -222,7 +222,7 @@ function ConfirmDialog({ open, onCancel, onConfirm, img, title, count, totalAmou
                       ...BN,
                       fontWeight: 700,
                       fontSize: 13.5,
-                      color: "#111827",
+                      color: tokens.textPrimary,
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                       whiteSpace: "nowrap",
@@ -236,7 +236,7 @@ function ConfirmDialog({ open, onCancel, onConfirm, img, title, count, totalAmou
                       component='span'
                       sx={{
                         fontWeight: 900,
-                        color: "#ea580c",
+                        color: tokens.primaryHover,
                         fontSize: 17,
                         letterSpacing: "-0.5px",
                       }}
@@ -248,9 +248,9 @@ function ConfirmDialog({ open, onCancel, onConfirm, img, title, count, totalAmou
                       sx={{
                         ...BN,
                         fontSize: 11,
-                        color: "#6b7280",
-                        bgcolor: "#f3f4f6",
-                        border: "1px solid #e5e7eb",
+                        color: tokens.textMuted,
+                        bgcolor: tokens.bgSubtle,
+                        border: `1px solid ${tokens.borderDefault}`,
                         px: "7px",
                         py: "1px",
                         borderRadius: "20px",
@@ -272,16 +272,16 @@ function ConfirmDialog({ open, onCancel, onConfirm, img, title, count, totalAmou
                     flex: 1,
                     py: 1.5,
                     borderRadius: "13px",
-                    border: "1.5px solid #e5e7eb",
-                    bgcolor: "#fff",
-                    color: "#6b7280",
+                    border: `1.5px solid ${tokens.borderDefault}`,
+                    bgcolor: tokens.bgPanel,
+                    color: tokens.textMuted,
                     fontWeight: 700,
                     fontSize: 14,
                     cursor: "pointer",
                     transition: "all 0.15s",
                     "&:hover": {
-                      bgcolor: "#f9fafb",
-                      borderColor: "#d1d5db",
+                      bgcolor: tokens.bgCanvas,
+                      borderColor: tokens.borderElevated,
                     },
                   }}
                 >
@@ -296,12 +296,12 @@ function ConfirmDialog({ open, onCancel, onConfirm, img, title, count, totalAmou
                     py: 1.5,
                     borderRadius: "13px",
                     border: "none",
-                    background: "linear-gradient(135deg,#f97316,#e11d48)",
-                    color: "#fff",
+                    background: `linear-gradient(135deg, ${tokens.primary}, ${tokens.primaryHover})`,
+                    color: tokens.textWhite,
                     fontWeight: 800,
                     fontSize: 14,
                     cursor: "pointer",
-                    boxShadow: "0 4px 16px rgba(249,115,22,0.4)",
+                    boxShadow: "0 4px 16px rgba(16,185,129,0.4)",
                     transition: "transform 0.15s",
                     "&:hover": { transform: "scale(1.02)" },
                   }}
@@ -383,16 +383,16 @@ function CheckoutPageContent() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          bgcolor: "#fff",
+          bgcolor: tokens.bgPanel,
         }}
       >
         <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-          <CircularProgress size={48} sx={{ color: "#f97316" }} />
+          <CircularProgress size={48} sx={{ color: tokens.primary }} />
           <Typography
             sx={{
               fontSize: 18,
               fontWeight: 700,
-              color: "#6b7280",
+              color: tokens.textMuted,
               letterSpacing: "0.1em",
               textTransform: "uppercase",
             }}
@@ -443,7 +443,7 @@ function CheckoutPageContent() {
         image: item.images?.[0] || "",
       }));
       const orderDetails = orderItems.map((i) => `• ${i.title} (x${i.qty}) - ৳${i.price * i.qty}`).join("\n");
-      const message = `🛍️ নতুন অর্ডার (BONGO NEX)
+      const message = `🛍️ নতুন অর্ডার (WE GADGET BD)
 ━━━━━━━━━━━━━━━
 👤 গ্রাহকের নাম: ${data.name}
 📞 মোবাইল: ${data.phone}
@@ -512,8 +512,8 @@ ${orderDetails}
           sx={{
             width: 96,
             height: 96,
-            bgcolor: "#fef2f2",
-            color: "#ef4444",
+            bgcolor: tokens.dangerSubtle,
+            color: tokens.danger,
             borderRadius: "50%",
             display: "flex",
             alignItems: "center",
@@ -529,13 +529,13 @@ ${orderDetails}
             ...BN,
             fontSize: 28,
             fontWeight: 900,
-            color: "#1f2937",
+            color: tokens.textPrimary,
             mb: 1,
           }}
         >
           পণ্যটি পাওয়া যায়নি
         </Typography>
-        <Typography sx={{ ...BN, color: "#6b7280", mb: 4 }}>সম্ভবত পণ্যটি আমাদের সংগ্রহে নেই অথবা ইউআরএল ভুল।</Typography>
+        <Typography sx={{ ...BN, color: tokens.textMuted, mb: 4 }}>সম্ভবত পণ্যটি আমাদের সংগ্রহে নেই অথবা ইউআরএল ভুল।</Typography>
         <Button
           component={NextLink}
           href='/products'
@@ -544,13 +544,13 @@ ${orderDetails}
             ...BN,
             px: 4,
             py: 1.5,
-            bgcolor: "#f97316",
-            color: "#fff",
+            bgcolor: tokens.primary,
+            color: tokens.textWhite,
             borderRadius: 999,
             fontWeight: 700,
             textTransform: "none",
-            boxShadow: "0 10px 15px -3px rgba(249,115,22,0.3)",
-            "&:hover": { bgcolor: "#ea580c" },
+            boxShadow: "0 10px 15px -3px rgba(16,185,129,0.3)",
+            "&:hover": { bgcolor: tokens.primaryHover },
           }}
         >
           শপিং শুরু করুন
@@ -573,7 +573,7 @@ ${orderDetails}
     productsToOrder.length > 1 ? `${productsToOrder.length}টি পণ্য · মোট ${confirmedCount}টি আইটেম` : (confirmedProduct?.title ?? "");
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#fafafa", pb: 10, position: "relative" }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: tokens.bgCanvas, pb: 10, position: "relative" }}>
       <ConfirmDialog
         open={showConfirm}
         onCancel={() => setShowConfirm(false)}
@@ -605,7 +605,7 @@ ${orderDetails}
               sx={{
                 position: "relative",
                 overflow: "hidden",
-                bgcolor: "#fff",
+                bgcolor: tokens.bgPanel,
                 width: "100%",
                 borderRadius: "32px",
                 maxWidth: { sm: 448 },
@@ -621,7 +621,7 @@ ${orderDetails}
                   left: 0,
                   right: 0,
                   height: 4,
-                  background: "linear-gradient(90deg,#4ade80,#22c55e,#10b981)",
+                  background: `linear-gradient(90deg, ${tokens.accent}, ${tokens.success}, ${tokens.primary})`,
                 }}
               />
 
@@ -632,7 +632,7 @@ ${orderDetails}
                   pt: 1,
                 }}
               >
-                <Box sx={{ width: 36, height: 4, borderRadius: 999, bgcolor: "#e5e7eb" }} />
+                <Box sx={{ width: 36, height: 4, borderRadius: 999, bgcolor: tokens.borderDefault }} />
               </Box>
 
               <Box
@@ -651,13 +651,13 @@ ${orderDetails}
                   alignItems: "center",
                   justifyContent: "center",
                   borderRadius: "50%",
-                  bgcolor: "#f3f4f6",
+                  bgcolor: tokens.bgSubtle,
                   border: 0,
                   cursor: "pointer",
-                  color: "#9ca3af",
+                  color: tokens.textDisabled,
                   transition: "background-color 200ms",
                   zIndex: 10,
-                  "&:hover": { bgcolor: "#e5e7eb" },
+                  "&:hover": { bgcolor: tokens.borderDefault },
                 }}
               >
                 <CloseIcon sx={{ fontSize: 14 }} />
@@ -671,7 +671,7 @@ ${orderDetails}
                   px: 3,
                   pt: 2,
                   pb: 2,
-                  background: "linear-gradient(180deg,#f0fdf4 0%,#ffffff 100%)",
+                  background: `linear-gradient(180deg, ${tokens.accentLight} 0%, ${tokens.bgPanel} 100%)`,
                 }}
               >
                 <Box sx={{ position: "relative", mb: 1.5 }}>
@@ -683,7 +683,7 @@ ${orderDetails}
                       borderRadius: "50%",
                       width: 60,
                       height: 60,
-                      background: "linear-gradient(135deg,#22c55e,#10b981)",
+                      background: `linear-gradient(135deg, ${tokens.accent}, ${tokens.primary})`,
                       boxShadow: "0 6px 20px rgba(34,197,94,0.35)",
                       animation: `${popIn} 400ms 100ms cubic-bezier(0.34, 1.5, 0.64, 1) both`,
                     }}
@@ -712,17 +712,17 @@ ${orderDetails}
                       right: -4,
                       width: 24,
                       height: 24,
-                      bgcolor: "#25D366",
+                      bgcolor: tokens.primary,
                       borderRadius: "50%",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      border: "2px solid #fff",
+                      border: `2px solid ${tokens.bgPanel}`,
                       boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
                       animation: `${popIn} 400ms 500ms cubic-bezier(0.34, 1.5, 0.64, 1) both`,
                     }}
                   >
-                    <WhatsAppIcon sx={{ fontSize: 12, color: "#fff" }} />
+                    <WhatsAppIcon sx={{ fontSize: 12, color: tokens.textWhite }} />
                   </Box>
                 </Box>
 
@@ -732,7 +732,7 @@ ${orderDetails}
                     ...BN,
                     fontSize: { xs: 18, sm: 20 },
                     fontWeight: 900,
-                    color: "#1f2937",
+                    color: tokens.textPrimary,
                     mb: 0.5,
                     animation: `${fadeInUp} 400ms 250ms ease-out both`,
                   }}
@@ -744,7 +744,7 @@ ${orderDetails}
                   sx={{
                     ...BN,
                     fontSize: 12,
-                    color: "#9ca3af",
+                    color: tokens.textDisabled,
                     fontWeight: 500,
                     animation: `${fadeInUp} 400ms 350ms ease-out both`,
                   }}
@@ -756,7 +756,7 @@ ${orderDetails}
               <Box sx={{ px: 3, pt: 1 }}>
                 <Typography
                   sx={{
-                    color: "#6b7280",
+                    color: tokens.textMuted,
                     textAlign: "center",
                     mb: 1,
                     fontSize: 12,
@@ -770,15 +770,15 @@ ${orderDetails}
                   startIcon={<WhatsAppIcon sx={{ fontSize: 16 }} />}
                   disableElevation
                   sx={{
-                    bgcolor: "#25D366",
-                    color: "#fff",
+                    bgcolor: tokens.primary,
+                    color: tokens.textWhite,
                     fontWeight: 700,
                     py: 1.25,
                     borderRadius: "12px",
                     fontSize: 13,
                     textTransform: "none",
                     boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
-                    "&:hover": { bgcolor: "#1eb455" },
+                    "&:hover": { bgcolor: tokens.primaryHover },
                     "&:active": { transform: "scale(0.95)" },
                   }}
                 >
@@ -811,7 +811,7 @@ ${orderDetails}
                         borderRadius: "50%",
                         width: 22,
                         height: 22,
-                        background: "linear-gradient(135deg,#22c55e,#10b981)",
+                        background: `linear-gradient(135deg, ${tokens.accent}, ${tokens.primary})`,
                         boxShadow: "0 2px 6px rgba(34,197,94,0.3)",
                         animation: `${popIn} 400ms ${0.65 + d}s cubic-bezier(0.34, 1.5, 0.64, 1) both`,
                       }}
@@ -826,12 +826,12 @@ ${orderDetails}
                   sx={{
                     ...BN,
                     fontSize: 12,
-                    color: "#9ca3af",
+                    color: tokens.textDisabled,
                     fontWeight: 500,
                     textAlign: "center",
                   }}
                 >
-                  <Box component='span' sx={{ fontWeight: 900, color: "#22c55e", fontSize: 14 }}>
+                  <Box component='span' sx={{ fontWeight: 900, color: tokens.success, fontSize: 14 }}>
                     {countdown}
                   </Box>{" "}
                   সেকেন্ড পরে হোমপেজে নিয়ে যাওয়া হবে
@@ -858,8 +858,8 @@ ${orderDetails}
       <Box
         sx={{
           position: "relative",
-          bgcolor: "#fff",
-          borderBottom: "1px solid #f3f4f6",
+          bgcolor: tokens.bgPanel,
+          borderBottom: `1px solid ${tokens.borderSubtle}`,
           boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
           position_sticky_hack: undefined,
         }}
@@ -869,7 +869,7 @@ ${orderDetails}
             position: "sticky",
             top: 0,
             zIndex: 50,
-            bgcolor: "#fff",
+            bgcolor: tokens.bgPanel,
           }}
         >
           <Box
@@ -892,10 +892,10 @@ ${orderDetails}
                   borderRadius: "50%",
                   display: "inline-flex",
                   transition: "background-color 200ms",
-                  "&:hover": { bgcolor: "#f3f4f6" },
+                  "&:hover": { bgcolor: tokens.bgSubtle },
                 }}
               >
-                <ArrowBackIcon sx={{ fontSize: 24, color: "#4b5563" }} />
+                <ArrowBackIcon sx={{ fontSize: 24, color: tokens.textSecondary }} />
               </Box>
               <Box>
                 <Typography
@@ -903,21 +903,21 @@ ${orderDetails}
                   sx={{
                     fontSize: 20,
                     fontWeight: 900,
-                    color: "#111827",
+                    color: tokens.textPrimary,
                     letterSpacing: "-0.02em",
                   }}
                 >
-                  BongoNex Checkout
+                  We Gadget BD Checkout
                 </Typography>
                 <Typography
                   sx={{
                     fontSize: 12,
-                    color: "#9ca3af",
+                    color: tokens.textDisabled,
                     fontWeight: 600,
                     letterSpacing: "0.15em",
                   }}
                 >
-                  Bongo-Nex Premium Shopping
+                  We Gadget BD Premium Shopping
                 </Typography>
               </Box>
             </Box>
@@ -926,7 +926,7 @@ ${orderDetails}
                 display: { xs: "none", md: "flex" },
                 alignItems: "center",
                 gap: 1,
-                bgcolor: "#fff7ed",
+                bgcolor: tokens.primaryLight,
                 px: 2,
                 py: 1,
                 borderRadius: 999,
@@ -936,7 +936,7 @@ ${orderDetails}
                 sx={{
                   width: 8,
                   height: 8,
-                  bgcolor: "#f97316",
+                  bgcolor: tokens.primary,
                   borderRadius: "50%",
                   animation: `${pulseDot} 2s ease-in-out infinite`,
                 }}
@@ -946,7 +946,7 @@ ${orderDetails}
                 sx={{
                   fontSize: 12,
                   fontWeight: 700,
-                  color: "#ea580c",
+                  color: tokens.primaryHover,
                   textTransform: "uppercase",
                   letterSpacing: "-0.02em",
                 }}
@@ -1022,7 +1022,7 @@ ${orderDetails}
             pointerEvents: "auto",
             bgcolor: "rgba(255,255,255,0.95)",
             backdropFilter: "blur(20px)",
-            borderTop: "1px solid #f3f4f6",
+            borderTop: `1px solid ${tokens.borderSubtle}`,
             boxShadow: "0 -4px 24px rgba(0,0,0,0.07)",
           }}
         >
@@ -1037,7 +1037,7 @@ ${orderDetails}
               }}
             >
               <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
-                <Box component='span' sx={{ ...BN, fontSize: 18, color: "#1f2937", fontWeight: 500 }}>
+                <Box component='span' sx={{ ...BN, fontSize: 18, color: tokens.textPrimary, fontWeight: 500 }}>
                   সর্বমোট:
                 </Box>
                 <Box
@@ -1045,7 +1045,7 @@ ${orderDetails}
                   sx={{
                     fontSize: 20,
                     fontWeight: 900,
-                    color: "#ea580c",
+                    color: tokens.primaryHover,
                     letterSpacing: "-0.02em",
                   }}
                 >
@@ -1058,10 +1058,10 @@ ${orderDetails}
                   alignItems: "center",
                   gap: 0.5,
                   fontSize: 10,
-                  color: "#047857",
+                  color: tokens.successText,
                   fontWeight: 700,
-                  bgcolor: "#ecfdf5",
-                  border: "1px solid #d1fae5",
+                  bgcolor: tokens.primaryLight,
+                  border: `1px solid ${tokens.successBorder}`,
                   px: 1.25,
                   py: 0.5,
                   borderRadius: 999,
@@ -1087,8 +1087,8 @@ ${orderDetails}
                 sx={{
                   position: "relative",
                   py: 1,
-                  background: "linear-gradient(to right,#f97316,#f97316,#f43f5e)",
-                  color: "#fff",
+                  background: `linear-gradient(to right, ${tokens.primary}, ${tokens.primaryHover})`,
+                  color: tokens.textWhite,
                   fontWeight: 900,
                   fontSize: 16,
                   borderRadius: "6px",
@@ -1097,14 +1097,14 @@ ${orderDetails}
                   justifyContent: "center",
                   gap: 1.25,
                   textTransform: "none",
-                  boxShadow: "0 10px 15px -3px rgba(249,115,22,0.3), 0 4px 6px -4px rgba(249,115,22,0.3)",
+                  boxShadow: "0 10px 15px -3px rgba(16,185,129,0.3), 0 4px 6px -4px rgba(16,185,129,0.3)",
                   overflow: "hidden",
                   transition: "all 300ms",
                   "&:hover": {
-                    background: "linear-gradient(to right,#ea580c,#ea580c,#e11d48)",
+                    background: `linear-gradient(to right, ${tokens.primaryHover}, ${tokens.primaryHover})`,
                   },
                   "&:active": { transform: "scale(0.98)" },
-                  "&.Mui-disabled": { opacity: 0.7, color: "#fff" },
+                  "&.Mui-disabled": { opacity: 0.7, color: tokens.textWhite },
                 }}
               >
                 <Box
@@ -1118,7 +1118,7 @@ ${orderDetails}
                 />
                 {isSubmitting ? (
                   <>
-                    <CircularProgress size={20} sx={{ color: "#fff" }} />
+                    <CircularProgress size={20} sx={{ color: tokens.textWhite }} />
                     <span>অর্ডার প্রসেস হচ্ছে...</span>
                   </>
                 ) : (
@@ -1135,7 +1135,7 @@ ${orderDetails}
                 display: { xs: "none", md: "block" },
                 textAlign: "center",
                 fontSize: 9,
-                color: "#d1d5db",
+                color: tokens.borderElevated,
                 mt: 1,
                 fontWeight: 500,
                 textTransform: "uppercase",
@@ -1162,16 +1162,16 @@ export default function CheckoutPage() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            bgcolor: "#fff",
+            bgcolor: tokens.bgPanel,
           }}
         >
           <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-            <CircularProgress size={48} sx={{ color: "#f97316" }} />
+            <CircularProgress size={48} sx={{ color: tokens.primary }} />
             <Typography
               sx={{
                 fontSize: 18,
                 fontWeight: 700,
-                color: "#6b7280",
+                color: tokens.textMuted,
                 letterSpacing: "0.1em",
                 textTransform: "uppercase",
               }}

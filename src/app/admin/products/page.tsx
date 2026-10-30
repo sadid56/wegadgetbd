@@ -4,26 +4,16 @@ import { useState } from "react";
 import NextLink from "next/link";
 
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import InputBase from "@mui/material/InputBase";
 import Typography from "@mui/material/Typography";
-import Chip from "@mui/material/Chip";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import Divider from "@mui/material/Divider";
-import CircularProgress from "@mui/material/CircularProgress";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogActions from "@mui/material/DialogActions";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { InputBase } from "@/components/ui/input";
+import { Chip } from "@/components/ui/badge";
+import { Menu, MenuItem } from "@/components/ui/menu";
+import { Divider } from "@/components/ui/divider";
+import { CircularProgress } from "@/components/ui/spinner";
+import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@/components/ui/table";
 
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
@@ -35,6 +25,7 @@ import StarIcon from "@mui/icons-material/Star";
 
 import { useAdminProducts, useDeleteProduct, useUpdateProduct } from "@/query-client/products";
 import { getAssetUrl } from "@/lib/storage";
+import { tokens } from "@/theme/theme";
 
 const tableHeadSx = {
   fontSize: 12,
@@ -367,9 +358,9 @@ export default function AdminProductsPage() {
                         sx={{
                           width: 32,
                           height: 32,
-                          color: product.isFeatured ? "#eab308" : "text.secondary",
+                          color: product.isFeatured ? tokens.warning : "text.secondary",
                           "&:hover": {
-                            color: product.isFeatured ? "#ca8a04" : "text.primary",
+                            color: product.isFeatured ? tokens.warningHover : "text.primary",
                             bgcolor: "action.hover",
                           },
                         }}
@@ -377,7 +368,7 @@ export default function AdminProductsPage() {
                         <StarIcon
                           sx={{
                             fontSize: 16,
-                            fill: product.isFeatured ? "#eab308" : "none",
+                            fill: product.isFeatured ? tokens.warning : "none",
                           }}
                         />
                       </IconButton>
@@ -463,42 +454,31 @@ export default function AdminProductsPage() {
         </Box>
         {activeProduct && (
           <MenuItem
-            component={NextLink}
-            href={`/admin/products/${activeProduct.id}/edit`}
+            {...({ component: NextLink, href: `/admin/products/${activeProduct.id}/edit` } as any)}
             onClick={closeMenu}
-            sx={{ fontSize: 14, py: 1, gap: 1, color: "text.primary", textDecoration: "none" }}
           >
-            <EditOutlinedIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+            <EditOutlinedIcon />
             Edit
           </MenuItem>
         )}
         {activeProduct && (
           <MenuItem
-            component={NextLink}
-            href={`/products/${activeProduct.slug}`}
-            target='_blank'
+            {...({ component: NextLink, href: `/products/${activeProduct.slug}`, target: "_blank" } as any)}
             onClick={closeMenu}
-            sx={{ fontSize: 14, py: 1, gap: 1, color: "text.primary", textDecoration: "none" }}
           >
-            <VisibilityOutlinedIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+            <VisibilityOutlinedIcon />
             View Public
           </MenuItem>
         )}
         <Divider sx={{ my: 0.5 }} />
         <MenuItem
+          variant='danger'
           onClick={() => {
             if (menuProductId) setProductToDelete(menuProductId);
             closeMenu();
           }}
-          sx={{
-            fontSize: 14,
-            py: 1,
-            gap: 1,
-            color: "error.main",
-            "&:hover": { bgcolor: "rgba(239,68,68,0.1)" },
-          }}
         >
-          <DeleteOutlineIcon sx={{ fontSize: 16 }} />
+          <DeleteOutlineIcon />
           Delete
         </MenuItem>
       </Menu>
@@ -543,9 +523,9 @@ export default function AdminProductsPage() {
               fontWeight: 600,
               fontSize: 14,
               borderRadius: "8px",
-              bgcolor: "#dc2626",
-              color: "#fff",
-              "&:hover": { bgcolor: "#b91c1c" },
+              bgcolor: tokens.danger,
+              color: tokens.textWhite,
+              "&:hover": { bgcolor: tokens.dangerHover },
             }}
           >
             Delete

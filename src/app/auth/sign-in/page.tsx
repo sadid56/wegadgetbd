@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import Card from "@mui/material/Card";
-import CircularProgress from "@mui/material/CircularProgress";
+import { Card } from "@/components/ui/card";
+import { CircularProgress } from "@/components/ui/spinner";
 import { SignInForm } from "../_components/sign-in-form";
 import { tokens } from "@/theme/theme";
 
@@ -21,8 +21,8 @@ export default function SignInPage() {
             justifyContent: "center",
             alignItems: "center",
             minHeight: 320,
-            borderRadius: "20px",
-            bgcolor: "#ffffff",
+            borderRadius: `${tokens.radiusXl}px`,
+            bgcolor: tokens.bgPanel,
           }}
         >
           <CircularProgress size={32} sx={{ color: tokens.primary }} />

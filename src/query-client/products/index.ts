@@ -56,3 +56,10 @@ export const useDeleteProduct = (options?: Record<string, unknown>) =>
     successMessage: "Product deleted successfully",
     ...options,
   });
+
+export const useProductReviews = (productId: string) =>
+  useQuery({
+    queryKey: ["products", productId, "reviews"],
+    queryFn: () => orpcClient.products.reviews({ productId }),
+    enabled: !!productId,
+  });

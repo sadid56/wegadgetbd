@@ -13,6 +13,7 @@ import {
   type FieldValues,
 } from "react-hook-form";
 import { Label, type LabelProps } from "@/components/ui/label";
+import { tokens } from "@/theme/theme";
 
 const Form = FormProvider;
 
@@ -97,7 +98,7 @@ function FormLabel({ sx, ...props }: LabelProps) {
     <Label
       htmlFor={formItemId}
       sx={{
-        color: error ? "error.main" : "text.primary",
+        color: error ? tokens.danger : tokens.textPrimary,
         fontSize: "0.85rem",
         fontWeight: 600,
         ...sx,
@@ -140,7 +141,7 @@ function FormDescription({ sx, children, ...props }: TypographyProps) {
       id={formDescriptionId}
       variant='caption'
       sx={{
-        color: "text.secondary",
+        color: tokens.textSecondary,
         fontSize: "0.78rem",
         lineHeight: 1.4,
         ...sx,
@@ -165,7 +166,7 @@ function FormMessage({ sx, children, ...props }: TypographyProps) {
       id={formMessageId}
       variant='caption'
       sx={{
-        color: "error.main",
+        color: tokens.danger,
         fontSize: "0.78rem",
         fontWeight: 500,
         ...sx,

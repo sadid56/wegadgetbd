@@ -1,8 +1,88 @@
 import React from "react";
-import { Box, Stack, Typography, TextField, InputAdornment, type TextFieldProps, type SxProps, type Theme } from "@mui/material";
+import {
+  Box,
+  Stack,
+  Typography,
+  TextField as MuiTextField,
+  InputBase as MuiInputBase,
+  InputAdornment as MuiInputAdornment,
+  type TextFieldProps as MuiTextFieldProps,
+  type InputBaseProps as MuiInputBaseProps,
+  type InputAdornmentProps as MuiInputAdornmentProps,
+  type SxProps,
+  type Theme,
+} from "@mui/material";
 import { tokens } from "../../theme/theme";
 
-export interface InputProps extends Omit<TextFieldProps, "variant"> {
+export type TextFieldProps = MuiTextFieldProps;
+export type InputBaseProps = MuiInputBaseProps;
+export type InputAdornmentProps = MuiInputAdornmentProps;
+
+export const InputAdornment = MuiInputAdornment;
+
+export const InputBase = React.forwardRef<HTMLDivElement, InputBaseProps>(function InputBase(
+  { sx, ...props },
+  ref
+) {
+  return (
+    <MuiInputBase
+      ref={ref}
+      sx={[
+        {
+          color: tokens.textPrimary,
+          fontSize: "0.875rem",
+          "& input::placeholder, & textarea::placeholder": {
+            color: tokens.textMuted,
+            opacity: 1,
+          },
+        },
+        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+      ]}
+      {...props}
+    />
+  );
+});
+
+export const TextField = React.forwardRef<HTMLDivElement, TextFieldProps>(function TextField(
+  { sx, size = "small", ...props },
+  ref
+) {
+  return (
+    <MuiTextField
+      ref={ref}
+      size={size}
+      sx={[
+        {
+          "& .MuiOutlinedInput-root": {
+            bgcolor: tokens.bgInput,
+            color: tokens.textPrimary,
+            borderRadius: `${tokens.radiusMd}px`,
+            fontSize: "0.875rem",
+            "& fieldset": {
+              borderColor: tokens.borderDefault,
+            },
+            "&:hover fieldset": {
+              borderColor: tokens.borderHover,
+            },
+            "&.Mui-focused fieldset": {
+              borderColor: tokens.primary,
+            },
+          },
+          "& .MuiInputLabel-root": {
+            color: tokens.textSecondary,
+            "&.Mui-focused": {
+              color: tokens.primary,
+            },
+          },
+        },
+        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+      ]}
+      {...props}
+    />
+  );
+});
+
+export interface InputProps extends Omit<MuiTextFieldProps, "variant"> {
   label?: string;
   labelIcon?: React.ReactNode;
   startIcon?: React.ReactNode;
@@ -57,7 +137,7 @@ export const Input = React.forwardRef<any, InputProps>(function Input(
         </Stack>
       )}
 
-      <TextField
+      <MuiTextField
         inputRef={inputRef || ref}
         fullWidth={fullWidth}
         size={size}
@@ -70,8 +150,8 @@ export const Input = React.forwardRef<any, InputProps>(function Input(
         variant='outlined'
         slotProps={{
           input: {
-            startAdornment: startIcon ? <InputAdornment position='start'>{startIcon}</InputAdornment> : undefined,
-            endAdornment: endIcon ? <InputAdornment position='end'>{endIcon}</InputAdornment> : undefined,
+            startAdornment: startIcon ? <MuiInputAdornment position='start'>{startIcon}</MuiInputAdornment> : undefined,
+            endAdornment: endIcon ? <MuiInputAdornment position='end'>{endIcon}</MuiInputAdornment> : undefined,
           },
         }}
         sx={{
@@ -88,7 +168,7 @@ export const Input = React.forwardRef<any, InputProps>(function Input(
             },
             "&.Mui-focused": {
               borderColor: error ? tokens.error : tokens.primary,
-              boxShadow: error ? "0 0 0 3px rgba(239, 68, 68, 0.15)" : "0 0 0 3px rgba(16, 185, 129, 0.15)",
+              boxShadow: error ? `0 0 0 3px ${tokens.dangerSubtle}` : `0 0 0 3px ${tokens.primarySubtle}`,
             },
           },
           "& .MuiOutlinedInput-notchedOutline": {
@@ -103,8 +183,8 @@ export const Input = React.forwardRef<any, InputProps>(function Input(
               opacity: 1,
             },
             "&:-webkit-autofill, &:-webkit-autofill:hover, &:-webkit-autofill:focus, &:-webkit-autofill:active, &:autofill, &:autofill:hover, &:autofill:focus, &:autofill:active": {
-              WebkitBoxShadow: `0 0 0 1000px ${tokens.bgInput || "#ffffff"} inset !important`,
-              boxShadow: `0 0 0 1000px ${tokens.bgInput || "#ffffff"} inset !important`,
+              WebkitBoxShadow: `0 0 0 1000px ${tokens.bgInput} inset !important`,
+              boxShadow: `0 0 0 1000px ${tokens.bgInput} inset !important`,
               WebkitTextFillColor: `${tokens.textPrimary} !important`,
               caretColor: `${tokens.textPrimary} !important`,
               transition: "background-color 5000s ease-in-out 0s",
@@ -126,3 +206,4 @@ export const Input = React.forwardRef<any, InputProps>(function Input(
 });
 
 Input.displayName = "Input";
+export default Input;

@@ -5,18 +5,14 @@ import { format } from "date-fns";
 import { useToast } from "@/context/toast-context";
 
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import CircularProgress from "@mui/material/CircularProgress";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
+import { Button } from "@/components/ui/button";
+import { TextField } from "@/components/ui/input";
+import { CircularProgress } from "@/components/ui/spinner";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@/components/ui/table";
 
-import { createExpense, getExpenseSummary } from "@/actions/expenses";
+import { ExpenseEndpoints } from "@/query-client/expenses";
+import { tokens } from "@/theme/theme";
 
 const inputSx = {
   "& .MuiOutlinedInput-root": {
@@ -71,13 +67,16 @@ export default function ExpenseSummaryPage() {
   const [date, setDate] = useState("");
 
   const loadSummary = async () => {
-    const result = await getExpenseSummary();
-    if (!result.success) {
-      toast.error(result.message || "Failed to load expenses");
-    } else {
-      setSummary(result);
+    try {
+      const result = await ExpenseEndpoints.getSummary();
+      if (result) {
+        setSummary(result);
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to load expenses");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -91,23 +90,29 @@ export default function ExpenseSummaryPage() {
     }
 
     setSaving(true);
-    const res = await createExpense({
-      amount: Number(amount),
-      note,
-      date: date ? new Date(date) : new Date(),
-    });
-    setSaving(false);
+    try {
+      const res = await ExpenseEndpoints.createExpense({
+        category: "General",
+        amount: Number(amount),
+        note,
+        date: date ? new Date(date) : new Date(),
+      });
+      setSaving(false);
 
-    if (!res.success) {
-      toast.error(res.message || "Failed to add expense");
-      return;
+      if (!res?.success) {
+        toast.error((res as any)?.message || "Failed to add expense");
+        return;
+      }
+
+      toast.success("Expense added");
+      setAmount("");
+      setNote("");
+      setDate("");
+      await loadSummary();
+    } catch (err: any) {
+      setSaving(false);
+      toast.error(err?.message || "Failed to add expense");
     }
-
-    toast.success("Expense added");
-    setAmount("");
-    setNote("");
-    setDate("");
-    await loadSummary();
   };
 
   if (loading && !summary) {

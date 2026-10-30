@@ -1,370 +1,245 @@
 "use client";
 
-import NextImage from "next/image";
 import NextLink from "next/link";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import ButtonBase from "@mui/material/ButtonBase";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
-import BoltIcon from "@mui/icons-material/Bolt";
-import { useCart } from "@/hooks/useCart";
-import { calculateDiscount } from "@/lib/utils";
-import { getAssetUrl } from "@/lib/storage";
+import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
+import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
+import StarIcon from "@mui/icons-material/Star";
 
-const BN = {
-  fontFamily: "'Hind Siliguri','Noto Sans Bengali',sans-serif",
+import { tokens } from "@/theme/theme";
+import { IconButton } from "@/components/ui/icon-button";
+import { useCart } from "@/hooks/useCart";
+
+export interface ProductCardItem {
+  id: string | number;
+  badge?: string;
+  tag?: string;
+  badgeVariant?: string;
+  tagVariant?: string;
+  brand?: string | null;
+  title?: string;
+  name?: string;
+  rating?: string | number;
+  reviewCount?: string | number;
+  readTime?: string;
+  price?: number | string;
+  originalPrice?: number | string;
+  salePrice?: number | string | null;
+  image?: string;
+  thumbnail?: string | null;
+  images?: string[];
+  slug?: string;
+  link?: string;
+  category?: { name?: string } | null;
+}
+
+const DOT_COLORS: Record<string, string> = {
+  default: tokens.primary,
+  guide: tokens.primary,
+  new: tokens.badgeNew,
+  review: tokens.badgeNew,
+  sale: tokens.badgeSale,
+  tips: tokens.badgeSale,
+  gaming: tokens.badgeGaming,
 };
 
-export function ProductCard({ product }: any) {
-  const { addItem, cart } = useCart();
+export function ProductCard({ product }: { product: ProductCardItem }) {
+  const { addItem } = useCart();
 
-  const isInCart = cart.some((item: any) => item.id === product.id);
-
-  const discount =
-    product.discountPrice && product.price ? calculateDiscount(product.price.toString(), product.discountPrice.toString()) : null;
-
-  const finalPrice = product.discountPrice ?? product.price ?? 0;
-
-  const imgSrc = getAssetUrl(product.images?.[0]) || "https://placehold.co/400x400/f3f4f6/9ca3af?text=No+Image";
+  const title = product.title || product.name || "Product";
+  const brand = product.brand || product.category?.name || product.tag || "GADGET";
+  const badge = product.badge || product.tag;
+  const dotColor = DOT_COLORS[product.badgeVariant || product.tagVariant || "default"] || tokens.primary;
+  const image = product.image || product.thumbnail || product.images?.[0] || "/images/default.png";
+  const href = product.link || `/products/${product.slug || product.id}`;
+  const price = Number(product.salePrice || product.price || 0);
+  const originalPrice = product.originalPrice ? Number(product.originalPrice) : undefined;
 
   return (
     <Box
       sx={{
-        ...BN,
-        position: "relative",
-        height: "100%",
+        bgcolor: tokens.bgPanel,
+        borderRadius: "20px",
+        border: `1px solid ${tokens.borderDefault}`,
+        boxShadow: "0 2px 8px rgba(15, 23, 42, 0.04)",
+        p: 1.5,
         display: "flex",
         flexDirection: "column",
-        bgcolor: "#fff",
-        borderRadius: "8px",
-        border: "1px solid",
-        borderColor: "grey.100",
-        boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-        overflow: "hidden",
-        transition: "all 300ms ease-out",
-        "&:hover": {
-          boxShadow: "0 20px 25px -5px rgba(229,231,235,0.8)",
-          transform: "translateY(-4px)",
-          "& .product-image": { transform: "scale(1.06)" },
-          "& .product-overlay": { opacity: 1 },
-          "& .product-view-btn": { opacity: 1, transform: "translateY(0)" },
+        justifyContent: "space-between",
+        height: "100%",
+        "&:hover .product-thumb": {
+          transform: "scale(1.05)",
         },
       }}
     >
+      {/* Thumbnail */}
       <Box
         sx={{
           position: "relative",
+          width: "100%",
+          height: { xs: 155, sm: 185, md: 200 },
+          borderRadius: "14px",
+          bgcolor: tokens.bgCanvas,
           overflow: "hidden",
-          aspectRatio: "4 / 3",
-          bgcolor: "grey.50",
         }}
       >
-        <NextImage
-          src={imgSrc}
-          alt={product.title || "Product"}
-          fill
-          sizes='(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw'
-          className='product-image'
-          style={{
-            objectFit: "cover",
-            transition: "transform 500ms ease-out",
-          }}
-        />
-
-        <Box
-          className='product-overlay'
-          sx={{
-            position: "absolute",
-            inset: 0,
-            background: "linear-gradient(to top, rgba(0,0,0,0.3), transparent)",
-            opacity: 0,
-            transition: "opacity 300ms",
-            pointerEvents: "none",
-          }}
-        />
-
-        <Box
-          component={NextLink}
-          href={`/products/${product.slug}`}
-          sx={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            textDecoration: "none",
-          }}
-        >
+        <Box component={NextLink} href={href} sx={{ display: "block", width: "100%", height: "100%" }}>
           <Box
-            className='product-view-btn'
+            component="img"
+            className="product-thumb"
+            src={image}
+            alt={title}
             sx={{
-              bgcolor: "#fff",
-              color: "grey.800",
-              borderRadius: 999,
-              px: 2,
-              py: 1,
-              display: "flex",
-              alignItems: "center",
-              gap: 0.75,
-              fontSize: 12,
-              fontWeight: 600,
-              boxShadow: 3,
-              opacity: 0,
-              transform: "translateY(8px)",
-              transition: "all 300ms",
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              display: "block",
+              transition: "transform 0.4s ease",
             }}
-          >
-            <VisibilityOutlinedIcon sx={{ fontSize: 13 }} />
-            বিস্তারিত দেখুন
-          </Box>
+          />
         </Box>
 
-        <Box
-          sx={{
-            position: "absolute",
-            top: 10,
-            left: 10,
-            display: "flex",
-            flexDirection: "column",
-            gap: 0.75,
-          }}
-        >
-          {discount && (
-            <Box
-              component='span'
-              sx={{
-                bgcolor: "error.main",
-                color: "#fff",
-                fontSize: { xs: 9, md: 10 },
-                fontWeight: 900,
-                px: 1,
-                py: 0.25,
-                borderRadius: "6px",
-                boxShadow: 1,
-                lineHeight: 1.2,
-              }}
-            >
-              -{discount}%
-            </Box>
-          )}
-        </Box>
-
-        {!product.inStock && (
+        {badge && (
           <Box
             sx={{
               position: "absolute",
-              inset: 0,
-              display: "flex",
+              top: 10,
+              left: 10,
+              display: "inline-flex",
               alignItems: "center",
-              justifyContent: "center",
-              bgcolor: "rgba(255,255,255,0.6)",
-              backdropFilter: "blur(2px)",
+              gap: 0.75,
+              bgcolor: "rgba(255, 255, 255, 0.92)",
+              backdropFilter: "blur(8px)",
+              border: "1px solid rgba(15, 23, 42, 0.06)",
+              borderRadius: "999px",
+              px: 1.15,
+              py: 0.35,
             }}
           >
-            <Box
-              component='span'
-              sx={{
-                bgcolor: "grey.800",
-                color: "#fff",
-                fontSize: { xs: 10, md: 12 },
-                fontWeight: 700,
-                px: 1.5,
-                py: 0.5,
-                borderRadius: 999,
-                boxShadow: 2,
-              }}
-            >
-              স্টক শেষ
-            </Box>
+            <Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: dotColor }} />
+            <Typography sx={{ fontSize: 10.5, fontWeight: 700, color: tokens.textPrimary }}>
+              {badge}
+            </Typography>
           </Box>
         )}
+
+        <IconButton
+          disableRipple
+          size="small"
+          aria-label="Wishlist"
+          sx={{
+            position: "absolute",
+            top: 10,
+            right: 10,
+            width: 30,
+            height: 30,
+            bgcolor: "rgba(255, 255, 255, 0.92)",
+            backdropFilter: "blur(8px)",
+            border: "1px solid rgba(15, 23, 42, 0.06)",
+            color: tokens.textSecondary,
+            "&:hover": { bgcolor: "rgba(255, 255, 255, 0.92)" },
+          }}
+        >
+          <FavoriteBorderIcon sx={{ fontSize: 15 }} />
+        </IconButton>
       </Box>
 
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          flex: 1,
-          p: { xs: 1.5, md: 2 },
-          gap: 1.25,
-        }}
-      >
-        <Box component={NextLink} href={`/products/${product.slug}`} sx={{ textDecoration: "none" }}>
+      {/* Details */}
+      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", px: 0.5, pt: 1.75, pb: 0.25 }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.6 }}>
           <Typography
-            component='h3'
             sx={{
-              fontSize: { xs: "12.5px", md: 14 },
-              fontWeight: 600,
-              color: "grey.800",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              display: "-webkit-box",
-              WebkitLineClamp: 1,
-              WebkitBoxOrient: "vertical",
-              transition: "color 200ms",
-              lineHeight: 1.35,
-              "&:hover": { color: "success.main" },
+              fontSize: 10.5,
+              fontWeight: 700,
+              color: tokens.textMuted,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
             }}
           >
-            {product.title}
+            {brand}
           </Typography>
+
+          <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.4 }}>
+            <StarIcon sx={{ color: tokens.warning, fontSize: 13 }} />
+            <Typography sx={{ fontSize: 11.5, fontWeight: 700, color: tokens.textPrimary }}>
+              {product.rating ?? "4.8"}
+            </Typography>
+            <Typography sx={{ fontSize: 11, color: tokens.textMuted }}>
+              ({product.reviewCount || product.readTime || "120+"})
+            </Typography>
+          </Box>
         </Box>
 
+        <Typography
+          component={NextLink}
+          href={href}
+          sx={{
+            fontSize: { xs: 13.5, sm: 15 },
+            fontWeight: 700,
+            color: tokens.textPrimary,
+            textDecoration: "none",
+            lineHeight: 1.35,
+            mb: 1.5,
+            display: "-webkit-box",
+            WebkitLineClamp: 1,
+            WebkitBoxOrient: "vertical",
+            overflow: "hidden",
+          }}
+        >
+          {title}
+        </Typography>
+
+        {/* Footer */}
         <Box
           sx={{
             display: "flex",
-            alignItems: "flex-end",
-            gap: 1,
+            justifyContent: "space-between",
+            alignItems: "center",
             mt: "auto",
-            pt: 0.5,
+            pt: 1.25,
+            borderTop: `1px solid ${tokens.borderSubtle}`,
           }}
         >
-          <Box sx={{ display: "flex", flexDirection: "column" }}>
-            {product.discountPrice && (
-              <Typography
-                component='span'
-                sx={{
-                  fontSize: { xs: 9, md: 10 },
-                  color: "grey.400",
-                  textDecoration: "line-through",
-                  lineHeight: 1,
-                  mb: 0.25,
-                }}
-              >
-                ৳{Number(product.price).toLocaleString()}
+          <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
+            <Typography sx={{ fontSize: { xs: 15.5, sm: 17.5 }, fontWeight: 800, color: tokens.textPrimary }}>
+              {price ? `৳${price.toLocaleString()}` : product.readTime || "Read More"}
+            </Typography>
+            {originalPrice && (
+              <Typography sx={{ fontSize: 11.5, color: tokens.textDisabled, textDecoration: "line-through" }}>
+                ৳{originalPrice.toLocaleString()}
               </Typography>
             )}
-            <Typography
-              component='span'
-              sx={{
-                fontSize: { xs: 15, md: 17 },
-                fontWeight: 900,
-                color: "grey.700",
-                lineHeight: 1,
-              }}
-            >
-              ৳{Number(finalPrice).toLocaleString()}
-            </Typography>
           </Box>
 
-          {discount && (
-            <Box
-              component='span'
-              sx={{
-                ml: "auto",
-                mb: 0.25,
-                display: { xs: "none", md: "flex" },
-                alignItems: "center",
-                fontSize: 10,
-                fontWeight: 700,
-                color: "success.main",
-                bgcolor: "success.50",
-                border: "1px solid",
-                borderColor: "success.100",
-                px: 0.75,
-                py: 0.25,
-                borderRadius: "6px",
-              }}
-            >
-              ৳{(Number(product.price) - Number(finalPrice)).toLocaleString()} টাকা-সাশ্রয়
-            </Box>
-          )}
-        </Box>
-
-        <Box sx={{ borderTop: "1px solid", borderColor: "grey.100" }} />
-
-        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-          {isInCart ? (
-            <ButtonBase
-              component={NextLink}
-              href='/cart'
-              sx={{
-                flex: 1,
-                height: { xs: 32, md: 36 },
-                borderRadius: "6px",
-                fontSize: { xs: 11, md: 12 },
-                fontWeight: 600,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 0.75,
-                bgcolor: "warning.50",
-                border: "1px solid",
-                borderColor: "warning.200",
-                color: "warning.main",
-                transition: "all 200ms",
-                "&:hover": {
-                  bgcolor: "success.main",
-                  color: "#fff",
-                  borderColor: "success.main",
-                },
-                "&:active": { transform: "scale(0.95)" },
-              }}
-            >
-              <ShoppingCartIcon sx={{ display: { xs: "none", md: "block" }, fontSize: 11 }} />
-              Carded
-            </ButtonBase>
-          ) : (
-            <ButtonBase
-              disabled={!product.inStock}
-              onClick={() => addItem(product)}
-              sx={{
-                flex: 1,
-                height: { xs: 28, md: 36 },
-                borderRadius: "6px",
-                fontSize: 12,
-                fontWeight: 600,
-                gap: { xs: "2px", md: 0.75 },
-                bgcolor: product.inStock ? "grey.900" : "grey.100",
-                color: product.inStock ? "#fff" : "grey.300",
-                boxShadow: product.inStock ? 1 : 0,
-                cursor: product.inStock ? "pointer" : "not-allowed",
-                transition: "all 200ms",
-                "&:hover": {
-                  bgcolor: product.inStock ? "grey.700" : "grey.100",
-                },
-                "&:active": {
-                  transform: product.inStock ? "scale(0.95)" : "none",
-                },
-              }}
-            >
-              <ShoppingCartIcon sx={{ fontSize: 10 }} />
-              Card
-            </ButtonBase>
-          )}
-
-          <ButtonBase
-            component={NextLink}
-            href={`/products/${product.slug}`}
+          <IconButton
+            disableRipple
+            onClick={() =>
+              price &&
+              addItem({
+                id: String(product.id),
+                name: title,
+                price,
+                image,
+                stock: 10,
+              } as any)
+            }
             sx={{
-              flex: 1,
-              height: { xs: 28, md: 36 },
-              borderRadius: "6px",
-              border: "1px solid",
-              fontSize: 12,
-              fontWeight: 600,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: { xs: "2px", md: 0.75 },
-              textDecoration: "none",
-              pointerEvents: product.inStock ? "auto" : "none",
-              borderColor: product.inStock ? "success.main" : "grey.100",
-              color: product.inStock ? "success.main" : "grey.300",
-              bgcolor: "transparent",
-              transition: "all 200ms",
-              "&:hover": product.inStock ? { bgcolor: "success.main", color: "#fff" } : {},
-              "&:active": {
-                transform: product.inStock ? "scale(0.95)" : "none",
-              },
+              bgcolor: tokens.bgDark,
+              color: tokens.textWhite,
+              width: 34,
+              height: 34,
+              borderRadius: "10px",
+              "&:hover": { bgcolor: tokens.bgDark, color: tokens.textWhite },
             }}
+            aria-label="Add to cart"
           >
-            <BoltIcon sx={{ fontSize: 11 }} />
-            Buy
-          </ButtonBase>
+            <ShoppingBagOutlinedIcon sx={{ fontSize: 16 }} />
+          </IconButton>
         </Box>
       </Box>
     </Box>
   );
 }
+
+export default ProductCard;

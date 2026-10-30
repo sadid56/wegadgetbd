@@ -2,12 +2,12 @@
 
 import { useState, type ReactNode } from "react";
 import Box from "@mui/material/Box";
-import Divider from "@mui/material/Divider";
 import Typography from "@mui/material/Typography";
 
+import { Divider } from "@/components/ui/divider";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/context/toast-context";
-import { getGoogleOAuthUrlAction } from "@/actions/auth";
+import { getGoogleOAuthUrlAction } from "@/server/actions/auth.action";
 import { tokens } from "@/theme/theme";
 
 const GOOGLE_PATHS = [
@@ -134,7 +134,7 @@ export function SocialAuth({ mode, next, disabled = false, onLoadingChange, divi
               top: "50%",
               left: "50%",
               transform: "translate(-50%, -50%)",
-              bgcolor: "#ffffff",
+              bgcolor: tokens.bgPanel,
               px: 1.5,
               fontWeight: 600,
               color: tokens.textMuted,

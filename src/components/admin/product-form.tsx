@@ -8,19 +8,15 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import Switch from "@mui/material/Switch";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Chip from "@mui/material/Chip";
-import CircularProgress from "@mui/material/CircularProgress";
-import InputAdornment from "@mui/material/InputAdornment";
-import Paper from "@mui/material/Paper";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { TextField, InputAdornment } from "@/components/ui/input";
+import { FormControl, Select, MenuItem, FormControlLabel } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Chip } from "@/components/ui/badge";
+import { CircularProgress } from "@/components/ui/spinner";
+import { Paper } from "@/components/ui/card";
 
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import CloseIcon from "@mui/icons-material/Close";
@@ -691,9 +687,9 @@ export function ProductForm({ initialData }: ProductFormProps) {
                 position: "absolute",
                 top: 8,
                 right: 8,
-                bgcolor: "error.main",
-                color: "#fff",
-                "&:hover": { bgcolor: "error.dark" },
+                bgcolor: tokens.danger,
+                color: tokens.textWhite,
+                "&:hover": { bgcolor: tokens.dangerHover },
               }}
             >
               <CloseIcon sx={{ fontSize: 16 }} />
@@ -762,10 +758,10 @@ export function ProductForm({ initialData }: ProductFormProps) {
                   position: "absolute",
                   top: 4,
                   right: 4,
-                  bgcolor: "rgba(0,0,0,0.6)",
-                  color: "#fff",
+                  bgcolor: tokens.bgOverlay,
+                  color: tokens.textWhite,
                   p: 0.5,
-                  "&:hover": { bgcolor: "error.main" },
+                  "&:hover": { bgcolor: tokens.danger },
                 }}
               >
                 <CloseIcon sx={{ fontSize: 14 }} />
@@ -777,8 +773,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
                     bottom: 0,
                     left: 0,
                     right: 0,
-                    bgcolor: "primary.main",
-                    color: "#fff",
+                    bgcolor: tokens.primary,
+                    color: tokens.textWhite,
                     fontSize: 10,
                     textAlign: "center",
                     py: 0.25,

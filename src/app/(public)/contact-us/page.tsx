@@ -1,264 +1,273 @@
-"use client";
-
+import type { Metadata } from "next";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
-import { alpha } from "@mui/material/styles";
-import { keyframes } from "@emotion/react";
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import MailOutlinedIcon from "@mui/icons-material/MailOutlined";
 import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
+import AccessTimeOutlinedIcon from "@mui/icons-material/AccessTimeOutlined";
+import { tokens } from "@/theme/theme";
 import { FAQ } from "@/components/common/FAQ";
+import { buildPublicMetadata } from "@/lib/seo";
 
-const fadeUp = keyframes`
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
-`;
+export const metadata: Metadata = buildPublicMetadata({
+  title: "যোগাযোগ করুন | We Gadget BD",
+  description: "যেকোনো জিজ্ঞাসা, অর্ডার বা সাপোর্টের জন্য We Gadget BD-এর সাথে যোগাযোগ করুন। ফোন, ইমেইল বা সরাসরি আমাদের অফিসে আসতে পারেন।",
+  path: "/contact-us",
+  keywords: ["contact We Gadget BD", "gadget shop dhaka", "customer support", "phone number", "office address"],
+});
 
-const BN_FONT = "'Hind Siliguri','Noto Sans Bengali',system-ui,sans-serif";
-
-const contactInfo = [
+const contactCards = [
   {
-    Icon: PhoneOutlinedIcon,
+    icon: PhoneOutlinedIcon,
     title: "ফোন করুন",
-    value: "+8801576641142",
-    description: "যেকোনো জিজ্ঞাসায় আমাদের কল করুন",
+    primary: "+880 1576-641142",
+    secondary: "সরাসরি কথা বলতে কল করুন",
     href: "tel:+8801576641142",
+    actionLabel: "কল করুন",
   },
   {
-    Icon: MailOutlinedIcon,
-    title: "ইমেইল",
-    value: "contact@bongonex.com",
-    description: "ইমেইল এর মাধ্যমে আমাদের সাথে যোগাযোগ করুন",
-    href: "mailto:bongonexbd@gmail.com",
+    icon: MailOutlinedIcon,
+    title: "ইমেইল পাঠান",
+    primary: "support@wegadgetbd.com",
+    secondary: "যেকোনো প্রশ্ন বা ফিডব্যাকের জন্য",
+    href: "mailto:support@wegadgetbd.com",
+    actionLabel: "ইমেইল পাঠান",
   },
   {
-    Icon: PlaceOutlinedIcon,
-    title: "ঠিকানা",
-    value: "লেভেল ৪, হাউস ১২, রোড ৭, ধানমন্ডি, ঢাকা",
-    description: "সরাসরি আমাদের অফিসে ভিজিট করতে পারেন",
-    href: "https://maps.google.com",
+    icon: PlaceOutlinedIcon,
+    title: "অফিস ঠিকানা",
+    primary: "লেভেল ৪, হাউস ১২, রোড ৭",
+    secondary: "ধানমন্ডি, ঢাকা - ১২০৫, বাংলাদেশ",
+    href: "https://maps.google.com/?q=Dhanmondi+Dhaka",
+    actionLabel: "ম্যাপে দেখুন",
   },
-] as const;
+  {
+    icon: AccessTimeOutlinedIcon,
+    title: "কাস্টমার সাপোর্ট সময়",
+    primary: "সকাল ১০:০০ - রাত ৮:০০",
+    secondary: "শনিবার থেকে বৃহস্পতিবার (শুক্রবার বন্ধ)",
+    href: undefined,
+    actionLabel: undefined,
+  },
+];
 
 export default function ContactUsPage() {
   return (
     <Box
       sx={{
-        bgcolor: "background.default",
+        bgcolor: tokens.bgCanvas,
         minHeight: "100vh",
-        py: 10,
-        overflow: "hidden",
-        position: "relative",
-        fontFamily: BN_FONT,
+        py: { xs: 4, md: 7 },
       }}
     >
-      <Box
-        sx={{
-          position: "absolute",
-          top: 0,
-          right: 0,
-          width: 500,
-          height: 500,
-          bgcolor: (theme) => alpha(theme.palette.primary.main, 0.06),
-          filter: "blur(120px)",
-          borderRadius: "50%",
-          pointerEvents: "none",
-        }}
-      />
-      <Box
-        sx={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          width: 500,
-          height: 500,
-          bgcolor: (theme) => alpha(theme.palette.primary.main, 0.06),
-          filter: "blur(120px)",
-          borderRadius: "50%",
-          pointerEvents: "none",
-        }}
-      />
-
-      <Container maxWidth='lg' sx={{ position: "relative", zIndex: 1 }}>
+      <Container maxWidth="lg">
+        {/* Header Section */}
         <Box
           sx={{
             textAlign: "center",
-            mb: 10,
-            animation: `${fadeUp} 600ms ease-out both`,
+            maxWidth: 680,
+            mx: "auto",
+            mb: { xs: 4, md: 6 },
           }}
         >
           <Typography
-            component='h1'
+            component="span"
             sx={{
-              fontSize: { xs: "2.5rem", md: "4.5rem" },
-              fontWeight: 900,
-              letterSpacing: "-0.04em",
+              display: "inline-block",
+              fontSize: 12,
+              fontWeight: 700,
               textTransform: "uppercase",
-              mb: 3,
-              lineHeight: 1.05,
-              color: "text.primary",
+              letterSpacing: "0.08em",
+              color: tokens.primary,
+              bgcolor: tokens.primaryLight,
+              px: 2,
+              py: 0.5,
+              borderRadius: "9999px",
+              mb: 1.5,
             }}
           >
-            আমাদের সাথে{" "}
-            <Box
-              component='span'
-              sx={{
-                color: "text.disabled",
-                WebkitTextStroke: "1px currentColor",
-              }}
-            >
-              যোগাযোগ
-            </Box>{" "}
-            করুন
+            যোগাযোগ
           </Typography>
+
+          <Typography
+            component="h1"
+            sx={{
+              fontSize: { xs: "1.75rem", md: "2.5rem" },
+              fontWeight: 800,
+              letterSpacing: "-0.03em",
+              color: tokens.textPrimary,
+              lineHeight: 1.2,
+              mb: 1.5,
+            }}
+          >
+            আমাদের সাথে যোগাযোগ করুন
+          </Typography>
+
           <Typography
             sx={{
-              fontSize: { xs: "1rem", md: "1.25rem" },
-              maxWidth: 672,
-              mx: "auto",
-              fontWeight: 300,
-              lineHeight: 1.65,
-              color: "text.secondary",
+              fontSize: { xs: "0.95rem", md: "1.05rem" },
+              color: tokens.textSecondary,
+              lineHeight: 1.6,
             }}
           >
-            আপনার যেকোনো প্রশ্ন বা মতামতের জন্য আমরা সবসময় প্রস্তুত। নিচের যেকোনো মাধ্যমে আমাদের সাথে যোগাযোগ করতে পারেন।
+            আপনার যেকোনো প্রশ্ন, অর্ডার আপডেট বা পরামর্শের জন্য আমাদের টিম সবসময় প্রস্তুত। নিচের যেকোনো মাধ্যমে আমাদের সাথে যুক্ত হতে পারেন।
           </Typography>
         </Box>
 
+        {/* Contact Info Cards */}
         <Box
           sx={{
             display: "grid",
             gridTemplateColumns: {
               xs: "1fr",
-              md: "repeat(3, minmax(0, 1fr))",
+              sm: "repeat(2, 1fr)",
+              md: "repeat(4, 1fr)",
             },
-            gap: 4,
-            mb: 10,
+            gap: 2.5,
+            mb: { xs: 4, md: 6 },
           }}
         >
-          {contactInfo.map(({ Icon, title, value, description, href }, index) => (
-            <Box
-              key={title}
-              component='a'
-              href={href}
-              sx={{
-                display: "block",
-                p: 5,
-                bgcolor: "background.paper",
-                border: "1px solid",
-                borderColor: "divider",
-                borderRadius: "24px",
-                boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.05)",
-                position: "relative",
-                overflow: "hidden",
-                textDecoration: "none",
-                transition: "all 300ms",
-                animation: `${fadeUp} 500ms ease-out ${index * 100}ms both`,
-                "&:hover": {
-                  boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.08)",
-                  transform: "translateY(-4px)",
-                  borderColor: "primary.main",
-                  "& .contact-decorative-icon": {
-                    transform: "scale(1.1)",
-                  },
-                  "& .contact-icon-wrap": {
-                    bgcolor: "primary.main",
-                    color: "primary.contrastText",
-                  },
-                },
-              }}
-            >
-              <Box
-                className='contact-decorative-icon'
-                sx={{
-                  position: "absolute",
-                  right: -16,
-                  top: -16,
-                  color: (theme) => alpha(theme.palette.primary.main, 0.05),
-                  transition: "transform 500ms",
-                }}
-              >
-                <Icon sx={{ fontSize: 24 }} />
-              </Box>
+          {contactCards.map((item) => {
+            const IconComponent = item.icon;
+            const isClickable = Boolean(item.href);
 
+            return (
               <Box
-                className='contact-icon-wrap'
+                key={item.title}
+                component={isClickable ? "a" : "div"}
+                href={item.href}
+                target={item.href?.startsWith("http") ? "_blank" : undefined}
+                rel={item.href?.startsWith("http") ? "noopener noreferrer" : undefined}
                 sx={{
-                  width: 56,
-                  height: 56,
-                  borderRadius: "16px",
-                  bgcolor: (theme) => alpha(theme.palette.primary.main, 0.1),
-                  color: "primary.main",
                   display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  mb: 4,
-                  transition: "background-color 300ms, color 300ms",
+                  flexDirection: "column",
+                  p: 3,
+                  bgcolor: tokens.bgPanel,
+                  border: "1px solid",
+                  borderColor: tokens.borderDefault,
+                  borderRadius: "16px",
+                  textDecoration: "none",
+                  color: "inherit",
                 }}
               >
-                <Icon sx={{ fontSize: 24 }} />
-              </Box>
+                <Box
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: "12px",
+                    bgcolor: tokens.primaryLight,
+                    color: tokens.primary,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    mb: 2,
+                  }}
+                >
+                  <IconComponent sx={{ fontSize: 22 }} />
+                </Box>
 
-              <Typography
-                component='h3'
-                sx={{
-                  fontSize: 20,
-                  fontWeight: 900,
-                  mb: 2,
-                  textTransform: "uppercase",
-                  letterSpacing: "-0.02em",
-                  color: "text.primary",
-                }}
-              >
-                {title}
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: 18,
-                  fontWeight: 700,
-                  color: "text.primary",
-                  mb: 1,
-                }}
-              >
-                {value}
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: 14,
-                  fontWeight: 500,
-                  color: "text.secondary",
-                }}
-              >
-                {description}
-              </Typography>
-            </Box>
-          ))}
+                <Typography
+                  sx={{
+                    fontSize: 12.5,
+                    fontWeight: 600,
+                    color: tokens.textMuted,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.04em",
+                    mb: 0.5,
+                  }}
+                >
+                  {item.title}
+                </Typography>
+
+                <Typography
+                  sx={{
+                    fontSize: 15,
+                    fontWeight: 700,
+                    color: tokens.textPrimary,
+                    lineHeight: 1.35,
+                    mb: 0.5,
+                  }}
+                >
+                  {item.primary}
+                </Typography>
+
+                <Typography
+                  sx={{
+                    fontSize: 13,
+                    color: tokens.textSecondary,
+                    lineHeight: 1.4,
+                    mt: "auto",
+                    pt: 1,
+                  }}
+                >
+                  {item.secondary}
+                </Typography>
+
+                {item.actionLabel && (
+                  <Typography
+                    sx={{
+                      fontSize: 12.5,
+                      fontWeight: 600,
+                      color: tokens.primary,
+                      mt: 1.5,
+                    }}
+                  >
+                    {item.actionLabel} →
+                  </Typography>
+                )}
+              </Box>
+            );
+          })}
         </Box>
 
+        {/* Map Section */}
         <Box
           sx={{
-            width: "100%",
-            height: { xs: 320, md: 384 },
-            mb: 10,
-            borderRadius: "24px",
-            overflow: "hidden",
+            bgcolor: tokens.bgPanel,
             border: "1px solid",
-            borderColor: "divider",
-            animation: `${fadeUp} 700ms ease-out both`,
+            borderColor: tokens.borderDefault,
+            borderRadius: "16px",
+            overflow: "hidden",
+            mb: { xs: 4, md: 6 },
           }}
         >
           <Box
-            component='iframe'
-            src='https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3651.890641050765!2d90.38933831543153!3d23.749099984589697!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755b8bd47433d6f%3A0x3c21f5c22d50f0a!2sDhanmondi%2C%20Dhaka!5e0!3m2!1sen!2sbd!4v1690000000000!5m2!1sen!2sbd'
-            title='Office Location'
+            sx={{
+              px: 3,
+              py: 2,
+              borderBottom: "1px solid",
+              borderColor: tokens.borderSubtle,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <Typography sx={{ fontSize: 15, fontWeight: 700, color: tokens.textPrimary }}>
+              আমাদের লোকেশন (Google Maps)
+            </Typography>
+            <Typography sx={{ fontSize: 13, color: tokens.textSecondary }}>
+              ধানমন্ডি, ঢাকা
+            </Typography>
+          </Box>
+
+          <Box
+            component="iframe"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3651.890641050765!2d90.38933831543153!3d23.749099984589697!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755b8bd47433d6f%3A0x3c21f5c22d50f0a!2sDhanmondi%2C%20Dhaka!5e0!3m2!1sen!2sbd!4v1690000000000!5m2!1sen!2sbd"
+            title="Office Location"
             allowFullScreen
-            loading='lazy'
-            sx={{ width: "100%", height: "100%", border: 0 }}
+            loading="lazy"
+            sx={{
+              width: "100%",
+              height: { xs: 260, md: 360 },
+              border: 0,
+              display: "block",
+            }}
           />
         </Box>
 
-        <Box sx={{ mb: 10 }}>
+        {/* FAQ Section */}
+        <Box sx={{ mb: 6 }}>
           <FAQ />
         </Box>
       </Container>

@@ -3,12 +3,12 @@
 import * as React from "react";
 import Dialog, { type DialogProps } from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogActions from "@mui/material/DialogActions";
 import Box from "@mui/material/Box";
 import { type SxProps, type Theme } from "@mui/material/styles";
 import { Button, type ButtonVariant, type ButtonSize } from "@/components/ui/button";
+import { tokens } from "@/theme/theme";
 
 interface AlertDialogContextValue {
   open: boolean;
@@ -113,13 +113,13 @@ function AlertDialogContent({ children, size = "default", sx, onClose, ...props 
       slotProps={{
         paper: {
           sx: {
-            borderRadius: 2,
+            borderRadius: `${tokens.radiusLg}px`,
             p: 1,
-            bgcolor: "background.paper",
+            bgcolor: tokens.bgPanel,
+            color: tokens.textPrimary,
             backgroundImage: "none",
-            border: 1,
-            borderColor: "divider",
-            boxShadow: "0 20px 25px -5px rgba(0,0,0,0.2), 0 8px 10px -6px rgba(0,0,0,0.2)",
+            border: `1px solid ${tokens.borderDefault}`,
+            boxShadow: tokens.shadowElevated,
             ...sx,
           },
         },
@@ -158,7 +158,7 @@ function AlertDialogTitle({ sx, ...props }: React.ComponentProps<typeof DialogTi
         p: 0,
         fontSize: "1.15rem",
         fontWeight: 700,
-        color: "text.primary",
+        color: tokens.textPrimary,
         ...sx,
       }}
       {...props}
@@ -171,7 +171,7 @@ function AlertDialogDescription({ sx, ...props }: React.ComponentProps<typeof Di
     <DialogContentText
       sx={{
         fontSize: "0.88rem",
-        color: "text.secondary",
+        color: tokens.textSecondary,
         lineHeight: 1.5,
         ...sx,
       }}
@@ -189,8 +189,8 @@ function AlertDialogMedia({ sx, ...props }: React.ComponentProps<typeof Box>) {
         justifyContent: "center",
         width: 48,
         height: 48,
-        borderRadius: "8px",
-        bgcolor: "action.hover",
+        borderRadius: `${tokens.radiusSm}px`,
+        bgcolor: tokens.bgSubtle,
         mb: 1,
         ...sx,
       }}

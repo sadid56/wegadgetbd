@@ -2,11 +2,12 @@
 
 import NextLink from "next/link";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import CircularProgress from "@mui/material/CircularProgress";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { keyframes } from "@emotion/react";
+import { Button } from "@/components/ui/button";
+import { CircularProgress } from "@/components/ui/spinner";
+import { tokens } from "@/theme/theme";
 import { ProductCard } from "./ProductCard";
 
 interface Product {
@@ -54,7 +55,7 @@ export function NewArrivalsSection({ products, isLoading }: NewArrivalsSectionPr
           mb: 3,
           pb: 2,
           borderBottom: "2px solid",
-          borderColor: "#fed7aa",
+          borderColor: tokens.primaryBorder,
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
@@ -63,7 +64,7 @@ export function NewArrivalsSection({ products, isLoading }: NewArrivalsSectionPr
               width: 4,
               height: 32,
               borderRadius: 999,
-              background: "linear-gradient(to bottom, #ff7319, #fb923c)",
+              background: `linear-gradient(to bottom, ${tokens.primary}, ${tokens.accent})`,
             }}
           />
           <Typography
@@ -73,7 +74,7 @@ export function NewArrivalsSection({ products, isLoading }: NewArrivalsSectionPr
               fontSize: { xs: "1.5rem", md: "1.875rem" },
               fontWeight: 600,
               letterSpacing: "-0.02em",
-              color: "text.primary",
+              color: tokens.textPrimary,
               lineHeight: 1.2,
             }}
           >
@@ -88,15 +89,15 @@ export function NewArrivalsSection({ products, isLoading }: NewArrivalsSectionPr
           endIcon={<ArrowForwardIcon sx={{ fontSize: 16 }} />}
           sx={{
             border: 1,
-            borderColor: "divider",
+            borderColor: tokens.borderDefault,
             borderRadius: "6px",
-            color: "#ff7319",
+            color: tokens.primary,
             fontWeight: 600,
             textTransform: "none",
             transition: "all 300ms",
             "&:hover": {
-              bgcolor: "#ff7319",
-              color: "#fff",
+              bgcolor: tokens.primary,
+              color: tokens.textWhite,
               "& .MuiButton-endIcon svg": { transform: "translateX(4px)" },
             },
             "& .MuiButton-endIcon svg": { transition: "transform 200ms" },
@@ -117,12 +118,12 @@ export function NewArrivalsSection({ products, isLoading }: NewArrivalsSectionPr
           }}
         >
           <Box sx={{ position: "relative", width: 64, height: 64 }}>
-            <CircularProgress size={64} thickness={3} sx={{ color: "#ff7319" }} />
+            <CircularProgress size={64} thickness={3} sx={{ color: tokens.primary }} />
             <Box
               sx={{
                 position: "absolute",
                 inset: 0,
-                color: "#fdba74",
+                color: tokens.accent,
                 animation: `${ringPulse} 1s ease-out infinite`,
               }}
             >
@@ -137,7 +138,7 @@ export function NewArrivalsSection({ products, isLoading }: NewArrivalsSectionPr
               fontWeight: 600,
               letterSpacing: "0.05em",
               textTransform: "uppercase",
-              color: "text.secondary",
+              color: tokens.textSecondary,
               animation: `${textPulse} 1.5s ease-in-out infinite`,
             }}
           >
@@ -167,11 +168,11 @@ export function NewArrivalsSection({ products, isLoading }: NewArrivalsSectionPr
             py: 10,
             borderRadius: "16px",
             border: "2px dashed",
-            borderColor: "orange.100",
-            bgcolor: "#fff",
+            borderColor: tokens.primaryBorder,
+            bgcolor: tokens.bgPanel,
           }}
         >
-          <Typography sx={{ fontWeight: 500, color: "text.secondary" }}>No products found.</Typography>
+          <Typography sx={{ fontWeight: 500, color: tokens.textSecondary }}>No products found.</Typography>
         </Box>
       )}
     </Box>

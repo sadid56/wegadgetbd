@@ -1,10 +1,11 @@
 "use client";
 
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
 import { keyframes } from "@emotion/react";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { tokens } from "@/theme/theme";
 
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 import AddIcon from "@mui/icons-material/Add";
@@ -46,12 +47,12 @@ export function OrderSummary({
   return (
     <Box
       sx={{
-        bgcolor: "#fff",
-        boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
+        bgcolor: tokens.bgPanel,
+        boxShadow: tokens.shadowElevated,
         borderRadius: { xs: "0 0 24px 24px", md: "24px" },
         p: 2.5,
         border: "1px solid",
-        borderColor: "grey.100",
+        borderColor: tokens.borderDefault,
         position: { md: "sticky" },
         top: { md: 40 },
         animation: `${fadeInX} 400ms ease-out both`,
@@ -66,17 +67,17 @@ export function OrderSummary({
           mb: 1,
           pb: 1,
           borderBottom: "1px solid",
-          borderColor: "divider",
+          borderColor: tokens.borderDefault,
         }}
       >
-        <ShoppingBagOutlinedIcon sx={{ fontSize: 20, color: "#f97316" }} />
+        <ShoppingBagOutlinedIcon sx={{ fontSize: 20, color: tokens.primary }} />
         <Typography
           component='h2'
           sx={{
             ...BN,
             fontSize: 24,
             fontWeight: 700,
-            color: "grey.800",
+            color: tokens.textPrimary,
             lineHeight: 1.2,
           }}
         >
@@ -96,7 +97,7 @@ export function OrderSummary({
           scrollbarWidth: "thin",
           "&::-webkit-scrollbar": { width: 6 },
           "&::-webkit-scrollbar-thumb": {
-            bgcolor: "grey.300",
+            bgcolor: tokens.borderElevated,
             borderRadius: 3,
           },
           "&::-webkit-scrollbar-track": { bgcolor: "transparent" },
@@ -112,14 +113,14 @@ export function OrderSummary({
                 display: "flex",
                 gap: 2,
                 p: 1,
-                bgcolor: "rgba(249,250,251,0.8)",
+                bgcolor: tokens.bgCanvas,
                 borderRadius: "12px",
                 border: "1px solid",
-                borderColor: "grey.100",
+                borderColor: tokens.borderSubtle,
                 transition: "all 200ms",
                 "&:hover": {
-                  bgcolor: "#fff",
-                  boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1)",
+                  bgcolor: tokens.bgPanel,
+                  boxShadow: tokens.shadowMd,
                 },
               }}
             >
@@ -129,11 +130,11 @@ export function OrderSummary({
                   position: "relative",
                   width: 80,
                   height: 80,
-                  bgcolor: "#fff",
+                  bgcolor: tokens.bgPanel,
                   borderRadius: "12px",
                   overflow: "hidden",
                   border: "1px solid",
-                  borderColor: "divider",
+                  borderColor: tokens.borderDefault,
                   flexShrink: 0,
                 }}
               >
@@ -153,8 +154,8 @@ export function OrderSummary({
                     position: "absolute",
                     top: 0,
                     right: 0,
-                    bgcolor: "#f97316",
-                    color: "#fff",
+                    bgcolor: tokens.primary,
+                    color: tokens.textWhite,
                     fontSize: 10,
                     fontWeight: 700,
                     px: 1,
@@ -181,7 +182,7 @@ export function OrderSummary({
                     ...BN,
                     fontSize: 14,
                     fontWeight: 700,
-                    color: "grey.800",
+                    color: tokens.textPrimary,
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     display: "-webkit-box",
@@ -200,14 +201,14 @@ export function OrderSummary({
                       component='span'
                       sx={{
                         fontSize: 14,
-                        color: "grey.400",
+                        color: tokens.textDisabled,
                         textDecoration: "line-through",
                       }}
                     >
                       ৳{Number(item.price) * qty}
                     </Typography>
                   )}
-                  <Typography component='span' sx={{ fontWeight: 900, color: "#f97316", fontSize: 15 }}>
+                  <Typography component='span' sx={{ fontWeight: 900, color: tokens.primary, fontSize: 15 }}>
                     ৳{Number(item.discountPrice || item.price) * qty}
                   </Typography>
                 </Box>
@@ -226,7 +227,7 @@ export function OrderSummary({
                       display: "flex",
                       alignItems: "center",
                       border: "1px solid",
-                      borderColor: "divider",
+                      borderColor: tokens.borderDefault,
                       borderRadius: "8px",
                       overflow: "hidden",
                     }}
@@ -237,13 +238,13 @@ export function OrderSummary({
                       sx={{
                         px: 1,
                         py: 0.5,
-                        bgcolor: "grey.100",
+                        bgcolor: tokens.bgSubtle,
                         border: 0,
                         cursor: "pointer",
                         display: "flex",
                         alignItems: "center",
                         transition: "background-color 150ms",
-                        "&:hover": { bgcolor: "grey.200" },
+                        "&:hover": { bgcolor: tokens.borderDefault },
                       }}
                     >
                       <RemoveIcon sx={{ fontSize: 14 }} />
@@ -266,13 +267,13 @@ export function OrderSummary({
                       sx={{
                         px: 1,
                         py: 0.5,
-                        bgcolor: "grey.100",
+                        bgcolor: tokens.bgSubtle,
                         border: 0,
                         cursor: "pointer",
                         display: "flex",
                         alignItems: "center",
                         transition: "background-color 150ms",
-                        "&:hover": { bgcolor: "grey.200" },
+                        "&:hover": { bgcolor: tokens.borderDefault },
                       }}
                     >
                       <AddIcon sx={{ fontSize: 14 }} />
@@ -284,12 +285,12 @@ export function OrderSummary({
                       size='small'
                       onClick={() => onRemoveItem?.(item.id)}
                       sx={{
-                        bgcolor: "#fef2f2",
-                        color: "#ef4444",
+                        bgcolor: tokens.dangerSubtle,
+                        color: tokens.danger,
                         borderRadius: "8px",
                         p: 1,
                         transition: "background-color 150ms",
-                        "&:hover": { bgcolor: "#fee2e2" },
+                        "&:hover": { bgcolor: tokens.dangerBorder },
                       }}
                     >
                       <DeleteOutlinedIcon sx={{ fontSize: 16 }} />
@@ -307,13 +308,13 @@ export function OrderSummary({
         sx={{
           p: 1.5,
           borderRadius: "0 0 12px 12px",
-          background: "linear-gradient(to bottom, #fff, #f9fafb)",
-          boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+          background: `linear-gradient(to bottom, ${tokens.bgPanel}, ${tokens.bgCanvas})`,
+          boxShadow: tokens.shadowMd,
         }}
       >
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-          <Box sx={{ display: "flex", justifyContent: "space-between", color: "grey.600" }}>
-            <Box component='span' sx={{ fontFamily: "serif", color: "grey.900", fontSize: 14 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", color: tokens.textSecondary }}>
+            <Box component='span' sx={{ fontFamily: "serif", color: tokens.textPrimary, fontSize: 14 }}>
               সাবটোটাল:
             </Box>
             <Box component='span' sx={{ fontWeight: 900, fontSize: 14 }}>
@@ -326,7 +327,7 @@ export function OrderSummary({
               sx={{
                 display: "flex",
                 justifyContent: "space-between",
-                color: "grey.700",
+                color: tokens.textSecondary,
                 fontSize: 14,
               }}
             >
@@ -337,8 +338,8 @@ export function OrderSummary({
             </Box>
           )}
 
-          <Box sx={{ display: "flex", justifyContent: "space-between", color: "grey.600" }}>
-            <Box component='span' sx={{ fontFamily: "serif", fontSize: 14, color: "grey.800" }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", color: tokens.textSecondary }}>
+            <Box component='span' sx={{ fontFamily: "serif", fontSize: 14, color: tokens.textPrimary }}>
               ডেলিভারি-চার্জ:
             </Box>
             <Box component='span' sx={{ fontSize: 14 }}>
@@ -352,13 +353,13 @@ export function OrderSummary({
               justifyContent: "space-between",
               pt: 1.5,
               borderTop: "1px solid",
-              borderColor: "divider",
+              borderColor: tokens.borderDefault,
               fontSize: 16,
               fontWeight: 700,
             }}
           >
             <Box component='span'>সর্বমোট:</Box>
-            <Box component='span' sx={{ color: "#ea580c", fontWeight: 900 }}>
+            <Box component='span' sx={{ color: tokens.primaryHover, fontWeight: 900 }}>
               ৳{totalAmount}
             </Box>
           </Box>
@@ -370,15 +371,15 @@ export function OrderSummary({
           sx={{
             ...BN,
             mt: 2.5,
-            bgcolor: "grey.800",
-            color: "#fff",
+            bgcolor: tokens.textPrimary,
+            color: tokens.textWhite,
             py: 1.5,
             borderRadius: "12px",
             fontWeight: 600,
             fontSize: 14,
             textTransform: "none",
             transition: "background-color 200ms",
-            "&:hover": { bgcolor: "grey.900" },
+            "&:hover": { bgcolor: tokens.bgDark },
           }}
         >
           Order Now

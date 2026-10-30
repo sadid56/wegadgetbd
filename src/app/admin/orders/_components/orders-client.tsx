@@ -1,57 +1,48 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { format } from "date-fns";
 import { useToast } from "@/context/toast-context";
 
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import InputBase from "@mui/material/InputBase";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import Chip from "@mui/material/Chip";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogActions from "@mui/material/DialogActions";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Pagination from "@mui/material/Pagination";
-import PaginationItem from "@mui/material/PaginationItem";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { InputBase } from "@/components/ui/input";
+import { Menu, MenuItem } from "@/components/ui/menu";
+import { Chip } from "@/components/ui/badge";
+import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@/components/ui/table";
+import { Pagination } from "@/components/ui/pagination";
+import { CircularProgress } from "@/components/ui/spinner";
 
 import SearchIcon from "@mui/icons-material/Search";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
-import { deleteOrder, updateOrderStatus } from "@/actions/orders";
+import { OrderEndpoints } from "@/query-client/orders";
 import { orderStatusEnum, type OrderStatus } from "@/db/schema";
 import { OrderDetailsModal } from "./order-details-modal";
+import { tokens } from "@/theme/theme";
 
 interface OrdersClientProps {
-  initialOrders: any[];
-  metadata: {
+  initialOrders?: any[];
+  metadata?: {
     total: number;
     page: number;
     limit: number;
     totalPages: number;
   };
-  search: string;
+  search?: string;
   status?: OrderStatus;
 }
 
 const STATUS_CHIP_STYLE: Record<string, { bgcolor: string; color: string; borderColor: string }> = {
-  PENDING: { bgcolor: "#ffedd5", color: "#c2410c", borderColor: "transparent" },
-  COMPLETED: { bgcolor: "#dcfce7", color: "#166534", borderColor: "#bbf7d0" },
-  CANCELLED: { bgcolor: "#fee2e2", color: "#991b1b", borderColor: "transparent" },
-  RETURNED: { bgcolor: "#fef2f2", color: "#dc2626", borderColor: "#fecaca" },
+  PENDING: { bgcolor: tokens.warningSubtle, color: tokens.warningHover, borderColor: "transparent" },
+  COMPLETED: { bgcolor: tokens.successSubtle, color: tokens.successText, borderColor: tokens.successBorder },
+  CANCELLED: { bgcolor: tokens.dangerSubtle, color: tokens.dangerHover, borderColor: "transparent" },
+  RETURNED: { bgcolor: tokens.errorSubtle, color: tokens.danger, borderColor: tokens.dangerBorder },
 };
 
 const STATUS_LABEL: Record<string, string> = {
@@ -181,12 +172,6 @@ function FilterSelect({
               setAnchor(null);
             }}
             selected={opt.value === value}
-            sx={{
-              fontSize: 13,
-              py: 1,
-              "&.Mui-selected": { bgcolor: "action.selected", fontWeight: 600 },
-              "&.Mui-selected:hover": { bgcolor: "action.selected" },
-            }}
           >
             {opt.label}
           </MenuItem>
@@ -244,11 +229,6 @@ function StatusCell({ status, onChange }: { status: OrderStatus; onChange: (s: O
               setAnchor(null);
             }}
             selected={s === status}
-            sx={{
-              fontSize: 13,
-              py: 1,
-              "&.Mui-selected": { bgcolor: "action.selected", fontWeight: 600 },
-            }}
           >
             {STATUS_LABEL[s] ?? s}
           </MenuItem>
@@ -259,44 +239,97 @@ function StatusCell({ status, onChange }: { status: OrderStatus; onChange: (s: O
 }
 
 // ─── Main component ───────────────────────────────────────────
-export function OrdersClient({ initialOrders, metadata, search, status }: OrdersClientProps) {
+export function OrdersClient({ initialOrders = [], metadata: initMeta }: OrdersClientProps) {
   const toast = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const page = parseInt(searchParams.get("page") || "1");
+  const searchParam = searchParams.get("search") || "";
+  const statusParam = searchParams.get("status") as OrderStatus | undefined;
+
+  const [orders, setOrders] = useState<any[]>(initialOrders);
+  const [metadata, setMetadata] = useState(
+    initMeta || { total: initialOrders.length, page: 1, limit: 10, totalPages: 1 }
+  );
+  const [loading, setLoading] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
 
-  const buildQuery = (page: number, query: string, statusVal?: string) => {
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchClientOrders() {
+      setLoading(true);
+      try {
+        const res = await OrderEndpoints.getOrders({
+          page,
+          limit: 10,
+          search: searchParam,
+          status: statusParam && (statusParam as string) !== "all" ? statusParam : undefined,
+        });
+
+        if (isMounted && res) {
+          setOrders(res.orders || []);
+          setMetadata(res.metadata || null);
+        }
+      } catch (err) {
+        console.error("Failed to load client orders:", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+
+    fetchClientOrders();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [page, searchParam, statusParam, refreshKey]);
+
+  const buildQuery = (pageNum: number, query: string, statusVal?: string) => {
     const statusPart = statusVal && statusVal !== "all" ? `&status=${statusVal}` : "";
-    return `?page=${page}&search=${encodeURIComponent(query)}${statusPart}`;
+    return `?page=${pageNum}&search=${encodeURIComponent(query)}${statusPart}`;
   };
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const query = formData.get("search") as string;
-    router.push(buildQuery(1, query, status));
+    router.push(buildQuery(1, query, statusParam));
   };
 
   const handleStatusFilterChange = (value: string) => {
-    router.push(buildQuery(1, search, value));
+    router.push(buildQuery(1, searchParam, value));
   };
 
   const handleStatusChange = async (id: string, newStatus: OrderStatus) => {
-    const res = await updateOrderStatus(id, newStatus);
-    if (res.success) {
-      toast.success(`Status updated to ${newStatus}`);
-    } else {
+    try {
+      const res = await OrderEndpoints.updateOrderStatus({ id, status: newStatus });
+      if (res) {
+        toast.success(`Status updated to ${newStatus}`);
+        setRefreshKey((prev) => prev + 1);
+      } else {
+        toast.error("Failed to update status");
+      }
+    } catch {
       toast.error("Failed to update status");
     }
   };
 
   const handleDelete = async () => {
     if (!deleteId) return;
-    const res = await deleteOrder(deleteId);
-    if (res.success) {
-      toast.success("Order deleted successfully");
-      setDeleteId(null);
-    } else {
+    try {
+      const res = await OrderEndpoints.deleteOrder(deleteId);
+      if (res) {
+        toast.success("Order deleted successfully");
+        setDeleteId(null);
+        setRefreshKey((prev) => prev + 1);
+      } else {
+        toast.error("Failed to delete order");
+      }
+    } catch {
       toast.error("Failed to delete order");
     }
   };
@@ -330,7 +363,7 @@ export function OrdersClient({ initialOrders, metadata, search, status }: Orders
             <InputBase
               name='search'
               placeholder='Search by name, phone, or address...'
-              defaultValue={search}
+              defaultValue={searchParam}
               sx={{
                 width: "100%",
                 height: 40,
@@ -349,7 +382,7 @@ export function OrdersClient({ initialOrders, metadata, search, status }: Orders
           </Box>
         </Box>
 
-        <FilterSelect value={status || "all"} onChange={handleStatusFilterChange} options={statusFilterOptions} width={180} />
+        <FilterSelect value={statusParam || "all"} onChange={handleStatusFilterChange} options={statusFilterOptions} width={180} />
       </Box>
 
       {/* Table */}
@@ -374,14 +407,20 @@ export function OrdersClient({ initialOrders, metadata, search, status }: Orders
             </TableRow>
           </TableHead>
           <TableBody>
-            {initialOrders.length === 0 ? (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={6} sx={{ height: 160, textAlign: "center" }}>
+                  <CircularProgress size={30} />
+                </TableCell>
+              </TableRow>
+            ) : orders.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} sx={{ height: 96, textAlign: "center", color: "text.secondary" }}>
                   No orders found.
                 </TableCell>
               </TableRow>
             ) : (
-              initialOrders.map((order) => (
+              orders.map((order) => (
                 <TableRow
                   key={order.id}
                   sx={{
@@ -419,8 +458,8 @@ export function OrdersClient({ initialOrders, metadata, search, status }: Orders
                         sx={{
                           width: 32,
                           height: 32,
-                          color: "#3b82f6",
-                          "&:hover": { bgcolor: "rgba(59,130,246,0.1)" },
+                          color: tokens.info,
+                          "&:hover": { bgcolor: tokens.infoSubtle },
                         }}
                       >
                         <VisibilityOutlinedIcon sx={{ fontSize: 16 }} />
@@ -453,8 +492,8 @@ export function OrdersClient({ initialOrders, metadata, search, status }: Orders
           <Pagination
             count={metadata.totalPages}
             page={metadata.page}
-            onChange={(_, page) => {
-              router.push(buildQuery(page, search, status));
+            onChange={(_: any, pageNum: number = 1) => {
+              router.push(buildQuery(pageNum, searchParam, statusParam));
             }}
             showFirstButton
             showLastButton

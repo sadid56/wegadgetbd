@@ -1,15 +1,11 @@
 "use client";
 
 import Box from "@mui/material/Box";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import Chip from "@mui/material/Chip";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import FormControl from "@mui/material/FormControl";
 import Typography from "@mui/material/Typography";
-import Divider from "@mui/material/Divider";
+import { Dialog, DialogTitle, DialogContent } from "@/components/ui/dialog";
+import { Chip } from "@/components/ui/badge";
+import { Select, MenuItem, FormControl } from "@/components/ui/select";
+import { Divider } from "@/components/ui/divider";
 
 import PersonOutlineIcon from "@mui/icons-material/PersonOutlined";
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
@@ -24,6 +20,7 @@ import { format } from "date-fns";
 import { orderStatusEnum, type OrderStatus } from "@/db/schema";
 import { parseDevice } from "@/lib/parse-device";
 import { getAssetUrl } from "@/lib/storage";
+import { tokens } from "@/theme/theme";
 
 interface OrderDetailsModalProps {
   open: boolean;
@@ -32,8 +29,8 @@ interface OrderDetailsModalProps {
   onStatusChange: (id: string, status: OrderStatus) => Promise<void>;
 }
 
-const ORANGE = "#f97316";
-const ORANGE_DARK = "#ea580c";
+const ORANGE = tokens.badgeSale;
+const ORANGE_DARK = tokens.warningHover;
 
 const infoRowSx = {
   display: "flex",
@@ -284,11 +281,11 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
                       key={idx}
                       component='tr'
                       sx={{
-                        bgcolor: "#fff",
+                        bgcolor: tokens.bgPanel,
                         borderBottom: idx < items.length - 1 ? "1px solid" : "none",
                         borderColor: "grey.100",
                         transition: "background-color 150ms",
-                        "&:hover": { bgcolor: "rgba(249,250,251,0.5)" },
+                        "&:hover": { bgcolor: tokens.bgSubtle },
                       }}
                     >
                       <Box component='td' sx={{ px: 2, py: 1.5 }}>
@@ -395,11 +392,11 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
                 <Box
                   sx={{
                     borderRadius: "8px",
-                    bgcolor: "#fff7ed",
+                    bgcolor: tokens.warningSubtle,
                     p: 1.5,
                     fontSize: 12,
                     fontStyle: "italic",
-                    color: "#7c2d12",
+                    color: tokens.warningHover,
                     lineHeight: 1.5,
                   }}
                 >
@@ -431,11 +428,11 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
                 <Box
                   sx={{
                     borderRadius: "8px",
-                    bgcolor: "#f0fdf4",
+                    bgcolor: tokens.accentLight,
                     p: 1.5,
                     fontSize: 10,
                     lineHeight: 1.65,
-                    color: "#14532d",
+                    color: tokens.successText,
                     whiteSpace: "pre-wrap",
                     maxHeight: 128,
                     overflowY: "auto",

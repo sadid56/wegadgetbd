@@ -7,22 +7,13 @@ import * as z from "zod";
 import { useToast } from "@/context/toast-context";
 
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogActions from "@mui/material/DialogActions";
-import CircularProgress from "@mui/material/CircularProgress";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { TextField } from "@/components/ui/input";
+import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@/components/ui/dialog";
+import { CircularProgress } from "@/components/ui/spinner";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@/components/ui/table";
 
 import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -31,6 +22,7 @@ import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined";
 
 import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from "@/query-client/categories";
 import { uploadFileToStorage, getAssetUrl, stripAssetDomain } from "@/lib/storage";
+import { tokens } from "@/theme/theme";
 
 const categorySchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -495,8 +487,8 @@ export default function CategoriesPage() {
                         sx={{
                           width: 32,
                           height: 32,
-                          color: "#ef4444",
-                          "&:hover": { bgcolor: "rgba(239,68,68,0.1)", color: "#dc2626" },
+                          color: tokens.danger,
+                          "&:hover": { bgcolor: tokens.dangerSubtle, color: tokens.dangerHover },
                         }}
                       >
                         <DeleteOutlineIcon sx={{ fontSize: 16 }} />
@@ -550,9 +542,9 @@ export default function CategoriesPage() {
               fontWeight: 600,
               fontSize: 14,
               borderRadius: "8px",
-              bgcolor: "#dc2626",
-              color: "#fff",
-              "&:hover": { bgcolor: "#b91c1c" },
+              bgcolor: tokens.danger,
+              color: tokens.textWhite,
+              "&:hover": { bgcolor: tokens.dangerHover },
             }}
           >
             Delete

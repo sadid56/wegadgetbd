@@ -1,5 +1,11 @@
-import * as React from "react";
-import { Chip, type ChipProps, type SxProps, type Theme } from "@mui/material";
+import {
+  Chip as MuiChip,
+  Badge as MuiCountBadge,
+  type ChipProps as MuiChipProps,
+  type BadgeProps as MuiCountBadgeProps,
+  type SxProps,
+  type Theme,
+} from "@mui/material";
 import { tokens } from "@/theme/theme";
 
 export type BadgeVariant =
@@ -8,8 +14,11 @@ export type BadgeVariant =
   | "destructive"
   | "danger"
   | "outline"
+  | "outlined"
+  | "filled"
   | "success"
   | "warning"
+  | "info"
   | "new"
   | "sale"
   | "gaming"
@@ -18,57 +27,78 @@ export type BadgeVariant =
   | "review"
   | "tips";
 
-export interface BadgeProps extends Omit<ChipProps, "variant" | "color"> {
+export interface BadgeProps extends Omit<MuiChipProps, "variant" | "color"> {
   variant?: BadgeVariant;
+  color?: "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning";
   sx?: SxProps<Theme>;
 }
 
-export function Badge({
-  variant = "default",
-  sx,
-  label,
-  children,
-  size = "small",
-  ...props
-}: BadgeProps) {
+export type ChipProps = BadgeProps;
+export type CountBadgeProps = MuiCountBadgeProps;
+
+export function CountBadge({ sx, ...props }: CountBadgeProps) {
+  return (
+    <MuiCountBadge
+      sx={[
+        {
+          "& .MuiBadge-badge": {
+            bgcolor: tokens.primary,
+            color: tokens.textWhite,
+            fontWeight: 700,
+          },
+        },
+        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+      ]}
+      {...props}
+    />
+  );
+}
+
+export function Badge({ variant = "default", color, sx, label, children, size = "small", ...props }: BadgeProps) {
+  const resolvedVariant: BadgeVariant =
+    color === "success"
+      ? "success"
+      : color === "error"
+        ? "danger"
+        : color === "warning"
+          ? "warning"
+          : color === "info"
+            ? "info"
+            : color === "secondary"
+              ? "secondary"
+              : variant === "outlined"
+                ? "outline"
+                : variant;
+
   const getStyles = () => {
-    switch (variant) {
+    switch (resolvedVariant) {
       case "new":
+      case "info":
+      case "review":
         return {
-          bgcolor: tokens.badgeNewSubtle,
-          color: tokens.badgeNew,
-          border: `1px solid rgba(14, 165, 233, 0.25)`,
+          bgcolor: tokens.infoSubtle,
+          color: tokens.info,
+          border: `1px solid ${tokens.infoBorder}`,
         };
       case "sale":
         return {
           bgcolor: tokens.badgeSaleSubtle,
           color: tokens.badgeSale,
-          border: `1px solid rgba(249, 115, 22, 0.25)`,
+          border: `1px solid ${tokens.warningBorder}`,
         };
       case "gaming":
         return {
           bgcolor: tokens.badgeGamingSubtle,
           color: tokens.badgeGaming,
-          border: `1px solid rgba(139, 92, 246, 0.25)`,
+          border: `1px solid ${tokens.badgeGamingSubtle}`,
         };
       case "guide":
       case "accent":
+      case "tips":
         return {
           bgcolor: tokens.accentSubtle,
           color: tokens.primaryHover,
           border: `1px solid ${tokens.primaryBorder}`,
-        };
-      case "review":
-        return {
-          bgcolor: "rgba(14, 165, 233, 0.12)",
-          color: "#0284c7",
-          border: "1px solid rgba(14, 165, 233, 0.22)",
-        };
-      case "tips":
-        return {
-          bgcolor: "rgba(16, 185, 129, 0.12)",
-          color: "#059669",
-          border: "1px solid rgba(16, 185, 129, 0.22)",
         };
       case "secondary":
         return {
@@ -102,6 +132,7 @@ export function Badge({
           border: `1px solid ${tokens.borderElevated}`,
         };
       case "default":
+      case "filled":
       default:
         return {
           bgcolor: tokens.primarySubtle,
@@ -112,20 +143,24 @@ export function Badge({
   };
 
   return (
-    <Chip
+    <MuiChip
       size={size}
-      label={label || children}
-      sx={{
-        fontWeight: 600,
-        fontSize: "0.75rem",
-        height: 24,
-        borderRadius: `${tokens.radiusPill}px`,
-        ...getStyles(),
-        ...sx,
-      }}
+      label={label ?? children}
+      sx={[
+        {
+          fontWeight: 600,
+          fontSize: "0.75rem",
+          height: 24,
+          borderRadius: `${tokens.radiusPill}px`,
+          ...getStyles(),
+        },
+        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+      ]}
       {...props}
     />
   );
 }
 
+export const Chip = Badge;
 export const badgeVariants = () => "";
+export default Badge;

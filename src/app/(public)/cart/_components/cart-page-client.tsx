@@ -3,10 +3,10 @@
 import NextLink from "next/link";
 import { useEffect, useRef } from "react";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
 import Typography from "@mui/material/Typography";
-import InputBase from "@mui/material/InputBase";
+import { InputBase } from "@/components/ui/input";
 import { keyframes } from "@emotion/react";
 
 import RemoveIcon from "@mui/icons-material/Remove";
@@ -27,6 +27,7 @@ import StarIcon from "@mui/icons-material/Star";
 
 import { useCart } from "@/hooks/useCart";
 import { getAssetUrl } from "@/lib/storage";
+import { tokens } from "@/theme/theme";
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(24px); }
@@ -63,7 +64,7 @@ function EmptyCart() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        bgcolor: "#f8fafc",
+        bgcolor: tokens.bgCanvas,
         px: 2,
       }}
     >
@@ -81,7 +82,7 @@ function EmptyCart() {
               position: "absolute",
               inset: 0,
               borderRadius: "50%",
-              bgcolor: "#f1f5f9",
+              bgcolor: tokens.bgSubtle,
               animation: `${pulse} 2s ease-in-out infinite`,
             }}
           />
@@ -91,15 +92,15 @@ function EmptyCart() {
               width: "100%",
               height: "100%",
               borderRadius: "50%",
-              bgcolor: "#fff",
-              border: "1px solid #e2e8f0",
+              bgcolor: tokens.bgPanel,
+              border: `1px solid ${tokens.borderDefault}`,
               boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <ShoppingBagOutlinedIcon sx={{ fontSize: 56, color: "#cbd5e1" }} />
+            <ShoppingBagOutlinedIcon sx={{ fontSize: 56, color: tokens.borderElevated }} />
           </Box>
           <Box sx={{ position: "absolute", inset: 0, animation: `${spin} 4s linear infinite` }}>
             <Box
@@ -111,8 +112,8 @@ function EmptyCart() {
                 width: 12,
                 height: 12,
                 borderRadius: "50%",
-                bgcolor: "#fb923c",
-                boxShadow: "0 4px 6px -1px rgba(254,215,170,1)",
+                bgcolor: tokens.primary,
+                boxShadow: `0 4px 6px -1px ${tokens.primaryBorder}`,
               }}
             />
           </Box>
@@ -123,7 +124,7 @@ function EmptyCart() {
           sx={{
             fontSize: 24,
             fontWeight: 900,
-            color: "#0f172a",
+            color: tokens.textPrimary,
             letterSpacing: "-0.02em",
             mb: 1,
           }}
@@ -132,7 +133,7 @@ function EmptyCart() {
         </Typography>
         <Typography
           sx={{
-            color: "#94a3b8",
+            color: tokens.textDisabled,
             fontSize: 14,
             lineHeight: 1.65,
             mb: 4,
@@ -152,14 +153,14 @@ function EmptyCart() {
             height: 48,
             px: 4,
             borderRadius: "16px",
-            bgcolor: "#0f172a",
-            color: "#fff",
+            bgcolor: tokens.textPrimary,
+            color: tokens.textWhite,
             fontWeight: 700,
             fontSize: 14,
             textTransform: "none",
             boxShadow: "0 20px 25px -5px rgba(15,23,42,0.2)",
             transition: "all 200ms",
-            "&:hover": { bgcolor: "#1e293b", transform: "scale(1.03)" },
+            "&:hover": { bgcolor: tokens.textSecondary, transform: "scale(1.03)" },
             "&:active": { transform: "scale(0.97)" },
           }}
         >
@@ -169,8 +170,8 @@ function EmptyCart() {
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 2, mt: 4, flexWrap: "wrap" }}>
           {["Free delivery", "Easy returns", "100% genuine"].map((t) => (
             <Box key={t} sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-              <Box sx={{ width: 4, height: 4, borderRadius: "50%", bgcolor: "#cbd5e1" }} />
-              <Typography sx={{ fontSize: 11, color: "#94a3b8", fontWeight: 500 }}>{t}</Typography>
+              <Box sx={{ width: 4, height: 4, borderRadius: "50%", bgcolor: tokens.borderElevated }} />
+              <Typography sx={{ fontSize: 11, color: tokens.textDisabled, fontWeight: 500 }}>{t}</Typography>
             </Box>
           ))}
         </Box>
@@ -191,7 +192,7 @@ export default function CartPage() {
   }, 0);
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#f8fafc" }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: tokens.bgCanvas }}>
       {/* Sticky header */}
       <Box
         sx={{
@@ -200,7 +201,7 @@ export default function CartPage() {
           zIndex: 40,
           bgcolor: "rgba(255,255,255,0.95)",
           backdropFilter: "blur(20px)",
-          borderBottom: "1px solid #f1f5f9",
+          borderBottom: `1px solid ${tokens.borderSubtle}`,
         }}
       >
         <Box
@@ -224,11 +225,11 @@ export default function CartPage() {
               gap: 0.75,
               fontSize: 14,
               fontWeight: 600,
-              color: "#64748b",
+              color: tokens.textMuted,
               textDecoration: "none",
               flexShrink: 0,
               transition: "color 200ms",
-              "&:hover": { color: "#0f172a", "& .back-icon": { transform: "translateX(-2px)" } },
+              "&:hover": { color: tokens.textPrimary, "& .back-icon": { transform: "translateX(-2px)" } },
             }}
           >
             <ArrowBackIcon className='back-icon' sx={{ fontSize: 16, transition: "transform 200ms" }} />
@@ -247,10 +248,10 @@ export default function CartPage() {
               gap: { xs: 0.5, sm: 0.75 },
               fontSize: { xs: 11, sm: 12 },
               fontWeight: 600,
-              color: "#94a3b8",
+              color: tokens.textDisabled,
             }}
           >
-            <Box component='span' sx={{ color: "#0f172a", fontWeight: 900 }}>
+            <Box component='span' sx={{ color: tokens.textPrimary, fontWeight: 900 }}>
               Cart
             </Box>
             <ChevronRightIcon sx={{ fontSize: 12 }} />
@@ -273,10 +274,10 @@ export default function CartPage() {
               cursor: "pointer",
               fontSize: 12,
               fontWeight: 600,
-              color: "#fb7185",
+              color: tokens.danger,
               flexShrink: 0,
               transition: "color 200ms",
-              "&:hover": { color: "#e11d48" },
+              "&:hover": { color: tokens.dangerHover },
             }}
           >
             <DeleteOutlinedIcon sx={{ fontSize: 14 }} />
@@ -296,19 +297,19 @@ export default function CartPage() {
               sx={{
                 fontSize: { xs: 18, sm: 24, md: 28 },
                 fontWeight: 900,
-                color: "#0f172a",
+                color: tokens.textPrimary,
                 letterSpacing: "-0.02em",
               }}
             >
               Shopping Cart
             </Typography>
-            <Typography sx={{ fontSize: { xs: 12, sm: 14 }, color: "#94a3b8", mt: 0.25 }}>
+            <Typography sx={{ fontSize: { xs: 12, sm: 14 }, color: tokens.textDisabled, mt: 0.25 }}>
               {totalCount} item{totalCount !== 1 ? "s" : ""} · Review before checkout
             </Typography>
           </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, bgcolor: "#f1f5f9", px: 1.5, py: 0.75, borderRadius: 999 }}>
-            <ShoppingCartIcon sx={{ fontSize: 14, color: "#64748b" }} />
-            <Typography component='span' sx={{ fontSize: 14, fontWeight: 900, color: "#334155" }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, bgcolor: tokens.bgSubtle, px: 1.5, py: 0.75, borderRadius: 999 }}>
+            <ShoppingCartIcon sx={{ fontSize: 14, color: tokens.textMuted }} />
+            <Typography component='span' sx={{ fontSize: 14, fontWeight: 900, color: tokens.textSecondary }}>
               {totalCount}
             </Typography>
           </Box>
@@ -341,10 +342,10 @@ export default function CartPage() {
                 py: 1,
                 fontSize: 10,
                 fontWeight: 900,
-                color: "#94a3b8",
+                color: tokens.textDisabled,
                 textTransform: "uppercase",
                 letterSpacing: "0.15em",
-                borderBottom: "1px solid #e2e8f0",
+                borderBottom: `1px solid ${tokens.borderDefault}`,
               }}
             >
               <Box sx={{ gridColumn: "span 6" }}>Product</Box>
@@ -364,14 +365,14 @@ export default function CartPage() {
                 <Box
                   key={item.id}
                   sx={{
-                    bgcolor: "#fff",
-                    border: "1px solid #e2e8f0",
+                    bgcolor: tokens.bgPanel,
+                    border: `1px solid ${tokens.borderDefault}`,
                     borderRadius: "16px",
                     overflow: "hidden",
                     transition: "all 300ms",
                     animation: `${itemFadeIn} 280ms cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.04}s both`,
                     "&:hover": {
-                      borderColor: "#cbd5e1",
+                      borderColor: tokens.borderElevated,
                       boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1)",
                       "& .cart-img": { transform: "scale(1.05)" },
                     },
@@ -386,8 +387,8 @@ export default function CartPage() {
                         height: 72,
                         borderRadius: "12px",
                         overflow: "hidden",
-                        bgcolor: "#f8fafc",
-                        border: "1px solid #f1f5f9",
+                        bgcolor: tokens.bgCanvas,
+                        border: `1px solid ${tokens.borderSubtle}`,
                         flexShrink: 0,
                       }}
                     >
@@ -401,7 +402,7 @@ export default function CartPage() {
                         />
                       ) : (
                         <Box sx={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <Inventory2OutlinedIcon sx={{ fontSize: 24, color: "#cbd5e1" }} />
+                          <Inventory2OutlinedIcon sx={{ fontSize: 24, color: tokens.borderElevated }} />
                         </Box>
                       )}
                       {hasDisc && (
@@ -412,8 +413,8 @@ export default function CartPage() {
                             left: 4,
                             fontSize: 9,
                             fontWeight: 900,
-                            color: "#fff",
-                            bgcolor: "#f43f5e",
+                            color: tokens.textWhite,
+                            bgcolor: tokens.danger,
                             px: 0.75,
                             py: 0.25,
                             borderRadius: "6px",
@@ -430,7 +431,7 @@ export default function CartPage() {
                         <Typography
                           sx={{
                             fontWeight: 700,
-                            color: "#0f172a",
+                            color: tokens.textPrimary,
                             fontSize: 14,
                             lineHeight: 1.35,
                             flex: 1,
@@ -450,10 +451,10 @@ export default function CartPage() {
                             width: 28,
                             height: 28,
                             borderRadius: "8px",
-                            color: "#cbd5e1",
+                            color: tokens.borderElevated,
                             flexShrink: 0,
                             mt: 0.25,
-                            "&:hover": { color: "#f43f5e", bgcolor: "#fff1f2" },
+                            "&:hover": { color: tokens.danger, bgcolor: tokens.dangerSubtle },
                           }}
                         >
                           <DeleteOutlinedIcon sx={{ fontSize: 14 }} />
@@ -461,11 +462,11 @@ export default function CartPage() {
                       </Box>
 
                       <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
-                        <Typography component='span' sx={{ fontSize: 16, fontWeight: 900, color: "#0f172a" }}>
+                        <Typography component='span' sx={{ fontSize: 16, fontWeight: 900, color: tokens.textPrimary }}>
                           ৳{unitPrice.toLocaleString()}
                         </Typography>
                         {hasDisc && (
-                          <Typography component='span' sx={{ fontSize: 12, color: "#94a3b8", textDecoration: "line-through" }}>
+                          <Typography component='span' sx={{ fontSize: 12, color: tokens.textDisabled, textDecoration: "line-through" }}>
                             ৳{origPrice.toLocaleString()}
                           </Typography>
                         )}
@@ -476,7 +477,7 @@ export default function CartPage() {
                           sx={{
                             display: "flex",
                             alignItems: "center",
-                            border: "1px solid #e2e8f0",
+                            border: `1px solid ${tokens.borderDefault}`,
                             borderRadius: "12px",
                             overflow: "hidden",
                           }}
@@ -493,9 +494,9 @@ export default function CartPage() {
                               bgcolor: "transparent",
                               border: 0,
                               cursor: "pointer",
-                              color: "#64748b",
+                              color: tokens.textMuted,
                               transition: "background-color 150ms",
-                              "&:hover": { bgcolor: "#f8fafc" },
+                              "&:hover": { bgcolor: tokens.bgCanvas },
                             }}
                           >
                             <RemoveIcon sx={{ fontSize: 12 }} />
@@ -510,9 +511,9 @@ export default function CartPage() {
                               justifyContent: "center",
                               fontSize: 14,
                               fontWeight: 900,
-                              color: "#0f172a",
-                              borderLeft: "1px solid #e2e8f0",
-                              borderRight: "1px solid #e2e8f0",
+                              color: tokens.textPrimary,
+                              borderLeft: `1px solid ${tokens.borderDefault}`,
+                              borderRight: `1px solid ${tokens.borderDefault}`,
                             }}
                           >
                             {item.qty}
@@ -529,15 +530,15 @@ export default function CartPage() {
                               bgcolor: "transparent",
                               border: 0,
                               cursor: "pointer",
-                              color: "#64748b",
+                              color: tokens.textMuted,
                               transition: "background-color 150ms",
-                              "&:hover": { bgcolor: "#f8fafc" },
+                              "&:hover": { bgcolor: tokens.bgCanvas },
                             }}
                           >
                             <AddIcon sx={{ fontSize: 12 }} />
                           </Box>
                         </Box>
-                        <Typography sx={{ fontSize: 14, fontWeight: 900, color: "#0f172a" }}>৳{lineTotal.toLocaleString()}</Typography>
+                        <Typography sx={{ fontSize: 14, fontWeight: 900, color: tokens.textPrimary }}>৳{lineTotal.toLocaleString()}</Typography>
                       </Box>
                     </Box>
                   </Box>
@@ -560,8 +561,8 @@ export default function CartPage() {
                           height: 68,
                           borderRadius: "12px",
                           overflow: "hidden",
-                          bgcolor: "#f8fafc",
-                          border: "1px solid #f1f5f9",
+                          bgcolor: tokens.bgCanvas,
+                          border: `1px solid ${tokens.borderSubtle}`,
                           flexShrink: 0,
                         }}
                       >
@@ -575,7 +576,7 @@ export default function CartPage() {
                           />
                         ) : (
                           <Box sx={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <Inventory2OutlinedIcon sx={{ fontSize: 28, color: "#cbd5e1" }} />
+                            <Inventory2OutlinedIcon sx={{ fontSize: 28, color: tokens.borderElevated }} />
                           </Box>
                         )}
                         {hasDisc && (
@@ -586,8 +587,8 @@ export default function CartPage() {
                               left: 4,
                               fontSize: 9,
                               fontWeight: 900,
-                              color: "#fff",
-                              bgcolor: "#f43f5e",
+                              color: tokens.textWhite,
+                              bgcolor: tokens.danger,
                               px: 0.75,
                               py: 0.25,
                               borderRadius: "6px",
@@ -601,7 +602,7 @@ export default function CartPage() {
                       <Typography
                         sx={{
                           fontWeight: 700,
-                          color: "#0f172a",
+                          color: tokens.textPrimary,
                           fontSize: 14,
                           lineHeight: 1.35,
                           flex: 1,
@@ -618,9 +619,9 @@ export default function CartPage() {
                     </Box>
 
                     <Box sx={{ gridColumn: "span 2", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
-                      <Typography sx={{ fontSize: 14, fontWeight: 900, color: "#0f172a" }}>৳{unitPrice.toLocaleString()}</Typography>
+                      <Typography sx={{ fontSize: 14, fontWeight: 900, color: tokens.textPrimary }}>৳{unitPrice.toLocaleString()}</Typography>
                       {hasDisc && (
-                        <Typography sx={{ fontSize: 10, color: "#94a3b8", textDecoration: "line-through" }}>
+                        <Typography sx={{ fontSize: 10, color: tokens.textDisabled, textDecoration: "line-through" }}>
                           ৳{origPrice.toLocaleString()}
                         </Typography>
                       )}
@@ -631,7 +632,7 @@ export default function CartPage() {
                         sx={{
                           display: "flex",
                           alignItems: "center",
-                          border: "1px solid #e2e8f0",
+                          border: `1px solid ${tokens.borderDefault}`,
                           borderRadius: "12px",
                           overflow: "hidden",
                         }}
@@ -648,9 +649,9 @@ export default function CartPage() {
                             bgcolor: "transparent",
                             border: 0,
                             cursor: "pointer",
-                            color: "#64748b",
+                            color: tokens.textMuted,
                             transition: "background-color 150ms, color 150ms",
-                            "&:hover": { bgcolor: "#f8fafc", color: "#0f172a" },
+                            "&:hover": { bgcolor: tokens.bgCanvas, color: tokens.textPrimary },
                           }}
                         >
                           <RemoveIcon sx={{ fontSize: 12 }} />
@@ -665,9 +666,9 @@ export default function CartPage() {
                             justifyContent: "center",
                             fontSize: 14,
                             fontWeight: 900,
-                            color: "#0f172a",
-                            borderLeft: "1px solid #e2e8f0",
-                            borderRight: "1px solid #e2e8f0",
+                            color: tokens.textPrimary,
+                            borderLeft: `1px solid ${tokens.borderDefault}`,
+                            borderRight: `1px solid ${tokens.borderDefault}`,
                           }}
                         >
                           {item.qty}
@@ -684,9 +685,9 @@ export default function CartPage() {
                             bgcolor: "transparent",
                             border: 0,
                             cursor: "pointer",
-                            color: "#64748b",
+                            color: tokens.textMuted,
                             transition: "background-color 150ms, color 150ms",
-                            "&:hover": { bgcolor: "#f8fafc", color: "#0f172a" },
+                            "&:hover": { bgcolor: tokens.bgCanvas, color: tokens.textPrimary },
                           }}
                         >
                           <AddIcon sx={{ fontSize: 12 }} />
@@ -695,7 +696,7 @@ export default function CartPage() {
                     </Box>
 
                     <Box sx={{ gridColumn: "span 2", display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 1, pr: 0.5 }}>
-                      <Typography sx={{ fontSize: 14, fontWeight: 900, color: "#0f172a" }}>৳{lineTotal.toLocaleString()}</Typography>
+                      <Typography sx={{ fontSize: 14, fontWeight: 900, color: tokens.textPrimary }}>৳{lineTotal.toLocaleString()}</Typography>
                       <IconButton
                         onClick={() => removeItem(item.id)}
                         size='small'
@@ -703,8 +704,8 @@ export default function CartPage() {
                           width: 32,
                           height: 32,
                           borderRadius: "12px",
-                          color: "#cbd5e1",
-                          "&:hover": { color: "#f43f5e", bgcolor: "#fff1f2" },
+                          color: tokens.borderElevated,
+                          "&:hover": { color: tokens.danger, bgcolor: tokens.dangerSubtle },
                         }}
                       >
                         <DeleteOutlinedIcon sx={{ fontSize: 14 }} />
@@ -716,12 +717,12 @@ export default function CartPage() {
             })}
 
             {/* Promo code */}
-            <Box sx={{ bgcolor: "#fff", border: "1px solid #e2e8f0", borderRadius: "16px", p: 2 }}>
+            <Box sx={{ bgcolor: tokens.bgPanel, border: `1px solid ${tokens.borderDefault}`, borderRadius: "16px", p: 2 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
-                <LocalOfferOutlinedIcon sx={{ fontSize: 14, color: "#94a3b8" }} />
+                <LocalOfferOutlinedIcon sx={{ fontSize: 14, color: tokens.textDisabled }} />
                 <Box
                   component='span'
-                  sx={{ fontSize: 12, fontWeight: 900, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.15em" }}
+                  sx={{ fontSize: 12, fontWeight: 900, color: tokens.textMuted, textTransform: "uppercase", letterSpacing: "0.15em" }}
                 >
                   Promo Code
                 </Box>
@@ -734,15 +735,15 @@ export default function CartPage() {
                     height: 44,
                     px: 2,
                     borderRadius: "12px",
-                    border: "1px solid #e2e8f0",
-                    bgcolor: "#f8fafc",
+                    border: `1px solid ${tokens.borderDefault}`,
+                    bgcolor: tokens.bgCanvas,
                     fontSize: 14,
                     fontWeight: 500,
-                    color: "#1e293b",
+                    color: tokens.textPrimary,
                     minWidth: 0,
                     transition: "border-color 200ms, box-shadow 200ms",
-                    "& input::placeholder": { color: "#94a3b8", opacity: 1 },
-                    "&.Mui-focused": { borderColor: "#94a3b8", boxShadow: "0 0 0 2px rgba(15,23,42,0.1)" },
+                    "& input::placeholder": { color: tokens.textDisabled, opacity: 1 },
+                    "&.Mui-focused": { borderColor: tokens.borderHover, boxShadow: "0 0 0 2px rgba(15,23,42,0.1)" },
                   }}
                 />
                 <Box
@@ -751,8 +752,8 @@ export default function CartPage() {
                     height: 44,
                     px: { xs: 2, sm: 2.5 },
                     borderRadius: "12px",
-                    bgcolor: "#0f172a",
-                    color: "#fff",
+                    bgcolor: tokens.textPrimary,
+                    color: tokens.textWhite,
                     fontWeight: 700,
                     fontSize: 14,
                     border: 0,
@@ -760,7 +761,7 @@ export default function CartPage() {
                     whiteSpace: "nowrap",
                     flexShrink: 0,
                     transition: "background-color 200ms",
-                    "&:hover": { bgcolor: "#1e293b" },
+                    "&:hover": { bgcolor: tokens.textSecondary },
                   }}
                 >
                   Apply
@@ -783,20 +784,20 @@ export default function CartPage() {
                     display: "flex",
                     alignItems: "center",
                     gap: { xs: 1, sm: 1.25 },
-                    bgcolor: "#fff",
-                    border: "1px solid #e2e8f0",
+                    bgcolor: tokens.bgPanel,
+                    border: `1px solid ${tokens.borderDefault}`,
                     borderRadius: "12px",
                     px: { xs: 1.25, sm: 1.5 },
                     py: { xs: 1.25, sm: 1.5 },
                   }}
                 >
-                  <Icon sx={{ fontSize: 16, color: "#94a3b8", flexShrink: 0 }} />
+                  <Icon sx={{ fontSize: 16, color: tokens.textDisabled, flexShrink: 0 }} />
                   <Box sx={{ minWidth: 0 }}>
-                    <Typography sx={{ fontSize: { xs: 10, sm: 11 }, fontWeight: 700, color: "#334155", lineHeight: 1 }}>{text}</Typography>
+                    <Typography sx={{ fontSize: { xs: 10, sm: 11 }, fontWeight: 700, color: tokens.textSecondary, lineHeight: 1 }}>{text}</Typography>
                     <Typography
                       sx={{
                         fontSize: { xs: 9, sm: 10 },
-                        color: "#94a3b8",
+                        color: tokens.textDisabled,
                         mt: 0.25,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
@@ -822,8 +823,8 @@ export default function CartPage() {
           >
             <Box
               sx={{
-                bgcolor: "#fff",
-                border: "1px solid #e2e8f0",
+                bgcolor: tokens.bgPanel,
+                border: `1px solid ${tokens.borderDefault}`,
                 borderRadius: "16px",
                 overflow: "hidden",
                 boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
@@ -835,21 +836,21 @@ export default function CartPage() {
                 sx={{
                   px: { xs: 2, sm: 3 },
                   py: { xs: 1.75, sm: 2 },
-                  borderBottom: "1px solid #f1f5f9",
-                  bgcolor: "#f8fafc",
+                  borderBottom: `1px solid ${tokens.borderSubtle}`,
+                  bgcolor: tokens.bgCanvas,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
                 }}
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <ShoppingCartIcon sx={{ fontSize: 16, color: "#64748b" }} />
+                  <ShoppingCartIcon sx={{ fontSize: 16, color: tokens.textMuted }} />
                   <Typography
                     component='h2'
                     sx={{
                       fontSize: { xs: 12, sm: 14 },
                       fontWeight: 900,
-                      color: "#0f172a",
+                      color: tokens.textPrimary,
                       textTransform: "uppercase",
                       letterSpacing: "0.05em",
                     }}
@@ -857,7 +858,7 @@ export default function CartPage() {
                     Order Summary
                   </Typography>
                 </Box>
-                <Typography sx={{ fontSize: 12, fontWeight: 700, color: "#94a3b8" }}>
+                <Typography sx={{ fontSize: 12, fontWeight: 700, color: tokens.textDisabled }}>
                   {totalCount} item{totalCount !== 1 ? "s" : ""}
                 </Typography>
               </Box>
@@ -873,11 +874,11 @@ export default function CartPage() {
                       >
                         <Box
                           component='span'
-                          sx={{ color: "#64748b", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+                          sx={{ color: tokens.textMuted, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
                         >
                           {item.title} ×{item.qty}
                         </Box>
-                        <Box component='span' sx={{ fontWeight: 700, color: "#334155", flexShrink: 0 }}>
+                        <Box component='span' sx={{ fontWeight: 700, color: tokens.textSecondary, flexShrink: 0 }}>
                           ৳{(p * item.qty).toLocaleString()}
                         </Box>
                       </Box>
@@ -885,38 +886,38 @@ export default function CartPage() {
                   })}
                 </Box>
 
-                <Box sx={{ height: 1, bgcolor: "#f1f5f9", mb: 1.5 }} />
+                <Box sx={{ height: 1, bgcolor: tokens.bgSubtle, mb: 1.5 }} />
 
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25, mb: 2 }}>
                   <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
-                    <Box component='span' sx={{ color: "#64748b", fontWeight: 500 }}>
+                    <Box component='span' sx={{ color: tokens.textMuted, fontWeight: 500 }}>
                       Subtotal
                     </Box>
-                    <Box component='span' sx={{ fontWeight: 700, color: "#0f172a" }}>
+                    <Box component='span' sx={{ fontWeight: 700, color: tokens.textPrimary }}>
                       ৳{totalPrice.toLocaleString()}
                     </Box>
                   </Box>
                   {savings > 0 && (
                     <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
-                      <Box component='span' sx={{ color: "#059669", fontWeight: 500, display: "flex", alignItems: "center", gap: 0.5 }}>
+                      <Box component='span' sx={{ color: tokens.successText, fontWeight: 500, display: "flex", alignItems: "center", gap: 0.5 }}>
                         <PercentIcon sx={{ fontSize: 14 }} /> You save
                       </Box>
-                      <Box component='span' sx={{ fontWeight: 700, color: "#059669" }}>
+                      <Box component='span' sx={{ fontWeight: 700, color: tokens.successText }}>
                         -৳{savings.toLocaleString()}
                       </Box>
                     </Box>
                   )}
                   <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: 14, alignItems: "flex-start" }}>
-                    <Box component='span' sx={{ color: "#64748b", fontWeight: 500 }}>
+                    <Box component='span' sx={{ color: tokens.textMuted, fontWeight: 500 }}>
                       Delivery
                     </Box>
-                    <Box component='span' sx={{ color: "#94a3b8", fontSize: 12, textAlign: "right" }}>
+                    <Box component='span' sx={{ color: tokens.textDisabled, fontSize: 12, textAlign: "right" }}>
                       Calculated at checkout
                     </Box>
                   </Box>
                 </Box>
 
-                <Box sx={{ height: 1, bgcolor: "#f1f5f9", mb: 2 }} />
+                <Box sx={{ height: 1, bgcolor: tokens.bgSubtle, mb: 2 }} />
 
                 <Box sx={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", mb: 2.5 }}>
                   <Box>
@@ -925,7 +926,7 @@ export default function CartPage() {
                       sx={{
                         fontSize: 10,
                         fontWeight: 900,
-                        color: "#94a3b8",
+                        color: tokens.textDisabled,
                         textTransform: "uppercase",
                         letterSpacing: "0.15em",
                         mb: 0.25,
@@ -934,17 +935,17 @@ export default function CartPage() {
                       Grand Total
                     </Box>
                     <Typography
-                      sx={{ fontSize: { xs: 24, sm: 30 }, fontWeight: 900, color: "#0f172a", letterSpacing: "-0.02em", lineHeight: 1.1 }}
+                      sx={{ fontSize: { xs: 24, sm: 30 }, fontWeight: 900, color: tokens.textPrimary, letterSpacing: "-0.02em", lineHeight: 1.1 }}
                     >
                       ৳{totalPrice.toLocaleString()}
                     </Typography>
                     {savings > 0 && (
-                      <Typography sx={{ fontSize: 12, color: "#059669", fontWeight: 600, mt: 0.25 }}>
+                      <Typography sx={{ fontSize: 12, color: tokens.successText, fontWeight: 600, mt: 0.25 }}>
                         Saving ৳{savings.toLocaleString()}
                       </Typography>
                     )}
                   </Box>
-                  <Box component='p' sx={{ fontSize: 10, color: "#94a3b8", fontWeight: 500, mb: 0.5 }}>
+                  <Box component='p' sx={{ fontSize: 10, color: tokens.textDisabled, fontWeight: 500, mb: 0.5 }}>
                     Excl. delivery
                   </Box>
                 </Box>
@@ -959,14 +960,14 @@ export default function CartPage() {
                     height: 48,
                     mb: 1.25,
                     borderRadius: "16px",
-                    bgcolor: "#0f172a",
-                    color: "#fff",
+                    bgcolor: tokens.textPrimary,
+                    color: tokens.textWhite,
                     fontWeight: 900,
                     fontSize: 14,
                     textTransform: "none",
                     boxShadow: "0 20px 25px -5px rgba(15,23,42,0.2)",
                     transition: "all 200ms",
-                    "&:hover": { bgcolor: "#1e293b", transform: "scale(1.02)" },
+                    "&:hover": { bgcolor: tokens.textSecondary, transform: "scale(1.02)" },
                     "&:active": { transform: "scale(0.98)" },
                   }}
                 >
@@ -982,14 +983,14 @@ export default function CartPage() {
                   sx={{
                     height: { xs: 40, sm: 44 },
                     borderRadius: "16px",
-                    bgcolor: "#fff",
-                    border: "1px solid #e2e8f0",
-                    color: "#475569",
+                    bgcolor: tokens.bgPanel,
+                    border: `1px solid ${tokens.borderDefault}`,
+                    color: tokens.textSecondary,
                     fontWeight: 600,
                     fontSize: 14,
                     textTransform: "none",
                     transition: "background-color 200ms",
-                    "&:hover": { bgcolor: "#f8fafc", borderColor: "#e2e8f0" },
+                    "&:hover": { bgcolor: tokens.bgCanvas, borderColor: tokens.borderDefault },
                   }}
                 >
                   Continue Shopping
@@ -1003,14 +1004,14 @@ export default function CartPage() {
                     gap: 1,
                     mt: 2,
                     pt: 2,
-                    borderTop: "1px solid #f1f5f9",
+                    borderTop: `1px solid ${tokens.borderSubtle}`,
                   }}
                 >
-                  <ShieldOutlinedIcon sx={{ fontSize: 14, color: "#cbd5e1" }} />
-                  <Typography sx={{ fontSize: 10, color: "#94a3b8", fontWeight: 500, textAlign: "center" }}>
+                  <ShieldOutlinedIcon sx={{ fontSize: 14, color: tokens.borderElevated }} />
+                  <Typography sx={{ fontSize: 10, color: tokens.textDisabled, fontWeight: 500, textAlign: "center" }}>
                     Secured by{" "}
-                    <Box component='span' sx={{ fontWeight: 700, color: "#64748b" }}>
-                      BongoNex
+                    <Box component='span' sx={{ fontWeight: 700, color: tokens.textMuted }}>
+                      We Gadget BD
                     </Box>
                     {" · SSL Encrypted"}
                   </Typography>
@@ -1023,15 +1024,15 @@ export default function CartPage() {
                 display: "flex",
                 alignItems: "center",
                 gap: 1,
-                bgcolor: "#ecfdf5",
-                border: "1px solid #d1fae5",
+                bgcolor: tokens.primaryLight,
+                border: `1px solid ${tokens.successBorder}`,
                 borderRadius: "12px",
                 px: { xs: 1.5, sm: 2 },
                 py: 1.5,
               }}
             >
-              <ShieldOutlinedIcon sx={{ fontSize: 16, color: "#10b981", flexShrink: 0 }} />
-              <Typography sx={{ fontSize: 11, fontWeight: 600, color: "#047857", lineHeight: 1.35 }}>
+              <ShieldOutlinedIcon sx={{ fontSize: 16, color: tokens.primary, flexShrink: 0 }} />
+              <Typography sx={{ fontSize: 11, fontWeight: 600, color: tokens.successText, lineHeight: 1.35 }}>
                 100% genuine products · 30-day return guarantee
               </Typography>
             </Box>
@@ -1041,8 +1042,8 @@ export default function CartPage() {
                 display: "flex",
                 alignItems: "center",
                 gap: 1.5,
-                bgcolor: "#fff",
-                border: "1px solid #e2e8f0",
+                bgcolor: tokens.bgPanel,
+                border: `1px solid ${tokens.borderDefault}`,
                 borderRadius: "12px",
                 px: { xs: 1.5, sm: 2 },
                 py: 1.5,
@@ -1050,11 +1051,11 @@ export default function CartPage() {
             >
               <Box sx={{ display: "flex", gap: 0.25 }}>
                 {[1, 2, 3, 4, 5].map((s) => (
-                  <StarIcon key={s} sx={{ fontSize: 14, color: "#fbbf24" }} />
+                  <StarIcon key={s} sx={{ fontSize: 14, color: tokens.warning }} />
                 ))}
               </Box>
-              <Typography sx={{ fontSize: 11, color: "#64748b", fontWeight: 500 }}>
-                <Box component='span' sx={{ fontWeight: 900, color: "#334155" }}>
+              <Typography sx={{ fontSize: 11, color: tokens.textMuted, fontWeight: 500 }}>
+                <Box component='span' sx={{ fontWeight: 900, color: tokens.textSecondary }}>
                   4.9/5
                 </Box>{" "}
                 from 18,400+ customers
@@ -1075,7 +1076,7 @@ export default function CartPage() {
           zIndex: 40,
           bgcolor: "rgba(255,255,255,0.95)",
           backdropFilter: "blur(20px)",
-          borderTop: "1px solid #f1f5f9",
+          borderTop: `1px solid ${tokens.borderSubtle}`,
           boxShadow: "0 -4px 20px rgba(0,0,0,0.07)",
           px: 2,
           py: 1.5,
@@ -1083,14 +1084,14 @@ export default function CartPage() {
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, maxWidth: 1152, mx: "auto" }}>
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography component='p' sx={{ fontSize: 10, color: "#94a3b8", fontWeight: 500, lineHeight: 1, mb: 0.25 }}>
+            <Typography component='p' sx={{ fontSize: 10, color: tokens.textDisabled, fontWeight: 500, lineHeight: 1, mb: 0.25 }}>
               Grand Total
             </Typography>
-            <Typography sx={{ fontSize: 20, fontWeight: 900, color: "#0f172a", letterSpacing: "-0.02em", lineHeight: 1 }}>
+            <Typography sx={{ fontSize: 20, fontWeight: 900, color: tokens.textPrimary, letterSpacing: "-0.02em", lineHeight: 1 }}>
               ৳{totalPrice.toLocaleString()}
             </Typography>
             {savings > 0 && (
-              <Typography sx={{ fontSize: 10, color: "#059669", fontWeight: 600, mt: 0.25 }}>Saving ৳{savings.toLocaleString()}</Typography>
+              <Typography sx={{ fontSize: 10, color: tokens.successText, fontWeight: 600, mt: 0.25 }}>Saving ৳{savings.toLocaleString()}</Typography>
             )}
           </Box>
           <Button
@@ -1102,15 +1103,15 @@ export default function CartPage() {
               height: 48,
               px: 3,
               borderRadius: "16px",
-              bgcolor: "#0f172a",
-              color: "#fff",
+              bgcolor: tokens.textPrimary,
+              color: tokens.textWhite,
               fontWeight: 900,
               fontSize: 14,
               textTransform: "none",
               flexShrink: 0,
               boxShadow: "0 10px 15px -3px rgba(15,23,42,0.2)",
               transition: "all 150ms",
-              "&:hover": { bgcolor: "#1e293b" },
+              "&:hover": { bgcolor: tokens.textSecondary },
               "&:active": { transform: "scale(0.97)" },
             }}
           >

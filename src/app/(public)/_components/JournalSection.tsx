@@ -4,13 +4,12 @@ import NextLink from "next/link";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
 import { tokens } from "@/theme/theme";
-import { Badge } from "@/components/ui/badge";
 import { SectionContainer } from "@/components/common/SectionContainer";
+import { ProductCard, type ProductCardItem } from "./ProductCard";
 
-const ARTICLES = [
+const ARTICLES: ProductCardItem[] = [
   {
     id: 1,
     tag: "GUIDE",
@@ -105,11 +104,6 @@ export function JournalSection() {
             fontWeight: 700,
             color: tokens.textPrimary,
             textDecoration: "none",
-            transition: "color 0.2s ease, transform 0.2s ease",
-            "&:hover": {
-              color: tokens.primary,
-              transform: "translateX(3px)",
-            },
           }}
         >
           View All Articles <ArrowForwardIcon sx={{ fontSize: 16 }} />
@@ -129,110 +123,7 @@ export function JournalSection() {
         }}
       >
         {ARTICLES.map((article) => (
-          <Box
-            key={article.id}
-            component={NextLink}
-            href={article.link}
-            sx={{
-              bgcolor: tokens.bgPanel,
-              borderRadius: "20px",
-              border: `1px solid ${tokens.borderDefault}`,
-              overflow: "hidden",
-              textDecoration: "none",
-              display: "flex",
-              flexDirection: "column",
-              transition: "transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease",
-              "&:hover": {
-                transform: "translateY(-4px)",
-                boxShadow: tokens.shadowLg,
-                borderColor: tokens.primaryBorder,
-              },
-              "&:hover .art-img": {
-                transform: "scale(1.06)",
-              },
-              "&:hover .art-title": {
-                color: tokens.primary,
-              },
-            }}
-          >
-            {/* Image Banner */}
-            <Box
-              sx={{
-                width: "100%",
-                height: 180,
-                overflow: "hidden",
-                position: "relative",
-                bgcolor: tokens.bgSubtle,
-              }}
-            >
-              <Box
-                component="img"
-                className="art-img"
-                src={article.image}
-                alt={article.title}
-                sx={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  transition: "transform 0.4s ease",
-                }}
-              />
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: 12,
-                  left: 12,
-                }}
-              >
-                <Badge
-                  variant={article.tagVariant as any || "accent"}
-                  label={article.tag}
-                  sx={{
-                    fontWeight: 700,
-                    fontSize: 10,
-                    height: 22,
-                    backdropFilter: "blur(6px)",
-                  }}
-                />
-              </Box>
-            </Box>
-
-            {/* Details */}
-            <Box sx={{ p: 2, display: "flex", flexDirection: "column", flex: 1 }}>
-              <Typography
-                className="art-title"
-                sx={{
-                  fontSize: 14.5,
-                  fontWeight: 700,
-                  color: tokens.textPrimary,
-                  lineHeight: 1.35,
-                  mb: 1.5,
-                  display: "-webkit-box",
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: "vertical",
-                  overflow: "hidden",
-                  transition: "color 0.2s ease",
-                }}
-              >
-                {article.title}
-              </Typography>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0.75,
-                  mt: "auto",
-                  color: tokens.textMuted,
-                }}
-              >
-                <AccessTimeIcon sx={{ fontSize: 14 }} />
-                <Typography sx={{ fontSize: 12, fontWeight: 500 }}>
-                  {article.readTime}
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
+          <ProductCard key={article.id} product={article} />
         ))}
       </Box>
     </SectionContainer>
@@ -240,4 +131,3 @@ export function JournalSection() {
 }
 
 export default JournalSection;
-

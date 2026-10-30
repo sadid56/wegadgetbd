@@ -2,10 +2,11 @@
 
 import { useRef } from "react";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { tokens } from "@/theme/theme";
 
 interface TagTabsProps {
   search: string;
@@ -40,16 +41,16 @@ export function TagTabs({ search, activeTag, availableTags, onTagClick }: TagTab
     minWidth: 0,
     ...(active
       ? {
-          bgcolor: "text.primary",
-          color: "background.default",
-          "&:hover": { bgcolor: "text.primary", opacity: 0.9 },
+          bgcolor: tokens.textPrimary,
+          color: tokens.textWhite,
+          "&:hover": { bgcolor: tokens.textPrimary, opacity: 0.9 },
         }
       : {
-          bgcolor: "background.paper",
-          color: "text.primary",
+          bgcolor: tokens.bgPanel,
+          color: tokens.textPrimary,
           border: "1px solid",
-          borderColor: "divider",
-          "&:hover": { bgcolor: "action.hover", borderColor: "divider" },
+          borderColor: tokens.borderDefault,
+          "&:hover": { bgcolor: tokens.bgSubtle, borderColor: tokens.borderDefault },
         }),
   });
 
@@ -59,7 +60,7 @@ export function TagTabs({ search, activeTag, availableTags, onTagClick }: TagTab
         my: 2,
         pt: 2,
         borderTop: "1px solid",
-        borderColor: "divider",
+        borderColor: tokens.borderDefault,
         display: "flex",
         alignItems: "center",
         gap: 1,
@@ -76,10 +77,10 @@ export function TagTabs({ search, activeTag, availableTags, onTagClick }: TagTab
           flexShrink: 0,
           borderRadius: "50%",
           border: "1px solid",
-          borderColor: "divider",
-          bgcolor: "background.paper",
-          boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-          "&:hover": { bgcolor: "action.hover", borderColor: "divider" },
+          borderColor: tokens.borderDefault,
+          bgcolor: tokens.bgPanel,
+          boxShadow: tokens.shadowSm,
+          "&:hover": { bgcolor: tokens.bgSubtle, borderColor: tokens.borderDefault },
         }}
       >
         <ChevronLeftIcon sx={{ fontSize: 16 }} />
@@ -118,10 +119,10 @@ export function TagTabs({ search, activeTag, availableTags, onTagClick }: TagTab
           ml: "auto",
           borderRadius: "50%",
           border: "1px solid",
-          borderColor: "divider",
-          bgcolor: "background.paper",
-          boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-          "&:hover": { bgcolor: "action.hover", borderColor: "divider" },
+          borderColor: tokens.borderDefault,
+          bgcolor: tokens.bgPanel,
+          boxShadow: tokens.shadowSm,
+          "&:hover": { bgcolor: tokens.bgSubtle, borderColor: tokens.borderDefault },
         }}
       >
         <ChevronRightIcon sx={{ fontSize: 16 }} />

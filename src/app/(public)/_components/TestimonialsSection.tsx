@@ -3,13 +3,13 @@
 import { useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
-import Avatar from "@mui/material/Avatar";
 import StarIcon from "@mui/icons-material/Star";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
 import { tokens } from "@/theme/theme";
+import { IconButton } from "@/components/ui/icon-button";
+import { Avatar } from "@/components/ui/avatar";
 import { SectionContainer } from "@/components/common/SectionContainer";
 
 const REVIEWS = [

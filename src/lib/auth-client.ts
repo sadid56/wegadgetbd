@@ -242,7 +242,7 @@ export async function signOut(options?: {
 }) {
   const { onSuccess, onError } = options?.fetchOptions ?? {};
   try {
-    const { signOutAction } = await import("@/actions/auth");
+    const { signOutAction } = await import("@/server/actions/auth.action");
     await signOutAction().catch(() => null);
     const { error } = await supabase.auth.signOut();
     clearAuthCookiesClient();

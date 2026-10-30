@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import { theme } from "@/theme/theme";
 import { ToastProvider } from "@/context/toast-context";
+import { InlineScrollbar } from "@/components/common/InlineScrollbar";
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -22,6 +23,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
+        <InlineScrollbar />
         <ToastProvider>{children}</ToastProvider>
       </ThemeProvider>
     </QueryClientProvider>

@@ -4,14 +4,14 @@ import { ContentPageLayout } from "@/components/layouts/content-page-layout";
 
 export const metadata: Metadata = buildPublicMetadata({
   title: "Privacy Policy",
-  description: "Read how BongoNex collects, uses, and protects your personal information.",
+  description: "Read how We Gadget BD collects, uses, and protects your personal information.",
   path: "/privacy",
   keywords: ["privacy policy", "data protection", "user privacy"],
 });
 
 const PRIVACY_MARKDOWN = `
 ## 1. Introduction
-Welcome to **BongoNex**. We respect your privacy and are committed to protecting your personal data. This privacy policy will inform you about how we look after your personal data when you visit our website and tell you about your privacy rights and how the law protects you.
+Welcome to **We Gadget BD**. We respect your privacy and are committed to protecting your personal data. This privacy policy will inform you about how we look after your personal data when you visit our website and tell you about your privacy rights and how the law protects you.
 
 ## 2. Data We Collect
 We may collect, use, store and transfer different kinds of personal data about you, including:
@@ -38,7 +38,7 @@ Under certain circumstances, you have rights under data protection laws in relat
 ## 6. Contact Us
 If you have any questions about this privacy policy or our privacy practices, please contact us at:
 
-- **Email:** [support@bongonex.com](mailto:support@bongonex.com)
+- **Email:** [support@wegadgetbd.com](mailto:support@wegadgetbd.com)
 - **Phone:** +880 1784972403
 `;
 

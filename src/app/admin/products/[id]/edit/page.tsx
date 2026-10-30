@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import CircularProgress from "@mui/material/CircularProgress";
+import { CircularProgress } from "@/components/ui/spinner";
 
 import { ProductForm } from "@/components/admin/product-form";
 import { orpc } from "@/lib/orpc/client";

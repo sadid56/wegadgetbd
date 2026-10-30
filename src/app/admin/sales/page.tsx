@@ -6,33 +6,24 @@ import { format } from "date-fns";
 import { useToast } from "@/context/toast-context";
 
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import InputBase from "@mui/material/InputBase";
 import Typography from "@mui/material/Typography";
-import Chip from "@mui/material/Chip";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogActions from "@mui/material/DialogActions";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Pagination from "@mui/material/Pagination";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { InputBase } from "@/components/ui/input";
+import { Chip } from "@/components/ui/badge";
+import { Menu, MenuItem } from "@/components/ui/menu";
+import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@/components/ui/table";
+import { Pagination } from "@/components/ui/pagination";
 
 import SearchIcon from "@mui/icons-material/Search";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 
-import { getSales, deleteSale } from "@/actions/sales";
+import { SaleEndpoints } from "@/query-client/sales";
 import { SaleDialog } from "./_components/sale-dialog";
+import { tokens } from "@/theme/theme";
 
 const tableHeadSx = {
   fontSize: 12,
@@ -78,9 +69,9 @@ function SaleStatusChip({ status }: { status: string }) {
           height: 22,
           fontSize: 11,
           fontWeight: 700,
-          bgcolor: "#dcfce7",
-          color: "#166534",
-          borderColor: "#bbf7d0",
+          bgcolor: tokens.successSubtle,
+          color: tokens.successText,
+          borderColor: tokens.successBorder,
           "& .MuiChip-label": { px: 1.25 },
         }}
       />
@@ -96,9 +87,9 @@ function SaleStatusChip({ status }: { status: string }) {
           height: 22,
           fontSize: 11,
           fontWeight: 700,
-          bgcolor: "#fee2e2",
-          color: "#991b1b",
-          borderColor: "#fecaca",
+          bgcolor: tokens.dangerSubtle,
+          color: tokens.dangerHover,
+          borderColor: tokens.dangerBorder,
           "& .MuiChip-label": { px: 1.25 },
         }}
       />
@@ -202,11 +193,6 @@ function FilterSelect({
               setAnchor(null);
             }}
             selected={opt.value === value}
-            sx={{
-              fontSize: 13,
-              py: 1,
-              "&.Mui-selected": { bgcolor: "action.selected", fontWeight: 600 },
-            }}
           >
             {opt.label}
           </MenuItem>
@@ -276,21 +262,28 @@ export default function SalesPage() {
         endDate = end;
       }
 
-      const result = await getSales({
-        page,
-        search,
-        startDate,
-        endDate,
-        sellerName: sellerParam,
-      });
+      try {
+        const result = await SaleEndpoints.getSales({
+          page,
+          search,
+          startDate,
+          endDate,
+          sellerName: sellerParam,
+        });
 
-      setSales(result.sales);
-      setTotalProfit(result.totalProfit);
-      setTotalPages(result.metadata.totalPages);
-      setSellerOptions(result.sellerOptions);
-      setTotals(result.totals);
-      setProductWise(result.productWise);
-      setLoading(false);
+        if (result) {
+          setSales(result.sales);
+          setTotalProfit(result.totalProfit);
+          setTotalPages(result.metadata.totalPages);
+          setSellerOptions(result.sellerOptions);
+          setTotals(result.totals);
+          setProductWise(result.productWise);
+        }
+      } catch (err) {
+        console.error("Failed to load sales:", err);
+      } finally {
+        setLoading(false);
+      }
     }
     fetchData();
   }, [page, search, dateFilter, refreshKey, sellerParam]);
@@ -301,12 +294,16 @@ export default function SalesPage() {
 
   const handleDelete = async () => {
     if (!deleteId) return;
-    const res = await deleteSale(deleteId);
-    if (res.success) {
-      toast.success("Sale deleted successfully");
-      setDeleteId(null);
-      handleRefresh();
-    } else {
+    try {
+      const res = await SaleEndpoints.deleteSale(deleteId);
+      if (res?.success) {
+        toast.success("Sale deleted successfully");
+        setDeleteId(null);
+        handleRefresh();
+      } else {
+        toast.error("Failed to delete sale");
+      }
+    } catch {
       toast.error("Failed to delete sale");
     }
   };
@@ -341,8 +338,8 @@ export default function SalesPage() {
   const statCards = [
     { label: "Sold Qty", value: totals.totalSoldQuantity, color: "text.primary" },
     { label: "All Sell Prices", value: formatMoney(totals.totalSellPrices), color: "text.primary" },
-    { label: "Cancel Count", value: totals.cancelCount, color: "#f97316" },
-    { label: "Return Count", value: totals.returnCount, color: "#ef4444" },
+    { label: "Cancel Count", value: totals.cancelCount, color: tokens.badgeSale },
+    { label: "Return Count", value: totals.returnCount, color: tokens.danger },
   ];
 
   const productWiseCards = [
@@ -382,7 +379,7 @@ export default function SalesPage() {
             <Box component='span' sx={{ fontSize: 14, fontWeight: 500, color: "text.secondary" }}>
               Total Profit
             </Box>
-            <Box component='span' sx={{ fontSize: 24, fontWeight: 700, color: "#16a34a", lineHeight: 1.2 }}>
+            <Box component='span' sx={{ fontSize: 24, fontWeight: 700, color: tokens.successText, lineHeight: 1.2 }}>
               {formatMoney(totalProfit)}
             </Box>
           </Box>
@@ -614,7 +611,7 @@ export default function SalesPage() {
                   <TableCell
                     sx={{
                       fontWeight: 700,
-                      color: sale.profit >= 0 ? "#16a34a" : "#dc2626",
+                      color: sale.profit >= 0 ? tokens.successText : tokens.danger,
                     }}
                   >
                     {Number(sale.profit).toFixed(0)}
@@ -668,7 +665,7 @@ export default function SalesPage() {
           <Pagination
             count={totalPages}
             page={page}
-            onChange={(_, p) => router.push(`?page=${p}&search=${encodeURIComponent(search)}&seller=${encodeURIComponent(sellerParam)}`)}
+            onChange={(_, p = 1) => router.push(`?page=${p}&search=${encodeURIComponent(search)}&seller=${encodeURIComponent(sellerParam)}`)}
             showFirstButton
             showLastButton
             siblingCount={1}

@@ -4,23 +4,15 @@ import { useState } from "react";
 import { format } from "date-fns";
 
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
-import Chip from "@mui/material/Chip";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import Divider from "@mui/material/Divider";
-import CircularProgress from "@mui/material/CircularProgress";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { Chip } from "@/components/ui/badge";
+import { Menu, MenuItem } from "@/components/ui/menu";
+import { Divider } from "@/components/ui/divider";
+import { CircularProgress } from "@/components/ui/spinner";
+import { Dialog, DialogTitle, DialogContent } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@/components/ui/table";
 
 import AddIcon from "@mui/icons-material/Add";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
@@ -32,6 +24,7 @@ import StarIcon from "@mui/icons-material/Star";
 import { useReviews, useDeleteReview, useToggleReviewStatus } from "@/query-client/reviews/index";
 import { ReviewForm } from "./_components/review-form";
 import { getAssetUrl } from "@/lib/storage";
+import { tokens } from "@/theme/theme";
 
 const tableHeadSx = {
   fontSize: 12,
@@ -283,7 +276,7 @@ export default function AdminReviewsPage() {
                       sx={{
                         display: "flex",
                         alignItems: "center",
-                        color: "#eab308",
+                        color: tokens.warning,
                       }}
                     >
                       <Box
@@ -297,7 +290,7 @@ export default function AdminReviewsPage() {
                       >
                         {review.rating}
                       </Box>
-                      <StarIcon sx={{ fontSize: 12, color: "#eab308" }} />
+                      <StarIcon sx={{ fontSize: 12, color: tokens.warning }} />
                     </Box>
                   </TableCell>
 
@@ -399,20 +392,19 @@ export default function AdminReviewsPage() {
             }
             closeMenu();
           }}
-          sx={{ fontSize: 14, py: 1, color: "text.primary" }}
         >
           Edit
         </MenuItem>
 
         {activeReview && activeReview.status !== "APPROVED" && (
           <MenuItem
+            variant='accent'
             onClick={() => {
               if (menuReviewId) handleStatusChange(menuReviewId, "APPROVED");
               closeMenu();
             }}
-            sx={{ fontSize: 14, py: 1, gap: 1, color: "text.primary" }}
           >
-            <CheckIcon sx={{ fontSize: 16, color: "#10b981" }} />
+            <CheckIcon />
             Approve
           </MenuItem>
         )}
@@ -423,9 +415,8 @@ export default function AdminReviewsPage() {
               if (menuReviewId) handleStatusChange(menuReviewId, "REJECTED");
               closeMenu();
             }}
-            sx={{ fontSize: 14, py: 1, gap: 1, color: "text.primary" }}
           >
-            <CloseIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+            <CloseIcon />
             Reject
           </MenuItem>
         )}
@@ -433,19 +424,13 @@ export default function AdminReviewsPage() {
         <Divider sx={{ my: 0.5 }} />
 
         <MenuItem
+          variant='danger'
           onClick={() => {
             if (menuReviewId) handleDelete(menuReviewId);
             closeMenu();
           }}
-          sx={{
-            fontSize: 14,
-            py: 1,
-            gap: 1,
-            color: "error.main",
-            "&:hover": { bgcolor: "rgba(239,68,68,0.1)" },
-          }}
         >
-          <DeleteOutlineIcon sx={{ fontSize: 16 }} />
+          <DeleteOutlineIcon />
           Delete
         </MenuItem>
       </Menu>

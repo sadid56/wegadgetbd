@@ -1,70 +1,72 @@
 import { useAppMutation } from "@/hooks/useAppMutation";
 import { useQuery } from "@tanstack/react-query";
-import {
-  getReviews,
-  getApprovedReviews,
-  createReview,
-  updateReview,
-  deleteReview,
-  toggleReviewStatus,
-  type CreateReviewInput,
-  type UpdateReviewInput,
-} from "@/actions/reviews";
+import { orpcClient } from "@/lib/orpc/client";
 import type { ReviewStatus } from "@/db/schema";
 
-async function unwrap<T>(fn: () => Promise<{ success: boolean; data?: T; error?: any }>): Promise<T> {
-  const res = await fn();
-  if (!res.success) throw new Error(res.error ?? "Request failed");
-  return res.data as T;
-}
+export type CreateReviewInput = {
+  customerName: string;
+  customerPic?: string;
+  mediaUrl?: string;
+  mediaType?: string;
+  review: string;
+  rating: number;
+  status?: ReviewStatus;
+  productId?: string;
+};
+
+export type UpdateReviewInput = Partial<CreateReviewInput>;
 
 const reviewKeys = {
   all: ["reviews"] as const,
   approved: ["approvedReviews"] as const,
 };
 
-const invalidateReviews = [reviewKeys.all, reviewKeys.approved];
-
 export const useReviews = () =>
   useQuery({
     queryKey: reviewKeys.all,
-    queryFn: () => unwrap(getReviews),
+    queryFn: async () => {
+      const res = await orpcClient.admin.reviews.list();
+      return res;
+    },
   });
 
 export const useApprovedReviews = () =>
   useQuery({
     queryKey: reviewKeys.approved,
-    queryFn: () => unwrap(getApprovedReviews),
+    queryFn: async () => {
+      const res = await orpcClient.admin.reviews.list();
+      return res.filter((r: any) => r.status === "APPROVED");
+    },
   });
 
 export const useCreateReview = (options?: Record<string, unknown>) =>
   useAppMutation({
-    mutationFn: (data: CreateReviewInput) => unwrap(() => createReview(data)),
-    invalidateKeys: invalidateReviews,
+    mutationFn: (data: any) => orpcClient.admin.reviews.create(data),
+    invalidateKeys: [reviewKeys.all, reviewKeys.approved],
     successMessage: "Review created successfully",
     ...options,
   });
 
 export const useUpdateReview = (options?: Record<string, unknown>) =>
   useAppMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateReviewInput }) => unwrap(() => updateReview(id, data)),
-    invalidateKeys: invalidateReviews,
+    mutationFn: ({ id, data }: { id: string; data: any }) =>
+      orpcClient.admin.reviews.update({ id, ...data }),
+    invalidateKeys: [reviewKeys.all, reviewKeys.approved],
     successMessage: "Review updated successfully",
     ...options,
   });
 
-export const useDeleteReview = (options?: Record<string, unknown>) =>
+export const useDeleteReview = () =>
   useAppMutation({
-    mutationFn: (id: string) => unwrap(() => deleteReview(id)),
-    invalidateKeys: invalidateReviews,
+    mutationFn: (id: string) => orpcClient.admin.reviews.delete({ id }),
+    invalidateKeys: [reviewKeys.all, reviewKeys.approved],
     successMessage: "Review deleted successfully",
-    ...options,
   });
 
-export const useToggleReviewStatus = (options?: Record<string, unknown>) =>
+export const useToggleReviewStatus = () =>
   useAppMutation({
-    mutationFn: ({ id, status }: { id: string; status: ReviewStatus }) => unwrap(() => toggleReviewStatus(id, status)),
-    invalidateKeys: invalidateReviews,
+    mutationFn: ({ id, status }: { id: string; status: ReviewStatus }) =>
+      orpcClient.admin.reviews.update({ id, status }),
+    invalidateKeys: [reviewKeys.all, reviewKeys.approved],
     successMessage: "Review status updated",
-    ...options,
   });

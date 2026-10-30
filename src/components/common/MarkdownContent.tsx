@@ -4,6 +4,7 @@ import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import ImageIcon from "@mui/icons-material/Image";
 import React, { useState } from "react";
 import { useToast } from "@/context/toast-context";
+import { tokens } from "@/theme/theme";
 
 const CodeBlock = ({ className, children }: any) => {
   const [copied, setCopied] = useState(false);
@@ -49,8 +50,8 @@ const CodeBlock = ({ className, children }: any) => {
       >
         {copied ? (
           <>
-            <CheckIcon sx={{ fontSize: 14, color: "#10b981" }} />
-            <span style={{ color: "#10b981" }}>Copied!</span>
+            <CheckIcon sx={{ fontSize: 14, color: tokens.primary }} />
+            <span style={{ color: tokens.primary }}>Copied!</span>
           </>
         ) : (
           <>

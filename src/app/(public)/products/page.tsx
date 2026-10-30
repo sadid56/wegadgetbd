@@ -5,7 +5,7 @@ import ShopPage from "./_components/products-page-client";
 const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
-  title: "All Products - Premium Gadgets & Tech Accessories | BongoNex",
+  title: "All Products - Premium Gadgets & Tech Accessories | We Gadget BD",
   description:
     "Explore our complete collection of 100% authentic gadgets in Bangladesh. Filter original smartwatches, TWS earbuds, phone accessories, and tech electronics by category and price.",
   keywords: [
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     "smartwatches collection",
     "wireless earbuds Bangladesh",
     "tech accessories store",
-    "BongoNex products",
+    "We Gadget BD products",
   ],
   alternates: {
     canonical: `${siteUrl}/products`,
@@ -32,10 +32,10 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "All Products - Premium Gadgets & Tech Accessories | BongoNex",
+    title: "All Products - Premium Gadgets & Tech Accessories | We Gadget BD",
     description: "Explore our complete collection of 100% authentic gadgets in Bangladesh with official warranty and fast delivery.",
     url: `${siteUrl}/products`,
-    siteName: "BongoNex",
+    siteName: "We Gadget BD",
     locale: "en_US",
     type: "website",
     images: [
@@ -43,13 +43,13 @@ export const metadata: Metadata = {
         url: `${siteUrl}/images/default.png`,
         width: 1200,
         height: 630,
-        alt: "All Products - BongoNex Gadgets Store",
+        alt: "All Products - We Gadget BD Gadgets Store",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "All Products - Premium Gadgets & Tech Accessories | BongoNex",
+    title: "All Products - Premium Gadgets & Tech Accessories | We Gadget BD",
     description: "Explore our complete collection of 100% authentic gadgets in Bangladesh with official warranty and fast delivery.",
     images: [`${siteUrl}/images/default.png`],
   },
@@ -63,13 +63,13 @@ export default function ProductsPage() {
         "@type": "CollectionPage",
         "@id": `${siteUrl}/products#webpage`,
         url: `${siteUrl}/products`,
-        name: "All Products - Premium Gadgets & Tech Accessories | BongoNex",
+        name: "All Products - Premium Gadgets & Tech Accessories | We Gadget BD",
         description: "Explore our complete collection of 100% authentic gadgets in Bangladesh with official warranty and fast delivery.",
         isPartOf: {
           "@type": "WebSite",
           "@id": `${siteUrl}/#website`,
           url: `${siteUrl}/`,
-          name: "BongoNex",
+          name: "We Gadget BD",
         },
       },
       {

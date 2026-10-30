@@ -3,6 +3,7 @@
 import React from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import { tokens } from "@/theme/theme";
 import { BN } from "./checkout-constants";
 
 export function Field({ label, hint, error, children }: { label: string; hint?: string; error?: string; children: React.ReactNode }) {
@@ -21,7 +22,7 @@ export function Field({ label, hint, error, children }: { label: string; hint?: 
             ...BN,
             fontSize: 12,
             fontWeight: 600,
-            color: "grey.600",
+            color: tokens.textSecondary,
             textTransform: "uppercase",
             letterSpacing: "0.05em",
           }}
@@ -29,7 +30,7 @@ export function Field({ label, hint, error, children }: { label: string; hint?: 
           {label}
         </Typography>
         {hint && (
-          <Typography component='span' sx={{ ...BN, fontSize: 11, color: "grey.400" }}>
+          <Typography component='span' sx={{ ...BN, fontSize: 11, color: tokens.textDisabled }}>
             {hint}
           </Typography>
         )}
@@ -42,7 +43,7 @@ export function Field({ label, hint, error, children }: { label: string; hint?: 
           component='p'
           sx={{
             ...BN,
-            color: "error.main",
+            color: tokens.error,
             fontSize: 12,
             fontWeight: 500,
             mt: 0.25,

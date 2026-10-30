@@ -6,22 +6,21 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import IconButton from "@mui/material/IconButton";
-import CircularProgress from "@mui/material/CircularProgress";
+import { Button } from "@/components/ui/button";
+import { TextField } from "@/components/ui/input";
+import { FormControl, Select, MenuItem } from "@/components/ui/select";
+import { IconButton } from "@/components/ui/icon-button";
+import { CircularProgress } from "@/components/ui/spinner";
 
 import CloseIcon from "@mui/icons-material/Close";
 import ImageOutlinedIcon from "@mui/icons-material/ImageOutlined";
 import VideocamOutlinedIcon from "@mui/icons-material/VideocamOutlined";
 
 import { useCreateReview, useUpdateReview } from "@/query-client/reviews/index";
-import { getProductsForSelect } from "@/actions/reviews";
+import { orpcClient } from "@/lib/orpc/client";
 import { uploadFileToStorage, getAssetUrl, stripAssetDomain } from "@/lib/storage";
+import { tokens } from "@/theme/theme";
 
 const reviewSchema = z.object({
   customerName: z.string().min(1, "Name is required"),
@@ -88,9 +87,21 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
   const isPending = isCreating || isUpdating || uploadingPic || uploadingMedia;
 
   useEffect(() => {
-    getProductsForSelect().then((res) => {
-      if (res.success) setProducts(res.data || []);
-    });
+    orpcClient.products
+      .list({ limit: 100 })
+      .then((res) => {
+        if (res?.products) {
+          setProducts(
+            res.products.map((p) => ({
+              id: p.id,
+              title: p.title,
+            }))
+          );
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load products for review form", err);
+      });
   }, []);
 
   const form = useForm<ReviewFormValues>({
@@ -265,13 +276,13 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
               gap: 1.5,
               transition: "all 200ms",
               "&:hover": {
-                borderColor: "#34d399",
-                bgcolor: "rgba(16,185,129,0.05)",
+                borderColor: tokens.accent,
+                bgcolor: tokens.primarySubtle,
               },
             }}
           >
             {uploadingPic ? (
-              <CircularProgress size={16} sx={{ color: "#10b981" }} />
+              <CircularProgress size={16} sx={{ color: tokens.primary }} />
             ) : (
               <ImageOutlinedIcon sx={{ fontSize: 16, color: "text.secondary" }} />
             )}
@@ -307,7 +318,7 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
                   borderRadius: "50%",
                   objectFit: "cover",
                   border: "2px solid",
-                  borderColor: "#a7f3d0",
+                  borderColor: tokens.primaryBorder,
                 }}
               />
               <IconButton
@@ -323,9 +334,9 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
                   right: -4,
                   width: 20,
                   height: 20,
-                  bgcolor: "#ef4444",
-                  color: "#fff",
-                  "&:hover": { bgcolor: "#dc2626" },
+                  bgcolor: tokens.danger,
+                  color: tokens.textWhite,
+                  "&:hover": { bgcolor: tokens.dangerHover },
                 }}
               >
                 <CloseIcon sx={{ fontSize: 12 }} />
@@ -365,7 +376,7 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
             onClick={() => mediaRef.current?.click()}
             sx={{
               border: "2px dashed",
-              borderColor: "#bfdbfe",
+              borderColor: tokens.infoBorder,
               borderRadius: "12px",
               p: 1.5,
               cursor: "pointer",
@@ -374,13 +385,13 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
               gap: 1.5,
               transition: "all 200ms",
               "&:hover": {
-                borderColor: "#60a5fa",
-                bgcolor: "rgba(59,130,246,0.05)",
+                borderColor: tokens.info,
+                bgcolor: tokens.infoSubtle,
               },
             }}
           >
             {uploadingMedia ? (
-              <CircularProgress size={16} sx={{ color: "#3b82f6" }} />
+              <CircularProgress size={16} sx={{ color: tokens.info }} />
             ) : (
               <VideocamOutlinedIcon sx={{ fontSize: 16, color: "text.secondary" }} />
             )}
@@ -451,10 +462,10 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
                   right: 8,
                   width: 24,
                   height: 24,
-                  bgcolor: "#ef4444",
-                  color: "#fff",
+                  bgcolor: tokens.danger,
+                  color: tokens.textWhite,
                   boxShadow: 2,
-                  "&:hover": { bgcolor: "#dc2626" },
+                  "&:hover": { bgcolor: tokens.dangerHover },
                 }}
               >
                 <CloseIcon sx={{ fontSize: 14 }} />

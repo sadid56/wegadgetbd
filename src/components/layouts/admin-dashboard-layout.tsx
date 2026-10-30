@@ -2,12 +2,12 @@
 
 import * as React from "react";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
-import IconButton from "@mui/material/IconButton";
-import Tooltip from "@mui/material/Tooltip";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { Tooltip } from "@/components/ui/tooltip";
 import MenuIcon from "@mui/icons-material/Menu";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
@@ -20,57 +20,18 @@ import NextLink from "next/link";
 
 import { NAVIGATION } from "@/app/admin/_components/Sidebar";
 import { authClient } from "@/lib/auth-client";
-import theme from "@/theme/theme";
+import theme, { tokens } from "@/theme/theme";
+import { BrandLogo } from "@/components/common/BrandLogo";
 
 const BRANDING = {
-  title: "Bongo Admin",
+  title: "We Gadget Admin",
   homeUrl: "/admin",
 };
 
 function CustomAppTitle() {
   return (
-    <Box
-      component={NextLink}
-      href='/admin'
-      sx={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 1.25,
-        textDecoration: "none",
-        color: "inherit",
-        ml: 0.5,
-      }}
-    >
-      <Box
-        component='span'
-        sx={{
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-          width: 32,
-          height: 32,
-          borderRadius: "8px",
-          bgcolor: "#10b981",
-          color: "#ffffff",
-          fontWeight: 800,
-          fontSize: 16,
-          flexShrink: 0,
-        }}
-      >
-        B
-      </Box>
-      <Typography
-        variant='h6'
-        sx={{
-          color: "primary.main",
-          fontWeight: 700,
-          fontSize: "1.1rem",
-          letterSpacing: "-0.01em",
-          lineHeight: 1,
-        }}
-      >
-        Bongo Admin
-      </Typography>
+    <Box sx={{ display: "inline-flex", alignItems: "center", ml: 0.5 }}>
+      <BrandLogo variant="light" size="sm" href="/admin" />
     </Box>
   );
 }

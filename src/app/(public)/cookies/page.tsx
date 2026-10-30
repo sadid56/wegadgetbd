@@ -4,7 +4,7 @@ import { ContentPageLayout } from "@/components/layouts/content-page-layout";
 
 export const metadata: Metadata = buildPublicMetadata({
   title: "Cookies Policy",
-  description: "Understand how BongoNex uses cookies and similar technologies to improve your experience.",
+  description: "Understand how We Gadget BD uses cookies and similar technologies to improve your experience.",
   path: "/cookies",
   keywords: ["cookies policy", "tracking technologies", "website cookies"],
 });
@@ -13,7 +13,7 @@ const COOKIES_MARKDOWN = `
 ## 1. What are Cookies
 Cookies are small pieces of text sent by your web browser by a website you visit. A cookie file is stored in your web browser and allows the website or a third-party to recognize you and make your next visit easier and the website more useful to you.
 
-## 2. How BongoNex Uses Cookies
+## 2. How We Gadget BD Uses Cookies
 When you use and access the Service, we may place a number of cookies files in your web browser. We use cookies for the following purposes:
 
 - **Essential Cookies:** We may use cookies to remember information that changes how the Service looks or behaves, such as a user's language preference on the Service.

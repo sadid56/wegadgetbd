@@ -4,8 +4,8 @@ import NextLink from "next/link";
 import { usePathname } from "next/navigation";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
-import Divider from "@mui/material/Divider";
+import { IconButton } from "@/components/ui/icon-button";
+import { Divider } from "@/components/ui/divider";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import InstagramIcon from "@mui/icons-material/Instagram";
@@ -13,6 +13,7 @@ import XIcon from "@mui/icons-material/X";
 
 import { tokens } from "@/theme/theme";
 import { SectionContainer } from "@/components/common/SectionContainer";
+import { BrandLogo } from "@/components/common/BrandLogo";
 
 const FOOTER_GROUPS = {
   shop: {
@@ -62,7 +63,7 @@ export function Footer() {
         pb: 4,
         borderTopLeftRadius: { xs: 24, md: 36 },
         borderTopRightRadius: { xs: 24, md: 36 },
-        borderTop: "1px solid rgba(16, 185, 129, 0.2)",
+        borderTop: `1px solid ${tokens.borderDarkSubtle}`,
         overflow: "hidden",
       }}
     >
@@ -82,46 +83,8 @@ export function Footer() {
         >
           {/* 1. Brand column */}
           <Box sx={{ maxWidth: 320 }}>
-            <Box
-              component={NextLink}
-              href="/"
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1.2,
-                textDecoration: "none",
-                mb: 1.5,
-              }}
-            >
-              {/* Clover / Sparkle icon */}
-              <Box
-                sx={{
-                  width: 30,
-                  height: 30,
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "3px",
-                  p: "3px",
-                  alignItems: "center",
-                  justifyItems: "center",
-                }}
-              >
-                <Box sx={{ width: 9, height: 9, bgcolor: tokens.accent, borderRadius: "50% 50% 0 50%" }} />
-                <Box sx={{ width: 9, height: 9, bgcolor: tokens.primary, borderRadius: "50% 50% 50% 0" }} />
-                <Box sx={{ width: 9, height: 9, bgcolor: tokens.primary, borderRadius: "50% 0 50% 50%" }} />
-                <Box sx={{ width: 9, height: 9, bgcolor: tokens.accent, borderRadius: "0 50% 50% 50%" }} />
-              </Box>
-
-              <Typography
-                sx={{
-                  fontWeight: 800,
-                  fontSize: 18,
-                  color: tokens.textWhite,
-                  letterSpacing: "-0.02em",
-                }}
-              >
-                We Gadget BD
-              </Typography>
+            <Box sx={{ mb: 1.5 }}>
+              <BrandLogo variant="dark" size="md" href="/" />
             </Box>
 
             <Typography

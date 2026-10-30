@@ -8,19 +8,14 @@ import { format } from "date-fns";
 import { useToast } from "@/context/toast-context";
 
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogActions from "@mui/material/DialogActions";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
+import { Button } from "@/components/ui/button";
+import { TextField } from "@/components/ui/input";
+import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@/components/ui/dialog";
+import { FormControl, Select, MenuItem } from "@/components/ui/select";
 
-import { createSale, updateSale } from "@/actions/sales";
+import { SaleEndpoints } from "@/query-client/sales";
+import { tokens } from "@/theme/theme";
 
 const formSchema = z.object({
   productName: z.string().min(1, "Product name is required"),
@@ -174,8 +169,8 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
       };
 
       if (initialData) {
-        const result = await updateSale(initialData.id, payload);
-        if (result.success) {
+        const result = await SaleEndpoints.updateSale({ id: initialData.id, data: payload });
+        if (result?.success) {
           toast.success("Sale updated successfully");
           onOpenChange(false);
           form.reset();
@@ -184,8 +179,8 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
           toast.error("Failed to update sale");
         }
       } else {
-        const result = await createSale(payload);
-        if (result.success) {
+        const result = await SaleEndpoints.createSale(payload);
+        if (result?.success) {
           toast.success("Sale added successfully");
           onOpenChange(false);
           form.reset();

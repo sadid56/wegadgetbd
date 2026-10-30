@@ -4,10 +4,45 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import MoreHorizontalIcon from "@mui/icons-material/MoreHoriz";
 import Box, { type BoxProps } from "@mui/material/Box";
 import ButtonBase, { type ButtonBaseProps } from "@mui/material/ButtonBase";
+import MuiPagination, { type PaginationProps as MuiPaginationProps } from "@mui/material/Pagination";
+import MuiPaginationItem, { type PaginationItemProps as MuiPaginationItemProps } from "@mui/material/PaginationItem";
 import Typography from "@mui/material/Typography";
 import { tokens } from "@/theme/theme";
 
-function Pagination({ sx, ...props }: BoxProps<"nav">) {
+export type PaginationProps = MuiPaginationProps & BoxProps<"nav">;
+
+function Pagination({ count, page, onChange, sx, children, ...props }: PaginationProps) {
+  if (count !== undefined) {
+    return (
+      <MuiPagination
+        count={count}
+        page={page}
+        onChange={onChange}
+        sx={[
+          {
+            "& .MuiPaginationItem-root": {
+              color: tokens.textSecondary,
+              borderColor: tokens.borderDefault,
+              fontWeight: 600,
+              borderRadius: `${tokens.radiusMd}px`,
+              "&:hover": {
+                bgcolor: tokens.bgSubtle,
+                color: tokens.textPrimary,
+              },
+              "&.Mui-selected": {
+                bgcolor: `${tokens.primary} !important`,
+                color: `${tokens.textWhite} !important`,
+                borderColor: `${tokens.primary} !important`,
+              },
+            },
+          },
+          ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+        ]}
+        {...(props as MuiPaginationProps)}
+      />
+    );
+  }
+
   return (
     <Box
       component='nav'
@@ -20,8 +55,10 @@ function Pagination({ sx, ...props }: BoxProps<"nav">) {
         justifyContent: "center",
         ...sx,
       }}
-      {...props}
-    />
+      {...(props as BoxProps<"nav">)}
+    >
+      {children}
+    </Box>
   );
 }
 
@@ -44,8 +81,12 @@ function PaginationContent({ sx, ...props }: BoxProps<"ul">) {
   );
 }
 
-function PaginationItem({ sx, ...props }: BoxProps<"li">) {
-  return <Box component='li' sx={{ listStyle: "none", ...sx }} {...props} />;
+function PaginationItem(props: MuiPaginationItemProps & BoxProps<"li">) {
+  if ("type" in props || "page" in props || "selected" in props) {
+    return <MuiPaginationItem {...(props as MuiPaginationItemProps)} />;
+  }
+  const { sx, ...rest } = props as BoxProps<"li">;
+  return <Box component='li' sx={{ listStyle: "none", ...sx }} {...rest} />;
 }
 
 export interface PaginationLinkProps extends ButtonBaseProps {
@@ -74,14 +115,14 @@ function PaginationLink({
         height: 36,
         minWidth: 36,
         px: size === "default" ? 1.75 : 1,
-        color: isActive ? tokens.primary : "text.secondary",
+        color: isActive ? tokens.primary : tokens.textSecondary,
         bgcolor: isActive ? tokens.primarySubtle : "transparent",
         border: "1px solid",
         borderColor: isActive ? tokens.primaryBorder : "transparent",
         transition: "all 0.15s ease",
         "&:hover": {
-          bgcolor: isActive ? tokens.primarySubtle : "action.hover",
-          color: isActive ? tokens.primary : "text.primary",
+          bgcolor: isActive ? tokens.primarySubtle : tokens.bgSubtle,
+          color: isActive ? tokens.primary : tokens.textPrimary,
         },
         ...sx,
       }}
@@ -142,7 +183,7 @@ function PaginationEllipsis({
         justifyContent: "center",
         width: 36,
         height: 36,
-        color: "text.disabled",
+        color: tokens.textDisabled,
         ...sx,
       }}
       {...props}

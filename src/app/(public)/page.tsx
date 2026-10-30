@@ -5,7 +5,7 @@ import LandingPage from "./_components/home-page-client";
 const siteUrl = getSiteUrl();
 
 export const metadata: Metadata = {
-  title: "BongoNex | Premium Gadgets & Authentic Tech Store in Bangladesh",
+  title: "We Gadget BD | Smarter Tech • Brighter Days",
   description:
     "Shop 100% authentic gadgets, smartwatches, TWS earbuds, lifestyle accessories, and premium tech gear in Bangladesh. Enjoy official warranty and fast nationwide delivery.",
   keywords: [
@@ -15,8 +15,8 @@ export const metadata: Metadata = {
     "TWS earbuds Bangladesh",
     "original tech accessories",
     "online gadget store BD",
-    "BongoNex",
-    "Bongo Nex",
+    "We Gadget BD",
+    "WeGadgetBD",
     "tech electronics online Bangladesh",
     "best gadget shop online",
   ],
@@ -35,11 +35,11 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "BongoNex | Premium Gadgets & Authentic Tech Store in Bangladesh",
+    title: "We Gadget BD | Smarter Tech • Brighter Days",
     description:
       "Shop 100% authentic gadgets, smartwatches, TWS earbuds, and premium tech gear with official warranty and fast delivery across Bangladesh.",
     url: `${siteUrl}/`,
-    siteName: "BongoNex",
+    siteName: "We Gadget BD",
     locale: "en_US",
     type: "website",
     images: [
@@ -47,13 +47,13 @@ export const metadata: Metadata = {
         url: `${siteUrl}/images/default.png`,
         width: 1200,
         height: 630,
-        alt: "BongoNex - Premium Gadget Store in Bangladesh",
+        alt: "We Gadget BD - Premium Gadget Store in Bangladesh",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "BongoNex | Premium Gadgets & Authentic Tech Store in Bangladesh",
+    title: "We Gadget BD | Smarter Tech • Brighter Days",
     description:
       "Shop 100% authentic gadgets, smartwatches, TWS earbuds, and premium tech gear with official warranty and fast delivery across Bangladesh.",
     images: [`${siteUrl}/images/default.png`],
@@ -68,8 +68,8 @@ export default function HomePage() {
         "@type": "WebSite",
         "@id": `${siteUrl}/#website`,
         url: `${siteUrl}/`,
-        name: "BongoNex",
-        alternateName: ["Bongo Nex", "BongoNex Bangladesh"],
+        name: "We Gadget BD",
+        alternateName: ["WeGadgetBD", "We Gadget Bangladesh"],
         description:
           "Official online store for authentic gadgets, smartwatches, audio devices, and tech accessories in Bangladesh.",
         potentialAction: {
@@ -85,18 +85,18 @@ export default function HomePage() {
       {
         "@type": ["OnlineStore", "Organization"],
         "@id": `${siteUrl}/#organization`,
-        name: "BongoNex",
-        alternateName: "Bongo Nex",
+        name: "We Gadget BD",
+        alternateName: "WeGadgetBD",
         url: `${siteUrl}/`,
         logo: {
           "@type": "ImageObject",
           "@id": `${siteUrl}/#logo`,
           url: `${siteUrl}/logo.png`,
-          caption: "BongoNex Logo",
+          caption: "We Gadget BD Logo",
         },
         image: `${siteUrl}/images/default.png`,
         description:
-          "Discover cutting-edge gadgets and components designed to power the future. Innovation meets quality at BONGO NEX with official warranty and nationwide delivery.",
+          "Discover cutting-edge gadgets and components designed to power the future. Innovation meets quality at We Gadget BD with official warranty and nationwide delivery.",
         priceRange: "৳৳",
         currenciesAccepted: "BDT",
         paymentAccepted:
@@ -112,9 +112,9 @@ export default function HomePage() {
           name: "Bangladesh",
         },
         sameAs: [
-          "https://www.facebook.com/BongoNexbd",
-          "https://www.youtube.com/@BongoNexbd",
-          "https://www.instagram.com/yourprofile",
+          "https://www.facebook.com/wegadgetbd",
+          "https://www.youtube.com/@wegadgetbd",
+          "https://www.instagram.com/wegadgetbd",
         ],
         contactPoint: {
           "@type": "ContactPoint",
@@ -126,7 +126,7 @@ export default function HomePage() {
         "@type": "WebPage",
         "@id": `${siteUrl}/#webpage`,
         url: `${siteUrl}/`,
-        name: "BongoNex | Premium Gadgets & Authentic Tech Store in Bangladesh",
+        name: "We Gadget BD | Smarter Tech • Brighter Days",
         isPartOf: {
           "@id": `${siteUrl}/#website`,
         },
@@ -162,7 +162,7 @@ export default function HomePage() {
             name: "Do you provide any warranty for tech products?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Yes, all our products come with either a manufacturer's official warranty or a Bongo Nex service warranty, depending on the item. Details are clearly listed on each product page.",
+              text: "Yes, all our products come with either a manufacturer's official warranty or a We Gadget BD service warranty, depending on the item. Details are clearly listed on each product page.",
             },
           },
           {
@@ -178,7 +178,7 @@ export default function HomePage() {
             name: "How can I track my order?",
             acceptedAnswer: {
               "@type": "Answer",
-              text: "Once your order is dispatched, you'll receive a tracking link via SMS and email. You can also view your order status directly in your Bongo Nex account dashboard.",
+              text: "Once your order is dispatched, you'll receive a tracking link via SMS and email. You can also view your order status directly in your We Gadget BD account dashboard.",
             },
           },
         ],

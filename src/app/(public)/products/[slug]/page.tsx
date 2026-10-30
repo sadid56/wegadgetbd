@@ -34,8 +34,8 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
   if (!foundProduct) {
     return {
-      title: "Product Not Found | BongoNex",
-      description: "The requested product is not available. Discover our latest gadgets, tech accessories and hot deals at BongoNex.",
+      title: "Product Not Found | We Gadget BD",
+      description: "The requested product is not available. Discover our latest gadgets, tech accessories and hot deals at We Gadget BD.",
       robots: {
         index: false,
         follow: false,
@@ -45,8 +45,8 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
   const effectivePrice = foundProduct.discountPrice ? Number(foundProduct.discountPrice) : Number(foundProduct.price);
   const brandName = foundProduct.brand ? `${foundProduct.brand} ` : "";
-  const pageTitle = `${foundProduct.title} - Best Price in BD | BongoNex`;
-  const pageDescription = `Buy authentic ${brandName}${foundProduct.title} in Bangladesh at ৳${effectivePrice.toLocaleString("en-BD")}. 100% genuine quality, official warranty, fast delivery & cash on delivery from BongoNex.`;
+  const pageTitle = `${foundProduct.title} - Best Price in BD | We Gadget BD`;
+  const pageDescription = `Buy authentic ${brandName}${foundProduct.title} in Bangladesh at ৳${effectivePrice.toLocaleString("en-BD")}. 100% genuine quality, official warranty, fast delivery & cash on delivery from We Gadget BD.`;
   const productUrl = `${siteUrl}/products/${foundProduct.slug}`;
   const ogImage = foundProduct.images?.[0] ? getAssetUrl(foundProduct.images[0]) : `${siteUrl}/images/default.png`;
 
@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     foundProduct.category?.name,
     "authentic gadgets Bangladesh",
     "buy online BD",
-    "BongoNex",
+    "We Gadget BD",
   ].filter(Boolean) as string[];
 
   return {
@@ -84,7 +84,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       title: pageTitle,
       description: pageDescription,
       url: productUrl,
-      siteName: "BongoNex",
+      siteName: "We Gadget BD",
       locale: "en_US",
       type: "website",
       images: [
@@ -92,7 +92,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
           url: ogImage,
           width: 800,
           height: 800,
-          alt: `${foundProduct.title} - BongoNex`,
+          alt: `${foundProduct.title} - We Gadget BD`,
         },
       ],
     },
@@ -143,13 +143,13 @@ export default async function ProductDetails({ params }: ProductPageProps) {
             "@type": "Product",
             "@id": `${productUrl}#product`,
             name: foundProduct.title,
-            description: foundProduct.description || `Buy ${foundProduct.title} online in Bangladesh with official warranty from BongoNex.`,
+            description: foundProduct.description || `Buy ${foundProduct.title} online in Bangladesh with official warranty from We Gadget BD.`,
             image: foundProduct.images && foundProduct.images.length > 0 ? foundProduct.images.map(getAssetUrl) : [`${siteUrl}/images/default.png`],
             sku: foundProduct.id,
             mpn: foundProduct.model || foundProduct.id,
             brand: {
               "@type": "Brand",
-              name: foundProduct.brand || "BongoNex",
+              name: foundProduct.brand || "We Gadget BD",
             },
             category: foundProduct.category?.name || "Gadgets",
             offers: {
@@ -162,7 +162,7 @@ export default async function ProductDetails({ params }: ProductPageProps) {
               itemCondition: "https://schema.org/NewCondition",
               seller: {
                 "@type": "Organization",
-                name: "BongoNex",
+                name: "We Gadget BD",
                 url: siteUrl,
               },
               hasMerchantReturnPolicy: {
@@ -256,12 +256,12 @@ export default async function ProductDetails({ params }: ProductPageProps) {
             "@type": "ItemPage",
             "@id": `${productUrl}#webpage`,
             url: productUrl,
-            name: `${foundProduct.title} - Best Price in BD | BongoNex`,
+            name: `${foundProduct.title} - Best Price in BD | We Gadget BD`,
             isPartOf: {
               "@type": "WebSite",
               "@id": `${siteUrl}/#website`,
               url: `${siteUrl}/`,
-              name: "BongoNex",
+              name: "We Gadget BD",
             },
             mainEntity: {
               "@id": `${productUrl}#product`,

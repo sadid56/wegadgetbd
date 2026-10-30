@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
-import { Box, Typography, Collapse } from "@mui/material";
+import { Box, Typography } from "@mui/material";
+import { Collapse } from "@/components/ui/modal";
 import { tokens } from "@/theme/theme";
 
 interface FAQItem {
@@ -29,7 +30,7 @@ const items: FAQItem[] = [
   {
     question: "Do you provide any warranty for tech products?",
     answer:
-      "Yes, all our products come with either a manufacturer's official warranty or a Bongo Nex service warranty, depending on the item. Details are clearly listed on each product page.",
+      "Yes, all our products come with either a manufacturer's official warranty or a We Gadget BD service warranty, depending on the item. Details are clearly listed on each product page.",
   },
   {
     question: "What if I receive a defective item?",
@@ -39,7 +40,7 @@ const items: FAQItem[] = [
   {
     question: "How can I track my order?",
     answer:
-      "Once your order is dispatched, you'll receive a tracking link via SMS and email. You can also view your order status directly in your Bongo Nex account dashboard.",
+      "Once your order is dispatched, you'll receive a tracking link via SMS and email. You can also view your order status directly in your We Gadget BD account dashboard.",
   },
 ];
 

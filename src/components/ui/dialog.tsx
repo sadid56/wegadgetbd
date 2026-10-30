@@ -3,17 +3,19 @@
 import * as React from "react";
 import MuiDialog, { type DialogProps as MuiDialogProps } from "@mui/material/Dialog";
 import MuiDialogTitle from "@mui/material/DialogTitle";
-import MuiDialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogActions from "@mui/material/DialogActions";
-import IconButton from "@mui/material/IconButton";
+import MuiDialogContent, { type DialogContentProps as MuiDialogContentProps } from "@mui/material/DialogContent";
+import MuiDialogContentText from "@mui/material/DialogContentText";
+import MuiDialogActions from "@mui/material/DialogActions";
 import Box from "@mui/material/Box";
 import CloseIcon from "@mui/icons-material/Close";
 import type { SxProps, Theme } from "@mui/material/styles";
+import { IconButton } from "./icon-button";
+import { tokens } from "@/theme/theme";
 
 interface DialogContextValue {
   open: boolean;
   setOpen: (open: boolean) => void;
+  hasDirectDialog: boolean;
 }
 
 const DialogContext = React.createContext<DialogContextValue | null>(null);
@@ -22,14 +24,26 @@ function useDialogContext() {
   return React.useContext(DialogContext);
 }
 
-interface DialogProps {
+export interface DialogProps extends Omit<MuiDialogProps, "open"> {
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
+  PaperProps?: { sx?: SxProps<Theme>; [key: string]: any };
   children?: React.ReactNode;
 }
 
-function Dialog({ open: controlledOpen, defaultOpen = false, onOpenChange, children }: DialogProps) {
+function Dialog({
+  open: controlledOpen,
+  defaultOpen = false,
+  onOpenChange,
+  onClose,
+  maxWidth = "sm",
+  fullWidth = true,
+  PaperProps,
+  slotProps,
+  children,
+  ...props
+}: DialogProps) {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen);
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : uncontrolledOpen;
@@ -44,7 +58,53 @@ function Dialog({ open: controlledOpen, defaultOpen = false, onOpenChange, child
     [isControlled, onOpenChange],
   );
 
-  return <DialogContext.Provider value={{ open, setOpen }}>{children}</DialogContext.Provider>;
+  // If onClose or PaperProps is passed, render MuiDialog directly (MUI Dialog pattern)
+  const hasDirectDialog = Boolean(onClose || PaperProps || props["aria-labelledby"] || props["aria-describedby"]);
+
+  const handleClose = (event: {}, reason: "backdropClick" | "escapeKeyDown") => {
+    setOpen(false);
+    onClose?.(event, reason);
+  };
+
+  if (hasDirectDialog || !onOpenChange) {
+    return (
+      <DialogContext.Provider value={{ open, setOpen, hasDirectDialog: true }}>
+        <MuiDialog
+          open={open}
+          onClose={handleClose}
+          maxWidth={maxWidth}
+          fullWidth={fullWidth}
+          slotProps={{
+            ...slotProps,
+            paper: {
+              ...PaperProps,
+              ...(typeof slotProps?.paper === "object" ? slotProps.paper : {}),
+              sx: [
+                {
+                  borderRadius: `${tokens.radiusLg}px`,
+                  bgcolor: tokens.bgPanel,
+                  color: tokens.textPrimary,
+                  backgroundImage: "none",
+                  border: `1px solid ${tokens.borderDefault}`,
+                  boxShadow: tokens.shadowElevated,
+                },
+                ...(Array.isArray(PaperProps?.sx) ? PaperProps.sx : PaperProps?.sx ? [PaperProps.sx] : []),
+              ],
+            },
+          }}
+          {...props}
+        >
+          {children}
+        </MuiDialog>
+      </DialogContext.Provider>
+    );
+  }
+
+  return (
+    <DialogContext.Provider value={{ open, setOpen, hasDirectDialog: false }}>
+      {children}
+    </DialogContext.Provider>
+  );
 }
 
 function DialogTrigger({
@@ -123,18 +183,38 @@ function DialogOverlay() {
   return null;
 }
 
-interface DialogContentProps extends Omit<MuiDialogProps, "open"> {
+export interface DialogContentProps extends MuiDialogContentProps {
   children?: React.ReactNode;
   showCloseButton?: boolean;
+  onClose?: MuiDialogProps["onClose"];
   sx?: SxProps<Theme>;
 }
 
-function DialogContent({ children, showCloseButton = true, sx, onClose, ...props }: DialogContentProps) {
+function DialogContent({ children, showCloseButton = true, sx, onClose, dividers, ...props }: DialogContentProps) {
   const ctx = useDialogContext();
-  const open = ctx?.open ?? false;
 
+  // When used inside a direct <Dialog open onClose>, render MuiDialogContent
+  if (!ctx || ctx.hasDirectDialog) {
+    return (
+      <MuiDialogContent
+        dividers={dividers}
+        sx={[
+          {
+            borderColor: tokens.borderDefault,
+            color: tokens.textPrimary,
+          },
+          ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+        ]}
+        {...props}
+      >
+        {children}
+      </MuiDialogContent>
+    );
+  }
+
+  const open = ctx.open ?? false;
   const handleClose = (event: {}, reason: "backdropClick" | "escapeKeyDown") => {
-    ctx?.setOpen(false);
+    ctx.setOpen(false);
     onClose?.(event, reason);
   };
 
@@ -147,30 +227,29 @@ function DialogContent({ children, showCloseButton = true, sx, onClose, ...props
       slotProps={{
         paper: {
           sx: {
-            borderRadius: 2,
+            borderRadius: `${tokens.radiusLg}px`,
             p: 2,
-            bgcolor: "background.paper",
+            bgcolor: tokens.bgPanel,
+            color: tokens.textPrimary,
             backgroundImage: "none",
-            border: 1,
-            borderColor: "divider",
-            boxShadow: "0 20px 25px -5px rgba(0,0,0,0.2), 0 8px 10px -6px rgba(0,0,0,0.2)",
+            border: `1px solid ${tokens.borderDefault}`,
+            boxShadow: tokens.shadowElevated,
             position: "relative",
             ...sx,
           },
         },
       }}
-      {...props}
     >
       {showCloseButton && (
         <IconButton
           size='small'
-          onClick={() => ctx?.setOpen(false)}
+          onClick={() => ctx.setOpen(false)}
           sx={{
             position: "absolute",
             top: 12,
             right: 12,
-            color: "text.secondary",
-            "&:hover": { color: "text.primary" },
+            color: tokens.textSecondary,
+            "&:hover": { color: tokens.textPrimary },
           }}
         >
           <CloseIcon sx={{ fontSize: 18 }} />
@@ -185,55 +264,65 @@ function DialogHeader({ sx, ...props }: React.ComponentProps<typeof Box>) {
   return <Box sx={{ display: "flex", flexDirection: "column", gap: 1, p: 1, ...sx }} {...props} />;
 }
 
-function DialogFooter({ sx, ...props }: React.ComponentProps<typeof DialogActions>) {
+function DialogActions({ sx, ...props }: React.ComponentProps<typeof MuiDialogActions>) {
   return (
-    <DialogActions
-      sx={{
-        p: 1,
-        pt: 2,
-        gap: 1,
-        display: "flex",
-        justifyContent: "flex-end",
-        ...sx,
-      }}
+    <MuiDialogActions
+      sx={[
+        {
+          p: 2,
+          gap: 1,
+          display: "flex",
+          justifyContent: "flex-end",
+        },
+        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+      ]}
       {...props}
     />
   );
 }
+
+const DialogFooter = DialogActions;
 
 function DialogTitle({ sx, ...props }: React.ComponentProps<typeof MuiDialogTitle>) {
   return (
     <MuiDialogTitle
-      sx={{
-        p: 0,
-        fontSize: "1.15rem",
-        fontWeight: 700,
-        color: "text.primary",
-        ...sx,
-      }}
+      sx={[
+        {
+          fontSize: "1.15rem",
+          fontWeight: 700,
+          color: tokens.textPrimary,
+        },
+        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+      ]}
       {...props}
     />
   );
 }
 
-function DialogDescription({ sx, ...props }: React.ComponentProps<typeof DialogContentText>) {
+function DialogContentText({ sx, ...props }: React.ComponentProps<typeof MuiDialogContentText>) {
   return (
-    <DialogContentText
-      sx={{
-        fontSize: "0.88rem",
-        color: "text.secondary",
-        lineHeight: 1.5,
-        ...sx,
-      }}
+    <MuiDialogContentText
+      sx={[
+        {
+          fontSize: "0.88rem",
+          color: tokens.textSecondary,
+          lineHeight: 1.5,
+        },
+        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+      ]}
       {...props}
     />
   );
 }
+
+const DialogDescription = DialogContentText;
 
 export {
   Dialog,
+  DialogActions,
   DialogClose,
   DialogContent,
+  DialogContentText,
   DialogDescription,
   DialogFooter,
   DialogHeader,

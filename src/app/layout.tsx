@@ -3,7 +3,7 @@ import { Inter } from "next/font/google";
 import { AppProvider } from "@/providers/app-provider";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { getSiteUrl } from "@/lib/seo";
-import "./globals.css";
+import "../styles/globals.css";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -14,7 +14,7 @@ const inter = Inter({
 const siteUrl = getSiteUrl();
 
 export const viewport: Viewport = {
-  themeColor: "#ffffff",
+  themeColor: "#08120e",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -23,17 +23,17 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "BongoNex | Premium Gadgets Store",
-    template: "%s | BongoNex",
+    default: "We Gadget BD | Smarter Tech • Brighter Days",
+    template: "%s | We Gadget BD",
   },
   description:
-    "Shop 100% authentic gadgets, smartwatches, TWS earbuds, audio gear, and lifestyle tech accessories in Bangladesh. Official warranty, fast delivery & cash on delivery from BongoNex.",
-  applicationName: "BongoNex",
-  authors: [{ name: "BongoNex", url: siteUrl }],
+    "Shop 100% authentic gadgets, smartwatches, TWS earbuds, audio gear, and lifestyle tech accessories in Bangladesh. Official warranty, fast delivery & cash on delivery from We Gadget BD.",
+  applicationName: "We Gadget BD",
+  authors: [{ name: "We Gadget BD", url: siteUrl }],
   generator: "Next.js",
   keywords: [
-    "BongoNex",
-    "Bongo Nex",
+    "We Gadget BD",
+    "WeGadgetBD",
     "online gadget shop Bangladesh",
     "authentic gadgets BD",
     "buy smart watch online BD",
@@ -44,8 +44,8 @@ export const metadata: Metadata = {
     "best gadget store bd",
   ],
   referrer: "origin-when-cross-origin",
-  creator: "BongoNex",
-  publisher: "BongoNex",
+  creator: "We Gadget BD",
+  publisher: "We Gadget BD",
   category: "technology",
   classification: "Ecommerce Store",
   formatDetection: {
@@ -78,32 +78,36 @@ export const metadata: Metadata = {
     locale: "bn_BD",
     alternateLocale: ["en_US"],
     url: siteUrl,
-    siteName: "BongoNex",
-    title: "BongoNex | Premium Gadgets Store",
+    siteName: "We Gadget BD",
+    title: "We Gadget BD | Smarter Tech • Brighter Days",
     description:
-      "Shop 100% authentic gadgets, smartwatches, TWS earbuds, audio gear, and lifestyle tech accessories with fast delivery and trusted support from BongoNex.",
+      "Shop 100% authentic gadgets, smartwatches, TWS earbuds, audio gear, and lifestyle tech accessories with fast delivery and trusted support from We Gadget BD.",
     images: [
       {
         url: "/images/default.png",
         width: 1200,
         height: 630,
-        alt: "BongoNex | Premium Gadgets Store in Bangladesh",
+        alt: "We Gadget BD | Smarter Tech • Brighter Days",
         type: "image/png",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "BongoNex | Premium Gadgets Store",
+    title: "We Gadget BD | Smarter Tech • Brighter Days",
     description:
-      "Shop 100% authentic gadgets, smartwatches, TWS earbuds, audio gear, and lifestyle tech accessories with fast delivery and trusted support from BongoNex.",
-    site: "@bongonex",
-    creator: "@bongonex",
+      "Shop 100% authentic gadgets, smartwatches, TWS earbuds, audio gear, and lifestyle tech accessories with fast delivery and trusted support from We Gadget BD.",
+    site: "@wegadgetbd",
+    creator: "@wegadgetbd",
     images: ["/images/default.png"],
   },
   icons: {
-    icon: [{ url: "/favicon.ico" }, { url: "/logo.png", sizes: "192x192", type: "image/png" }],
-    shortcut: "/favicon.ico",
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/logo.png", sizes: "192x192", type: "image/png" },
+    ],
+    shortcut: "/icon.svg",
     apple: [{ url: "/logo.png", sizes: "180x180", type: "image/png" }],
   },
 };
@@ -115,8 +119,8 @@ const rootJsonLd = {
       "@type": "WebSite",
       "@id": `${siteUrl}/#website`,
       url: `${siteUrl}/`,
-      name: "BongoNex",
-      alternateName: ["Bongo Nex", "BongoNex Bangladesh", "BongoNex Online Shop"],
+      name: "We Gadget BD",
+      alternateName: ["WeGadgetBD", "We Gadget Bangladesh", "We Gadget BD Online Shop"],
       publisher: {
         "@id": `${siteUrl}/#organization`,
       },
@@ -133,18 +137,18 @@ const rootJsonLd = {
     {
       "@type": ["OnlineStore", "Organization"],
       "@id": `${siteUrl}/#organization`,
-      name: "BongoNex",
-      alternateName: "Bongo Nex",
+      name: "We Gadget BD",
+      alternateName: "WeGadgetBD",
       url: `${siteUrl}/`,
       logo: {
         "@type": "ImageObject",
         "@id": `${siteUrl}/#logo`,
         url: `${siteUrl}/logo.png`,
-        caption: "BongoNex Logo",
+        caption: "We Gadget BD Logo",
       },
       image: `${siteUrl}/images/default.png`,
       description:
-        "BongoNex is Bangladesh's premier online store for 100% authentic gadgets, smartwatches, TWS earbuds, and premium tech accessories with cash on delivery and nationwide fast shipping.",
+        "We Gadget BD is Bangladesh's premier online store for 100% authentic gadgets, smartwatches, TWS earbuds, and premium tech accessories with cash on delivery and nationwide fast shipping.",
       priceRange: "৳৳",
       currenciesAccepted: "BDT",
       paymentAccepted: "Cash, bKash, Nagad, Card",

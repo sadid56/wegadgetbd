@@ -3,11 +3,12 @@
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Container from "@mui/material/Container";
-import CircularProgress from "@mui/material/CircularProgress";
 import Typography from "@mui/material/Typography";
 import { keyframes } from "@emotion/react";
+import { Button } from "@/components/ui/button";
+import { CircularProgress } from "@/components/ui/spinner";
+import { tokens } from "@/theme/theme";
 
 import { useProducts } from "@/query-client/products";
 import { useCategories } from "@/query-client/categories";
@@ -88,7 +89,7 @@ function ShopPageContent() {
   }, [categoriesData]);
 
   return (
-    <Box sx={{ bgcolor: "rgba(249,250,251,0.3)", minHeight: "100vh", color: "#111827" }}>
+    <Box sx={{ bgcolor: tokens.bgCanvas, minHeight: "100vh", color: tokens.textPrimary }}>
       <ProductHero search={search} totalProducts={productsData?.total || 0} />
 
       <Container maxWidth='xl' sx={{ py: 1, pb: { xs: 4, md: 8 }, px: { xs: 0, md: 2 } }}>
@@ -119,7 +120,7 @@ function ShopPageContent() {
               py: 16,
             }}
           >
-            <CircularProgress size={48} sx={{ color: "#ff7319", mb: 3 }} />
+            <CircularProgress size={48} sx={{ color: tokens.primary, mb: 3 }} />
             <Box
               className='bricolage'
               sx={{
@@ -127,7 +128,7 @@ function ShopPageContent() {
                 fontWeight: 900,
                 letterSpacing: "0.15em",
                 textTransform: "uppercase",
-                color: "#9ca3af",
+                color: tokens.textDisabled,
                 animation: `${pulse} 1.5s ease-in-out infinite`,
               }}
             >
@@ -140,15 +141,15 @@ function ShopPageContent() {
               textAlign: "center",
               py: 12,
               borderRadius: "32px",
-              border: "1px dashed #e5e7eb",
-              bgcolor: "#fff",
-              boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+              border: `1px dashed ${tokens.borderDefault}`,
+              bgcolor: tokens.bgPanel,
+              boxShadow: tokens.shadowSm,
             }}
           >
             <Typography
               className='bricolage'
               sx={{
-                color: "#6b7280",
+                color: tokens.textMuted,
                 fontWeight: 500,
                 fontSize: 18,
                 mb: 3,
@@ -164,15 +165,15 @@ function ShopPageContent() {
               }}
               disableElevation
               sx={{
-                borderColor: "#ff7319",
-                color: "#ff7319",
+                borderColor: tokens.primary,
+                color: tokens.primary,
                 fontWeight: 700,
                 px: 4,
                 borderRadius: 999,
                 textTransform: "none",
                 "&:hover": {
-                  borderColor: "#ff7319",
-                  bgcolor: "#fff7ed",
+                  borderColor: tokens.primary,
+                  bgcolor: tokens.primaryLight,
                 },
               }}
             >
@@ -211,14 +212,14 @@ export default function ShopPage() {
       fallback={
         <Box
           sx={{
-            bgcolor: "background.default",
+            bgcolor: tokens.bgCanvas,
             minHeight: "100vh",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          <CircularProgress size={48} sx={{ color: "primary.main" }} />
+          <CircularProgress size={48} sx={{ color: tokens.primary }} />
         </Box>
       }
     >

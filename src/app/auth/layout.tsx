@@ -4,6 +4,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { tokens } from "@/theme/theme";
+import { BrandLogo } from "@/components/common/BrandLogo";
 
 export const metadata: Metadata = {
   title: "Account | We Gadget BD",
@@ -25,7 +26,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        bgcolor: "#f8fafc",
+        bgcolor: tokens.bgCanvas,
         position: "relative",
       }}
     >
@@ -38,8 +39,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          borderBottom: "1px solid #e2e8f0",
-          bgcolor: "#ffffff",
+          borderBottom: `1px solid ${tokens.borderDefault}`,
+          bgcolor: tokens.bgPanel,
         }}
       >
         {/* Back to Home Button */}
@@ -49,19 +50,19 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               display: "inline-flex",
               alignItems: "center",
               gap: 1,
-              color: "#334155",
+              color: tokens.textSecondary,
               fontSize: { xs: 13, sm: 13.5 },
               fontWeight: 600,
               px: { xs: 1.75, sm: 2.25 },
               py: 0.85,
-              borderRadius: "9999px",
-              bgcolor: "#f8fafc",
-              border: "1px solid #e2e8f0",
+              borderRadius: `${tokens.radiusPill}px`,
+              bgcolor: tokens.bgCanvas,
+              border: `1px solid ${tokens.borderDefault}`,
               transition: "all 0.15s ease",
               "&:hover": {
-                bgcolor: "#f1f5f9",
-                borderColor: "#cbd5e1",
-                color: "#0f172a",
+                bgcolor: tokens.bgSubtle,
+                borderColor: tokens.borderElevated,
+                color: tokens.textPrimary,
                 transform: "translateX(-2px)",
               },
             }}
@@ -72,47 +73,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </NextLink>
 
         {/* Brand Logo in Header */}
-        <NextLink href='/' style={{ textDecoration: "none" }}>
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1.2,
-            }}
-          >
-            {/* Clover / Sparkle icon */}
-            <Box
-              sx={{
-                width: 28,
-                height: 28,
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "2.5px",
-                p: "3px",
-                alignItems: "center",
-                justifyItems: "center",
-              }}
-            >
-              <Box sx={{ width: 9, height: 9, bgcolor: tokens.accent, borderRadius: "50% 50% 0 50%" }} />
-              <Box sx={{ width: 9, height: 9, bgcolor: tokens.primary, borderRadius: "50% 50% 50% 0" }} />
-              <Box sx={{ width: 9, height: 9, bgcolor: tokens.primary, borderRadius: "50% 0 50% 50%" }} />
-              <Box sx={{ width: 9, height: 9, bgcolor: tokens.accent, borderRadius: "0 50% 50% 50%" }} />
-            </Box>
-            <Typography
-              sx={{
-                fontWeight: 800,
-                fontSize: { xs: 17, sm: 19 },
-                letterSpacing: "-0.03em",
-                color: "#0f172a",
-              }}
-            >
-              We Gadget{" "}
-              <Box component='span' sx={{ color: tokens.primary }}>
-                BD
-              </Box>
-            </Typography>
-          </Box>
-        </NextLink>
+        <BrandLogo variant="light" size="sm" href="/" />
       </Box>
 
       {/* Main Content Area */}
@@ -137,11 +98,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           py: 2.5,
           px: 2,
           textAlign: "center",
-          borderTop: "1px solid #e2e8f0",
-          bgcolor: "#ffffff",
+          borderTop: `1px solid ${tokens.borderDefault}`,
+          bgcolor: tokens.bgPanel,
         }}
       >
-        <Typography sx={{ fontSize: 12.5, color: "#64748b" }}>
+        <Typography sx={{ fontSize: 12.5, color: tokens.textMuted }}>
           © {new Date().getFullYear()} We Gadget BD. All rights reserved.
         </Typography>
       </Box>

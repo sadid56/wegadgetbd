@@ -6,30 +6,22 @@ import { format } from "date-fns";
 import { useToast } from "@/context/toast-context";
 
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import InputBase from "@mui/material/InputBase";
 import Typography from "@mui/material/Typography";
-import Chip from "@mui/material/Chip";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogActions from "@mui/material/DialogActions";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import Pagination from "@mui/material/Pagination";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { InputBase } from "@/components/ui/input";
+import { Chip } from "@/components/ui/badge";
+import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@/components/ui/table";
+import { Pagination } from "@/components/ui/pagination";
 
 import SearchIcon from "@mui/icons-material/Search";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
-import { getPayments, deletePayment } from "@/actions/payment";
+import { PaymentEndpoints } from "@/query-client/payments";
 import { PaymentDialog } from "./_components/payment-dialog";
+import { tokens } from "@/theme/theme";
 
 const tableHeadSx = {
   fontSize: 12,
@@ -67,9 +59,9 @@ function PaymentStatusChip({ status }: { status: string }) {
           height: 22,
           fontSize: 11,
           fontWeight: 700,
-          bgcolor: "#dcfce7",
-          color: "#166534",
-          borderColor: "#bbf7d0",
+          bgcolor: tokens.successSubtle,
+          color: tokens.successText,
+          borderColor: tokens.successBorder,
           "& .MuiChip-label": { px: 1.25 },
         }}
       />
@@ -85,9 +77,9 @@ function PaymentStatusChip({ status }: { status: string }) {
           height: 22,
           fontSize: 11,
           fontWeight: 700,
-          bgcolor: "#fef9c3",
-          color: "#854d0e",
-          borderColor: "#fef08a",
+          bgcolor: tokens.warningSubtle,
+          color: tokens.warningHover,
+          borderColor: tokens.warningBorder,
           "& .MuiChip-label": { px: 1.25 },
         }}
       />
@@ -130,10 +122,17 @@ export default function PaymentsPage() {
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
-      const { payments, metadata } = await getPayments({ page, search });
-      setPayments(payments);
-      setTotalPages(metadata.totalPages);
-      setLoading(false);
+      try {
+        const res = await PaymentEndpoints.getPayments({ page, search });
+        if (res) {
+          setPayments(res.payments);
+          setTotalPages(res.metadata.totalPages);
+        }
+      } catch (err) {
+        console.error("Failed to load payments:", err);
+      } finally {
+        setLoading(false);
+      }
     }
     fetchData();
   }, [page, search, refreshKey]);
@@ -144,12 +143,16 @@ export default function PaymentsPage() {
 
   const handleDelete = async () => {
     if (!deleteId) return;
-    const res = await deletePayment(deleteId);
-    if (res.success) {
-      toast.success("Payment deleted successfully");
-      setDeleteId(null);
-      handleRefresh();
-    } else {
+    try {
+      const res = await PaymentEndpoints.deletePayment(deleteId);
+      if (res?.success) {
+        toast.success("Payment deleted successfully");
+        setDeleteId(null);
+        handleRefresh();
+      } else {
+        toast.error("Failed to delete payment");
+      }
+    } catch {
       toast.error("Failed to delete payment");
     }
   };
@@ -357,7 +360,7 @@ export default function PaymentsPage() {
           <Pagination
             count={totalPages}
             page={page}
-            onChange={(_, p) => router.push(`?page=${p}&search=${search}`)}
+            onChange={(_, p = 1) => router.push(`?page=${p}&search=${search}`)}
             showFirstButton
             showLastButton
             siblingCount={1}

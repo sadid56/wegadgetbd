@@ -3,8 +3,8 @@
 import { useRouter } from "next/navigation";
 
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
+import { Button } from "@/components/ui/button";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 import { ProductForm } from "@/components/admin/product-form";

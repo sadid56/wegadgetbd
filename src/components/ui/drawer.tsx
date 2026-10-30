@@ -5,6 +5,7 @@ import MuiDrawer, { type DrawerProps as MuiDrawerProps } from "@mui/material/Dra
 import Box, { type BoxProps } from "@mui/material/Box";
 import Typography, { type TypographyProps } from "@mui/material/Typography";
 import type { SxProps, Theme } from "@mui/material/styles";
+import { tokens } from "@/theme/theme";
 
 interface DrawerContextValue {
   open: boolean;
@@ -18,7 +19,7 @@ function useDrawerContext() {
   return React.useContext(DrawerContext);
 }
 
-interface DrawerProps {
+export interface DrawerProps extends Omit<MuiDrawerProps, "open"> {
   open?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -26,7 +27,16 @@ interface DrawerProps {
   children?: React.ReactNode;
 }
 
-function Drawer({ open: controlledOpen, defaultOpen = false, onOpenChange, direction = "bottom", children }: DrawerProps) {
+function Drawer({
+  open: controlledOpen,
+  defaultOpen = false,
+  onOpenChange,
+  onClose,
+  anchor,
+  direction = "bottom",
+  children,
+  ...props
+}: DrawerProps) {
   const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen);
   const isControlled = controlledOpen !== undefined;
   const open = isControlled ? controlledOpen : uncontrolledOpen;
@@ -40,6 +50,20 @@ function Drawer({ open: controlledOpen, defaultOpen = false, onOpenChange, direc
     },
     [isControlled, onOpenChange],
   );
+
+  // If anchor or onClose is passed, render MuiDrawer directly
+  if (anchor || onClose) {
+    return (
+      <MuiDrawer
+        anchor={anchor || direction}
+        open={open}
+        onClose={onClose}
+        {...props}
+      >
+        {children}
+      </MuiDrawer>
+    );
+  }
 
   return <DrawerContext.Provider value={{ open, setOpen, direction }}>{children}</DrawerContext.Provider>;
 }
@@ -145,10 +169,11 @@ function DrawerContent({ children, sx, onClose, ...props }: DrawerContentProps) 
       slotProps={{
         paper: {
           sx: {
-            bgcolor: "background.paper",
+            bgcolor: tokens.bgPanel,
+            color: tokens.textPrimary,
             backgroundImage: "none",
             borderTopLeftRadius: direction === "bottom" ? 16 : 0,
-            borderTopRightLeftRadius: direction === "bottom" ? 16 : 0,
+            borderTopRightRadius: direction === "bottom" ? 16 : 0,
             borderBottomLeftRadius: direction === "top" ? 16 : 0,
             borderBottomRightRadius: direction === "top" ? 16 : 0,
             maxHeight: isVertical ? "85vh" : "100%",
@@ -166,7 +191,7 @@ function DrawerContent({ children, sx, onClose, ...props }: DrawerContentProps) 
             width: 48,
             height: 4,
             borderRadius: 2,
-            bgcolor: "divider",
+            bgcolor: tokens.borderDefault,
             mx: "auto",
             mb: 2,
           }}
@@ -186,11 +211,11 @@ function DrawerFooter({ sx, ...props }: BoxProps) {
 }
 
 function DrawerTitle({ sx, ...props }: TypographyProps) {
-  return <Typography sx={{ fontSize: "1.1rem", fontWeight: 700, color: "text.primary", ...sx }} {...props} />;
+  return <Typography sx={{ fontSize: "1.1rem", fontWeight: 700, color: tokens.textPrimary, ...sx }} {...props} />;
 }
 
 function DrawerDescription({ sx, ...props }: TypographyProps) {
-  return <Typography sx={{ fontSize: "0.85rem", color: "text.secondary", ...sx }} {...props} />;
+  return <Typography sx={{ fontSize: "0.85rem", color: tokens.textSecondary, ...sx }} {...props} />;
 }
 
 export {

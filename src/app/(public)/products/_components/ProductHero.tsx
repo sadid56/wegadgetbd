@@ -5,6 +5,7 @@ import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import { keyframes } from "@emotion/react";
+import { tokens } from "@/theme/theme";
 
 interface ProductHeroProps {
   search: string;
@@ -56,14 +57,14 @@ export function ProductHero({ search, totalProducts }: ProductHeroProps) {
                     display: "flex",
                     alignItems: "center",
                     gap: 1,
-                    color: "#ff7319",
+                    color: tokens.primary,
                     fontSize: { xs: 10, sm: 12 },
                     fontWeight: 700,
                     textTransform: "uppercase",
                     letterSpacing: "0.15em",
                   }}
                 >
-                  <Box sx={{ width: 24, height: 2, bgcolor: "#ff7319" }} />
+                  <Box sx={{ width: 24, height: 2, bgcolor: tokens.primary }} />
                   Search Results
                 </Box>
 
@@ -79,12 +80,12 @@ export function ProductHero({ search, totalProducts }: ProductHeroProps) {
                     },
                     fontWeight: 700,
                     letterSpacing: "-0.02em",
-                    color: "#111827",
+                    color: tokens.textPrimary,
                     lineHeight: 1.15,
                   }}
                 >
                   Showing results for{" "}
-                  <Box component='span' sx={{ color: "#ff7319", wordBreak: "break-word" }}>
+                  <Box component='span' sx={{ color: tokens.primary, wordBreak: "break-word" }}>
                     {search}
                   </Box>
                 </Typography>
@@ -98,7 +99,7 @@ export function ProductHero({ search, totalProducts }: ProductHeroProps) {
                     gap: 1,
                     fontSize: { xs: 12, sm: 14, md: 16 },
                     fontWeight: 500,
-                    color: "#6b7280",
+                    color: tokens.textMuted,
                   }}
                 >
                   <Box
@@ -106,9 +107,9 @@ export function ProductHero({ search, totalProducts }: ProductHeroProps) {
                     sx={{
                       px: 1,
                       py: 0.25,
-                      bgcolor: "#f3f4f6",
+                      bgcolor: tokens.bgSubtle,
                       borderRadius: "4px",
-                      color: "#111827",
+                      color: tokens.textPrimary,
                       fontWeight: 700,
                       fontSize: 12,
                     }}
@@ -132,12 +133,12 @@ export function ProductHero({ search, totalProducts }: ProductHeroProps) {
                     },
                     fontWeight: 700,
                     letterSpacing: "-0.02em",
-                    color: "#111827",
+                    color: tokens.textPrimary,
                     lineHeight: 1.15,
                   }}
                 >
                   Explore Our{" "}
-                  <Box component='span' className='text-glow-orange' sx={{ color: "#ff7319" }}>
+                  <Box component='span' className='text-glow-orange' sx={{ color: tokens.primary }}>
                     Tech Universe
                   </Box>
                 </Typography>
@@ -147,7 +148,7 @@ export function ProductHero({ search, totalProducts }: ProductHeroProps) {
                   sx={{
                     display: { xs: "none", sm: "block" },
                     fontSize: { sm: 14, md: 16, lg: 18 },
-                    color: "#6b7280",
+                    color: tokens.textMuted,
                     maxWidth: 576,
                     lineHeight: 1.65,
                   }}
@@ -161,7 +162,7 @@ export function ProductHero({ search, totalProducts }: ProductHeroProps) {
                   sx={{
                     display: { xs: "block", sm: "none" },
                     fontSize: 12,
-                    color: "#6b7280",
+                    color: tokens.textMuted,
                     lineHeight: 1.4,
                     maxWidth: 320,
                   }}

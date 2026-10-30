@@ -2,13 +2,14 @@ import * as React from "react";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import Box from "@mui/material/Box";
-import CircularProgress from "@mui/material/CircularProgress";
+import { CircularProgress } from "@/components/ui/spinner";
 
 import { requireAdmin } from "@/lib/auth";
 import { AdminDashboardLayout } from "../../components/layouts/admin-dashboard-layout";
+import { tokens } from "@/theme/theme";
 
 export const metadata: Metadata = {
-  title: "Admin Dashboard | BongoNex",
+  title: "Admin Dashboard | We Gadget BD",
   description: "Admin Dashboard",
   robots: {
     index: false,
@@ -35,10 +36,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             alignItems: "center",
             justifyContent: "center",
             minHeight: "100vh",
-            bgcolor: "background.default",
+            bgcolor: tokens.bgCanvas,
           }}
         >
-          <CircularProgress size={36} sx={{ color: "primary.main" }} />
+          <CircularProgress size={36} sx={{ color: tokens.primary }} />
         </Box>
       }
     >

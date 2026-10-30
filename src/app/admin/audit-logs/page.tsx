@@ -2,22 +2,15 @@
 
 import { useState } from "react";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import InputBase from "@mui/material/InputBase";
 import Typography from "@mui/material/Typography";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import Chip from "@mui/material/Chip";
-import CircularProgress from "@mui/material/CircularProgress";
-import Modal from "@mui/material/Modal";
-import Fade from "@mui/material/Fade";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { InputBase } from "@/components/ui/input";
+import { Menu, MenuItem } from "@/components/ui/menu";
+import { Chip } from "@/components/ui/badge";
+import { CircularProgress } from "@/components/ui/spinner";
+import { Modal, Fade } from "@/components/ui/modal";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@/components/ui/table";
 
 import SearchIcon from "@mui/icons-material/Search";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
@@ -29,18 +22,19 @@ import CloseIcon from "@mui/icons-material/Close";
 
 import { useAuditLogs } from "@/query-client/audit-logs";
 import { format } from "date-fns";
+import { tokens } from "@/theme/theme";
 
 // ─── Action constants ─────────────────────────────────────────────
 const ACTION_COLORS: Record<string, { bgcolor: string; color: string; borderColor: string }> = {
-  CREATE_PRODUCT: { bgcolor: "#dcfce7", color: "#166534", borderColor: "#bbf7d0" },
-  UPDATE_PRODUCT: { bgcolor: "#dbeafe", color: "#1e40af", borderColor: "#bfdbfe" },
-  DELETE_PRODUCT: { bgcolor: "#fee2e2", color: "#991b1b", borderColor: "#fecaca" },
-  STATUS_CHANGE: { bgcolor: "#fef9c3", color: "#854d0e", borderColor: "#fef08a" },
-  LOGIN: { bgcolor: "#f3e8ff", color: "#6b21a8", borderColor: "#e9d5ff" },
-  SESSION_REVOKE: { bgcolor: "#ffedd5", color: "#9a3412", borderColor: "#fed7aa" },
-  BLOCK_USER: { bgcolor: "#fee2e2", color: "#991b1b", borderColor: "#fecaca" },
-  UNBLOCK_USER: { bgcolor: "#dcfce7", color: "#166534", borderColor: "#bbf7d0" },
-  UPDATE_SETTINGS: { bgcolor: "#e0e7ff", color: "#3730a3", borderColor: "#c7d2fe" },
+  CREATE_PRODUCT: { bgcolor: tokens.successSubtle, color: tokens.successText, borderColor: tokens.successBorder },
+  UPDATE_PRODUCT: { bgcolor: tokens.infoSubtle, color: tokens.infoHover, borderColor: tokens.infoBorder },
+  DELETE_PRODUCT: { bgcolor: tokens.dangerSubtle, color: tokens.dangerHover, borderColor: tokens.dangerBorder },
+  STATUS_CHANGE: { bgcolor: tokens.warningSubtle, color: tokens.warningHover, borderColor: tokens.warningBorder },
+  LOGIN: { bgcolor: tokens.badgeGamingSubtle, color: tokens.badgeGaming, borderColor: tokens.badgeGamingSubtle },
+  SESSION_REVOKE: { bgcolor: tokens.badgeSaleSubtle, color: tokens.badgeSale, borderColor: tokens.warningBorder },
+  BLOCK_USER: { bgcolor: tokens.dangerSubtle, color: tokens.dangerHover, borderColor: tokens.dangerBorder },
+  UNBLOCK_USER: { bgcolor: tokens.successSubtle, color: tokens.successText, borderColor: tokens.successBorder },
+  UPDATE_SETTINGS: { bgcolor: tokens.infoSubtle, color: tokens.info, borderColor: tokens.infoBorder },
 };
 
 const ACTION_LABELS: Record<string, string> = {
@@ -145,12 +139,6 @@ function FilterSelect({
               setAnchor(null);
             }}
             selected={opt.value === value}
-            sx={{
-              fontSize: 14,
-              py: 1,
-              "&.Mui-selected": { bgcolor: "action.selected", fontWeight: 600 },
-              "&.Mui-selected:hover": { bgcolor: "action.selected" },
-            }}
           >
             {opt.label}
           </MenuItem>
@@ -321,9 +309,9 @@ export default function AuditLogsPage() {
             ) : (
               data?.logs?.map((log: any) => {
                 const colorStyle = ACTION_COLORS[log.action] || {
-                  bgcolor: "#f3f4f6",
-                  color: "#1f2937",
-                  borderColor: "#e5e7eb",
+                  bgcolor: tokens.bgSubtle,
+                  color: tokens.textPrimary,
+                  borderColor: tokens.borderDefault,
                 };
                 return (
                   <TableRow

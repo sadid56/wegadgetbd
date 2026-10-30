@@ -5,6 +5,7 @@ import MuiAvatar, { type AvatarProps as MuiAvatarProps } from "@mui/material/Ava
 import MuiAvatarGroup, { type AvatarGroupProps as MuiAvatarGroupProps } from "@mui/material/AvatarGroup";
 import Box, { type BoxProps } from "@mui/material/Box";
 import { type SxProps, type Theme } from "@mui/material/styles";
+import { tokens } from "@/theme/theme";
 
 interface AvatarContextValue {
   size: "default" | "sm" | "lg";
@@ -34,8 +35,8 @@ function Avatar({ size = "default", sx, children, ...props }: AvatarProps) {
           height: dimension,
           fontSize: size === "sm" ? 12 : size === "lg" ? 18 : 14,
           fontWeight: 600,
-          bgcolor: "action.selected",
-          color: "text.primary",
+          bgcolor: tokens.primarySubtle,
+          color: tokens.textPrimary,
           ...sx,
         }}
         {...props}
@@ -100,9 +101,8 @@ function AvatarBadge({ sx, ...props }: BoxProps) {
         width: 10,
         height: 10,
         borderRadius: "50%",
-        bgcolor: "success.main",
-        border: "2px solid",
-        borderColor: "background.paper",
+        bgcolor: tokens.success,
+        border: `2px solid ${tokens.bgPanel}`,
         zIndex: 1,
         ...sx,
       }}
@@ -116,7 +116,7 @@ function AvatarGroup({ sx, ...props }: MuiAvatarGroupProps) {
     <MuiAvatarGroup
       sx={{
         "& .MuiAvatar-root": {
-          borderColor: "background.paper",
+          borderColor: tokens.bgPanel,
         },
         ...sx,
       }}
@@ -133,7 +133,7 @@ function AvatarGroupCount({ sx, children, ...props }: BoxProps) {
         alignItems: "center",
         justifyContent: "center",
         borderRadius: "50%",
-        bgcolor: "action.hover",
+        bgcolor: tokens.bgSubtle,
         fontSize: 12,
         fontWeight: 600,
         ...sx,

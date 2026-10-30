@@ -4,22 +4,17 @@ import { format } from "date-fns";
 import { useToast } from "@/context/toast-context";
 
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
-import CircularProgress from "@mui/material/CircularProgress";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
+import { IconButton } from "@/components/ui/icon-button";
+import { CircularProgress } from "@/components/ui/spinner";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@/components/ui/table";
 
 import SmartphoneIcon from "@mui/icons-material/Smartphone";
 import MonitorIcon from "@mui/icons-material/Monitor";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 import { useSessions, useRevokeSession } from "@/query-client/admin";
+import { tokens } from "@/theme/theme";
 
 const tableHeadSx = {
   fontSize: 12,
@@ -163,10 +158,10 @@ export default function SessionsPage() {
                         sx={{
                           width: 32,
                           height: 32,
-                          color: "#ef4444",
+                          color: tokens.danger,
                           "&:hover": {
-                            color: "#dc2626",
-                            bgcolor: "rgba(239,68,68,0.1)",
+                            color: tokens.dangerHover,
+                            bgcolor: tokens.dangerSubtle,
                           },
                         }}
                       >

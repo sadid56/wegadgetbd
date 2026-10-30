@@ -1,12 +1,11 @@
 "use client";
 
 import Box from "@mui/material/Box";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardHeader from "@mui/material/CardHeader";
 import Typography from "@mui/material/Typography";
-import Avatar from "@mui/material/Avatar";
-import Chip from "@mui/material/Chip";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Avatar } from "@/components/ui/avatar";
+import { Chip } from "@/components/ui/badge";
+import { tokens } from "@/theme/theme";
 
 interface RecentPaymentsProps {
   payments: {

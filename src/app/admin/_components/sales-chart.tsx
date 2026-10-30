@@ -2,11 +2,10 @@
 
 import { useTheme } from "@mui/material/styles";
 import Box from "@mui/material/Box";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardHeader from "@mui/material/CardHeader";
 import Typography from "@mui/material/Typography";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { tokens } from "@/theme/theme";
 
 interface SalesChartProps {
   data: {
@@ -58,8 +57,8 @@ export function SalesChart({ data }: SalesChartProps) {
                   <stop offset='95%' stopColor={primaryColor} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <XAxis dataKey='date' stroke='#888888' fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis stroke='#888888' fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `৳${value}`} />
+              <XAxis dataKey='date' stroke={tokens.textMuted} fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis stroke={tokens.textMuted} fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `৳${value}`} />
               <CartesianGrid strokeDasharray='3 3' vertical={false} stroke={theme.palette.divider} />
               <Tooltip
                 cursor={{ stroke: theme.palette.divider, strokeWidth: 1 }}

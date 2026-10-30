@@ -11,6 +11,7 @@ import CheckIcon from "@mui/icons-material/Check";
 import CircleIcon from "@mui/icons-material/Circle";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import type { SxProps, Theme } from "@mui/material/styles";
+import { tokens } from "@/theme/theme";
 
 interface DropdownContextValue {
   anchorEl: HTMLElement | null;
@@ -99,12 +100,11 @@ function DropdownMenuContent({ children, sx, onClose, ...props }: DropdownMenuCo
           sx: {
             mt: 0.5,
             minWidth: 160,
-            borderRadius: 1.5,
-            border: 1,
-            borderColor: "divider",
-            bgcolor: "background.paper",
+            borderRadius: `${tokens.radiusMd}px`,
+            border: `1px solid ${tokens.borderDefault}`,
+            bgcolor: tokens.bgElevated,
             backgroundImage: "none",
-            boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)",
+            boxShadow: tokens.shadowPopover,
             p: 0.5,
             ...sx,
           },
@@ -146,10 +146,10 @@ function DropdownMenuItem({ inset, variant = "default", onClick, sx, children, .
         py: 0.8,
         px: 1.5,
         pl: inset ? 3.5 : 1.5,
-        color: isDestructive ? "error.main" : "text.primary",
+        color: isDestructive ? tokens.danger : tokens.textPrimary,
         gap: 1.5,
         "&:hover": {
-          bgcolor: isDestructive ? "error.light" : "action.hover",
+          bgcolor: isDestructive ? tokens.dangerSubtle : tokens.bgSubtle,
         },
         ...sx,
       }}

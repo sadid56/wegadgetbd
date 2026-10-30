@@ -1,5 +1,6 @@
 import Box from "@mui/material/Box";
-import { Navbar } from "../../components/layouts/Navbar";
+import { tokens } from "@/theme/theme";
+import { Navbar } from "../../components/layouts/navbar/navbar";
 import { Footer } from "../../components/layouts/Footer";
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
@@ -9,7 +10,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         display: "flex",
         minHeight: "100vh",
         flexDirection: "column",
-        bgcolor: "background.default",
+        bgcolor: tokens.bgCanvas,
       }}
     >
       <Navbar />

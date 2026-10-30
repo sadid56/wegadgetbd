@@ -5,8 +5,6 @@ import NextLink from "next/link";
 import { useRouter } from "next/navigation";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
-import InputBase from "@mui/material/InputBase";
 import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 import HeadsetMicOutlinedIcon from "@mui/icons-material/HeadsetMicOutlined";
@@ -17,48 +15,43 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
 import { tokens } from "@/theme/theme";
-import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { InputBase } from "@/components/ui/input";
 import { SectionContainer } from "@/components/common/SectionContainer";
 
 const SPOTLIGHT_PRODUCTS = [
   {
     id: 1,
-    badge: "Best Seller",
+    category: "Wireless Audio",
     title: "Sony WH-1000XM5",
-    subtitle: "Wireless Noise Canceling Headphones",
+    subtitle: "Noise Canceling Headphones",
     rating: "4.8",
-    reviewCount: "120+",
     price: "৳24,999",
     originalPrice: "৳30,000",
     image: "/images/sony-headphones.jpg",
     link: "/products/sony-wh-1000xm5",
-    quote: "Better Sound, Bigger Moments",
   },
   {
     id: 2,
-    badge: "New Arrival",
+    category: "Laptops",
     title: "MacBook Air M3",
-    subtitle: "Supercharged by Apple M3 Silicon",
+    subtitle: "13-inch • Apple M3 Chip",
     rating: "4.9",
-    reviewCount: "1200+",
     price: "৳109,999",
     originalPrice: "৳129,999",
     image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=800&auto=format&fit=crop",
     link: "/products",
-    quote: "Pure Speed, Infinite Battery",
   },
   {
     id: 3,
-    badge: "Flagship",
+    category: "Smartphones",
     title: "iPhone 15 Pro",
-    subtitle: "Titanium. So strong. So light.",
-    rating: "4.8",
-    reviewCount: "950+",
+    subtitle: "256GB • Natural Titanium",
+    rating: "4.9",
     price: "৳99,999",
     originalPrice: "৳109,999",
     image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?q=80&w=800&auto=format&fit=crop",
     link: "/products",
-    quote: "Cinematic Vision in Your Pocket",
   },
 ];
 
@@ -90,19 +83,19 @@ export function Hero() {
       sx={{
         position: "relative",
         width: "100%",
-        minHeight: { xs: "auto", md: 540, lg: 580 },
+        minHeight: { xs: "auto", md: 540, lg: 640 },
         display: "flex",
         alignItems: "center",
         bgcolor: tokens.bgDark,
         borderBottomLeftRadius: { xs: 24, md: 36 },
         borderBottomRightRadius: { xs: 24, md: 36 },
-        borderBottom: "1px solid rgba(16, 185, 129, 0.2)",
+        borderBottom: `1px solid ${tokens.borderDark}`,
         overflow: "hidden",
         pt: { xs: 9, md: 10.5 },
         pb: { xs: 10, md: 12 },
       }}
     >
-      {/* ═══ 1. BACKGROUND IMAGE & AMBIENT OVERLAY ═══ */}
+      {/* Background Image */}
       <Box
         sx={{
           position: "absolute",
@@ -110,25 +103,25 @@ export function Hero() {
           backgroundImage: "url('/images/hero-banner-dark.jpg')",
           backgroundSize: "cover",
           backgroundPosition: "center right",
-          filter: "brightness(0.92) contrast(1.05)",
+          filter: "brightness(0.9) contrast(1.05)",
           zIndex: 1,
         }}
       />
 
-      {/* Dark moody vignette & gradient */}
+      {/* Dark Gradient Overlay */}
       <Box
         sx={{
           position: "absolute",
           inset: 0,
           background: {
-            xs: "linear-gradient(180deg, rgba(8,18,14,0.92) 0%, rgba(8,18,14,0.85) 60%, rgba(8,18,14,0.95) 100%)",
-            md: "linear-gradient(90deg, rgba(8,18,14,0.95) 0%, rgba(8,18,14,0.86) 42%, rgba(8,18,14,0.30) 75%, rgba(8,18,14,0.85) 100%)",
+            xs: "linear-gradient(180deg, rgba(9,14,28,0.92) 0%, rgba(9,14,28,0.86) 60%, rgba(9,14,28,0.95) 100%)",
+            md: "linear-gradient(90deg, rgba(9,14,28,0.95) 0%, rgba(9,14,28,0.86) 45%, rgba(9,14,28,0.45) 75%, rgba(9,14,28,0.85) 100%)",
           },
           zIndex: 2,
         }}
       />
 
-      {/* ═══ 2. MAIN CONTAINER ═══ */}
+      {/* Main Content */}
       <SectionContainer
         component="div"
         sx={{
@@ -137,13 +130,11 @@ export function Hero() {
           display: "grid",
           gridTemplateColumns: { xs: "1fr", md: "1.15fr 0.85fr", lg: "1.2fr 0.8fr" },
           alignItems: "center",
-          gap: { xs: 6, md: 4, lg: 6 },
+          gap: { xs: 5, md: 4, lg: 6 },
         }}
       >
         {/* ═══ LEFT CONTENT ═══ */}
         <Box sx={{ maxWidth: 640 }}>
-
-          {/* Headline: The Right Gadgets for a Brighter You */}
           <Typography
             component="h1"
             sx={{
@@ -161,7 +152,7 @@ export function Hero() {
               component="span"
               sx={{
                 color: tokens.accent,
-                background: `linear-gradient(120deg, ${tokens.accent} 0%, #6ee7b7 100%)`,
+                background: `linear-gradient(120deg, ${tokens.accent} 0%, ${tokens.primaryLight} 100%)`,
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
               }}
@@ -170,7 +161,6 @@ export function Hero() {
             </Box>
           </Typography>
 
-          {/* Subtitle */}
           <Typography
             sx={{
               fontSize: { xs: 14, sm: 15 },
@@ -185,7 +175,7 @@ export function Hero() {
             and more enjoyable.
           </Typography>
 
-          {/* Frosted Search Bar */}
+          {/* Search Bar */}
           <Box
             component="form"
             onSubmit={handleSearchSubmit}
@@ -201,11 +191,9 @@ export function Hero() {
               p: "5px 7px 5px 16px",
               maxWidth: 500,
               mb: 2.5,
-              boxShadow: "0 8px 24px -6px rgba(0, 0, 0, 0.4)",
-              transition: "border-color 0.2s ease, box-shadow 0.2s ease",
+              transition: "border-color 0.2s ease",
               "&:focus-within": {
                 borderColor: tokens.primary,
-                boxShadow: `0 8px 24px -4px ${tokens.primarySubtle}`,
               },
             }}
           >
@@ -233,234 +221,194 @@ export function Hero() {
                 height: 38,
                 borderRadius: "50%",
                 flexShrink: 0,
-                transition: "all 0.2s ease",
                 "&:hover": {
                   bgcolor: tokens.primaryHover,
-                  transform: "scale(1.05)",
                 },
               }}
             >
               <ArrowForwardIcon sx={{ fontSize: 17 }} />
             </IconButton>
           </Box>
-
-          {/* 3 Trust Badges */}
-          <Box
-            sx={{
-              display: "flex",
-              flexWrap: "wrap",
-              alignItems: "center",
-              gap: { xs: 2.5, sm: 3.5 },
-              pt: 1,
-            }}
-          >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
-              <LocalShippingOutlinedIcon sx={{ color: tokens.primary, fontSize: 22 }} />
-              <Box>
-                <Typography sx={{ fontWeight: 700, fontSize: 13, color: tokens.textWhite, lineHeight: 1.2 }}>
-                  Free Shipping
-                </Typography>
-                <Typography sx={{ fontSize: 11.5, color: "rgba(255, 255, 255, 0.55)" }}>
-                  On orders over ৳2000
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
-              <VerifiedUserOutlinedIcon sx={{ color: tokens.primary, fontSize: 22 }} />
-              <Box>
-                <Typography sx={{ fontWeight: 700, fontSize: 13, color: tokens.textWhite, lineHeight: 1.2 }}>
-                  Secure Payment
-                </Typography>
-                <Typography sx={{ fontSize: 11.5, color: "rgba(255, 255, 255, 0.55)" }}>
-                  100% safe & trusted
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
-              <HeadsetMicOutlinedIcon sx={{ color: tokens.primary, fontSize: 22 }} />
-              <Box>
-                <Typography sx={{ fontWeight: 700, fontSize: 13, color: tokens.textWhite, lineHeight: 1.2 }}>
-                  24/7 Support
-                </Typography>
-                <Typography sx={{ fontSize: 11.5, color: "rgba(255, 255, 255, 0.55)" }}>
-                  We&apos;re here to help
-                </Typography>
-              </Box>
-            </Box>
-          </Box>
         </Box>
 
-        {/* ═══ RIGHT: SPOTLIGHT PRODUCT CARD ═══ */}
+        {/* ═══ RIGHT: MINIMAL EDITORIAL PRODUCT CARD ═══ */}
         <Box
           sx={{
             display: "flex",
             flexDirection: "column",
             alignItems: { xs: "center", md: "flex-end" },
-            position: "relative",
           }}
         >
-          {/* Spotlight Card */}
           <Box
             sx={{
               width: "100%",
               maxWidth: 340,
-              bgcolor: "rgba(255, 255, 255, 0.96)",
-              borderRadius: "20px",
-              p: { xs: 2, sm: 2.2 },
-              boxShadow: "0 20px 40px -10px rgba(0, 0, 0, 0.5)",
-              backdropFilter: "blur(12px)",
-              position: "relative",
-              overflow: "hidden",
+              bgcolor: tokens.bgPanel,
+              borderRadius: `${tokens.radiusLg}px`,
+              border: `1px solid ${tokens.borderDefault}`,
+              p: 1.75,
+              "&:hover .hero-card-thumb": {
+                transform: "scale(1.05)",
+              },
             }}
           >
-            {/* Top row: Badge & Wishlist */}
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
-              <Box
-                sx={{
-                  bgcolor: tokens.primaryLight,
-                  color: tokens.primaryHover,
-                  px: 1.25,
-                  py: 0.3,
-                  borderRadius: `${tokens.radiusPill}px`,
-                  fontSize: 10.5,
-                  fontWeight: 700,
-                  border: `1px solid ${tokens.primaryBorder}`,
-                }}
-              >
-                {activeProduct.badge}
-              </Box>
-            </Box>
-
-            {/* Title & Subtitle */}
-            <Typography sx={{ fontWeight: 800, fontSize: 17, color: tokens.textPrimary, mb: 0.2 }}>
-              {activeProduct.title}
-            </Typography>
-            <Typography sx={{ fontSize: 12, color: tokens.textMuted, mb: 1 }}>
-              {activeProduct.subtitle}
-            </Typography>
-
-            {/* Rating */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 1 }}>
-              <StarIcon sx={{ color: tokens.warning, fontSize: 15 }} />
-              <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: tokens.textPrimary }}>
-                {activeProduct.rating}
-              </Typography>
-              <Typography sx={{ fontSize: 11.5, color: tokens.textMuted }}>
-                ({activeProduct.reviewCount})
-              </Typography>
-            </Box>
-
-            {/* Price */}
-            <Box sx={{ display: "flex", alignItems: "baseline", gap: 1, mb: 1.5 }}>
-              <Typography sx={{ fontSize: 19, fontWeight: 800, color: tokens.textPrimary }}>
-                {activeProduct.price}
-              </Typography>
-              <Typography
-                sx={{
-                  fontSize: 13,
-                  color: tokens.textDisabled,
-                  textDecoration: "line-through",
-                  fontWeight: 500,
-                }}
-              >
-                {activeProduct.originalPrice}
-              </Typography>
-            </Box>
-
-            {/* CTA Button */}
-            <Button
+            {/* Clean Product Thumbnail (no pills/clutter) */}
+            <Box
               component={NextLink}
               href={activeProduct.link}
               sx={{
-                bgcolor: "#08120e",
-                color: tokens.textWhite,
-                borderRadius: `${tokens.radiusPill}px`,
-                py: 0.8,
-                px: 2.4,
-                fontSize: 12.5,
-                fontWeight: 700,
-                width: "fit-content",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 0.75,
-                mb: 1.75,
-                "&:hover": {
-                  bgcolor: tokens.primaryHover,
-                  color: tokens.textWhite,
-                },
-              }}
-            >
-              Shop Now <ArrowForwardIcon sx={{ fontSize: 14 }} />
-            </Button>
-
-            {/* Product Cutout Image */}
-            <Box
-              sx={{
+                display: "block",
                 width: "100%",
-                height: 165,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                bgcolor: "#f8fafc",
-                borderRadius: "14px",
-                p: 1.5,
+                height: 190,
+                borderRadius: `${tokens.radiusMd}px`,
+                bgcolor: tokens.bgSubtle,
                 overflow: "hidden",
+                mb: 1.75,
               }}
             >
               <Box
                 component="img"
+                className="hero-card-thumb"
                 src={activeProduct.image}
                 alt={activeProduct.title}
                 sx={{
-                  maxHeight: "100%",
-                  maxWidth: "100%",
-                  objectFit: "contain",
-                  transition: "transform 0.4s ease",
-                  "&:hover": { transform: "scale(1.06)" },
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  transition: "transform 0.35s ease",
                 }}
               />
             </Box>
+
+            {/* Category + Rating Row */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                mb: 0.4,
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: 11,
+                  fontWeight: 600,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
+                  color: tokens.textMuted,
+                }}
+              >
+                {activeProduct.category}
+              </Typography>
+
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.4 }}>
+                <StarIcon sx={{ color: tokens.warning, fontSize: 14 }} />
+                <Typography sx={{ fontSize: 12, fontWeight: 700, color: tokens.textPrimary }}>
+                  {activeProduct.rating}
+                </Typography>
+              </Box>
+            </Box>
+
+            {/* Title & Subtitle */}
+            <Typography
+              component={NextLink}
+              href={activeProduct.link}
+              sx={{
+                display: "block",
+                fontWeight: 700,
+                fontSize: 16.5,
+                color: tokens.textPrimary,
+                textDecoration: "none",
+                lineHeight: 1.3,
+                mb: 0.25,
+              }}
+            >
+              {activeProduct.title}
+            </Typography>
+
+            <Typography
+              sx={{
+                fontSize: 12.5,
+                color: tokens.textMuted,
+                mb: 1.75,
+              }}
+            >
+              {activeProduct.subtitle}
+            </Typography>
+
+            {/* Bottom Row: Price + Minimal Action Button */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                pt: 1.25,
+                borderTop: `1px solid ${tokens.borderSubtle}`,
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.8 }}>
+                <Typography sx={{ fontSize: 18, fontWeight: 800, color: tokens.textPrimary }}>
+                  {activeProduct.price}
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: 12,
+                    color: tokens.textDisabled,
+                    textDecoration: "line-through",
+                  }}
+                >
+                  {activeProduct.originalPrice}
+                </Typography>
+              </Box>
+
+              <IconButton
+                component={NextLink}
+                href={activeProduct.link}
+                aria-label={`View ${activeProduct.title}`}
+                sx={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  bgcolor: tokens.primarySubtle,
+                  color: tokens.primary,
+                  border: `1px solid ${tokens.primaryBorder}`,
+                  "&:hover": {
+                    bgcolor: tokens.primary,
+                    color: tokens.textWhite,
+                  },
+                }}
+              >
+                <ArrowForwardIcon sx={{ fontSize: 17 }} />
+              </IconButton>
+            </Box>
           </Box>
 
-          {/* Script Quote on desk */}
-          <Typography
-            sx={{
-              fontFamily: "'Brush Script MT', 'Dancing Script', cursive, sans-serif",
-              fontSize: { xs: 18, md: 21 },
-              color: "rgba(255, 255, 255, 0.8)",
-              mt: 1.5,
-              textAlign: "right",
-              letterSpacing: "0.02em",
-              fontStyle: "italic",
-            }}
-          >
-            {activeProduct.quote}
-          </Typography>
-
-          {/* Bottom Pagination: 01 / 03  <  > */}
+          {/* Minimal Slider Counter & Prev/Next */}
           <Box
             sx={{
               display: "flex",
               alignItems: "center",
-              gap: 1.5,
-              mt: 1,
-              color: "rgba(255, 255, 255, 0.75)",
+              justifyContent: "space-between",
+              width: "100%",
+              maxWidth: 340,
+              mt: 1.25,
+              px: 0.5,
             }}
           >
-            <Typography sx={{ fontSize: 13, fontWeight: 600, letterSpacing: "0.1em" }}>
-              0{currentIndex + 1} <Box component="span" sx={{ opacity: 0.5 }}>/ 0{SPOTLIGHT_PRODUCTS.length}</Box>
+            <Typography sx={{ fontSize: 12.5, fontWeight: 600, color: "rgba(255, 255, 255, 0.7)", letterSpacing: "0.08em" }}>
+              0{currentIndex + 1} <Box component="span" sx={{ opacity: 0.45 }}>/ 0{SPOTLIGHT_PRODUCTS.length}</Box>
             </Typography>
-            <Box sx={{ display: "flex", gap: 0.5 }}>
+
+            <Box sx={{ display: "flex", gap: 0.75 }}>
               <IconButton
                 onClick={handlePrev}
                 size="small"
                 sx={{
+                  width: 28,
+                  height: 28,
                   color: tokens.textWhite,
-                  border: "1px solid rgba(255, 255, 255, 0.2)",
-                  p: 0.5,
-                  "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" },
+                  border: "1px solid rgba(255, 255, 255, 0.18)",
+                  "&:hover": { bgcolor: "rgba(255, 255, 255, 0.08)" },
                 }}
               >
                 <ChevronLeftIcon sx={{ fontSize: 16 }} />
@@ -469,10 +417,11 @@ export function Hero() {
                 onClick={handleNext}
                 size="small"
                 sx={{
+                  width: 28,
+                  height: 28,
                   color: tokens.textWhite,
-                  border: "1px solid rgba(255, 255, 255, 0.2)",
-                  p: 0.5,
-                  "&:hover": { bgcolor: "rgba(255, 255, 255, 0.1)" },
+                  border: "1px solid rgba(255, 255, 255, 0.18)",
+                  "&:hover": { bgcolor: "rgba(255, 255, 255, 0.08)" },
                 }}
               >
                 <ChevronRightIcon sx={{ fontSize: 16 }} />

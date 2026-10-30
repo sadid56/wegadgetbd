@@ -2,9 +2,10 @@
 
 import NextLink from "next/link";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
+import { Button } from "@/components/ui/button";
+import { tokens } from "@/theme/theme";
 import { ProductCard } from "./ProductCard";
 import { useProducts } from "@/query-client/products";
 
@@ -24,18 +25,18 @@ export function HotDealsSection() {
           mb: 1.5,
           pb: 1.5,
           borderBottom: 1,
-          borderColor: "divider",
+          borderColor: tokens.borderDefault,
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <LocalFireDepartmentIcon sx={{ fontSize: 24, color: "#ff7319" }} />
+          <LocalFireDepartmentIcon sx={{ fontSize: 24, color: tokens.primary }} />
           <Typography
             component='h2'
             className='bricolage'
             sx={{
               fontWeight: 700,
               letterSpacing: "-0.02em",
-              color: "text.primary",
+              color: tokens.textPrimary,
               fontSize: { xs: "1.25rem", md: "1.5rem" },
               lineHeight: 1.2,
             }}
@@ -52,8 +53,8 @@ export function HotDealsSection() {
           sx={{
             fontWeight: 600,
             fontSize: "0.85rem",
-            color: "#ff7319",
-            borderColor: "divider",
+            color: tokens.primary,
+            borderColor: tokens.borderDefault,
             borderRadius: "6px",
             textTransform: "none",
             px: 2,
@@ -61,9 +62,9 @@ export function HotDealsSection() {
             minWidth: 0,
             transition: "all 200ms",
             "&:hover": {
-              borderColor: "#ff7319",
-              bgcolor: "#ff7319",
-              color: "#fff",
+              borderColor: tokens.primary,
+              bgcolor: tokens.primary,
+              color: tokens.textWhite,
             },
           }}
         >

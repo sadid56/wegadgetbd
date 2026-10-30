@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import Box from "@mui/material/Box";
-import IconButton from "@mui/material/IconButton";
-import Menu from "@mui/material/Menu";
-import MenuItem from "@mui/material/MenuItem";
-import Drawer from "@mui/material/Drawer";
-import ButtonBase from "@mui/material/ButtonBase";
+import { IconButton } from "@/components/ui/icon-button";
+import { Menu } from "@/components/ui/menu";
+import { MenuItem } from "@/components/ui/select";
+import { Drawer } from "@/components/ui/drawer";
+import { ButtonBase } from "@/components/ui/button";
 import { keyframes } from "@emotion/react";
+import { tokens } from "@/theme/theme";
 
 import SearchIcon from "@mui/icons-material/Search";
 import ArrowDownwardIcon from "@mui/icons-material/ArrowDownward";
@@ -74,43 +75,43 @@ const QUICK_FILTERS = [
     id: "on_sale",
     label: "On Sale",
     icon: LocalOfferIcon,
-    active: { bgcolor: "#e11d48", borderColor: "#e11d48", color: "#fff" },
-    inactive: { bgcolor: "#fff1f2", borderColor: "#fecdd3", color: "#e11d48" },
+    active: { bgcolor: tokens.danger, borderColor: tokens.danger, color: tokens.textWhite },
+    inactive: { bgcolor: tokens.dangerSubtle, borderColor: tokens.dangerBorder, color: tokens.danger },
   },
   {
     id: "new_arrival",
     label: "New Arrivals",
     icon: AutoAwesomeIcon,
-    active: { bgcolor: "#7c3aed", borderColor: "#7c3aed", color: "#fff" },
-    inactive: { bgcolor: "#f5f3ff", borderColor: "#ddd6fe", color: "#7c3aed" },
+    active: { bgcolor: tokens.badgeGaming, borderColor: tokens.badgeGaming, color: tokens.textWhite },
+    inactive: { bgcolor: tokens.badgeGamingSubtle, borderColor: tokens.badgeGaming, color: tokens.badgeGaming },
   },
   {
     id: "top_rated",
     label: "Top Rated",
     icon: StarIcon,
-    active: { bgcolor: "#f59e0b", borderColor: "#f59e0b", color: "#fff" },
-    inactive: { bgcolor: "#fffbeb", borderColor: "#fde68a", color: "#d97706" },
+    active: { bgcolor: tokens.warning, borderColor: tokens.warning, color: tokens.textWhite },
+    inactive: { bgcolor: tokens.warningSubtle, borderColor: tokens.warningBorder, color: tokens.warningHover },
   },
   {
     id: "best_seller",
     label: "Best Sellers",
     icon: TrendingUpIcon,
-    active: { bgcolor: "#059669", borderColor: "#059669", color: "#fff" },
-    inactive: { bgcolor: "#ecfdf5", borderColor: "#a7f3d0", color: "#059669" },
+    active: { bgcolor: tokens.successText, borderColor: tokens.successText, color: tokens.textWhite },
+    inactive: { bgcolor: tokens.primaryLight, borderColor: tokens.successBorder, color: tokens.successText },
   },
   {
     id: "flash_deal",
     label: "Flash Deals",
     icon: BoltIcon,
-    active: { bgcolor: "#f97316", borderColor: "#f97316", color: "#fff" },
-    inactive: { bgcolor: "#fff7ed", borderColor: "#fed7aa", color: "#ea580c" },
+    active: { bgcolor: tokens.badgeSale, borderColor: tokens.badgeSale, color: tokens.textWhite },
+    inactive: { bgcolor: tokens.badgeSaleSubtle, borderColor: tokens.badgeSale, color: tokens.badgeSale },
   },
   {
     id: "in_stock",
     label: "In Stock",
     icon: Inventory2Icon,
-    active: { bgcolor: "#0284c7", borderColor: "#0284c7", color: "#fff" },
-    inactive: { bgcolor: "#f0f9ff", borderColor: "#bae6fd", color: "#0284c7" },
+    active: { bgcolor: tokens.infoHover, borderColor: tokens.infoHover, color: tokens.textWhite },
+    inactive: { bgcolor: tokens.infoSubtle, borderColor: tokens.infoBorder, color: tokens.infoHover },
   },
 ] as const;
 
@@ -127,8 +128,8 @@ function ActivePill({ label, onRemove }: { label: string; onRemove: () => void }
         pl: 1.25,
         pr: 0.75,
         borderRadius: 999,
-        bgcolor: "#0f172a",
-        color: "#fff",
+        bgcolor: tokens.textPrimary,
+        color: tokens.textWhite,
         fontSize: 11,
         fontWeight: 600,
         whiteSpace: "nowrap",
@@ -146,7 +147,7 @@ function ActivePill({ label, onRemove }: { label: string; onRemove: () => void }
           height: 14,
           borderRadius: "50%",
           bgcolor: "rgba(255,255,255,0.2)",
-          color: "#fff",
+          color: tokens.textWhite,
           border: 0,
           cursor: "pointer",
           display: "flex",
@@ -218,10 +219,10 @@ export function FilterBar({
           sx={{
             borderRadius: "16px",
             border: "1px solid",
-            borderColor: "rgba(226,232,240,0.8)",
+            borderColor: tokens.borderDefault,
             bgcolor: "rgba(255,255,255,0.96)",
             backdropFilter: "blur(20px)",
-            boxShadow: "0 10px 15px -3px rgba(226,232,240,0.5)",
+            boxShadow: tokens.shadowMd,
           }}
         >
           {/* Row 1: Search + Sort + Controls */}
@@ -232,7 +233,7 @@ export function FilterBar({
               gap: 1,
               px: 1.5,
               py: 1.25,
-              borderBottom: "1px solid #f1f5f9",
+              borderBottom: `1px solid ${tokens.borderSubtle}`,
             }}
           >
             {/* Desktop search */}
@@ -244,7 +245,7 @@ export function FilterBar({
                   top: "50%",
                   transform: "translateY(-50%)",
                   fontSize: 16,
-                  color: "#94a3b8",
+                  color: tokens.textDisabled,
                   pointerEvents: "none",
                 }}
               />
@@ -260,17 +261,17 @@ export function FilterBar({
                   pl: "40px",
                   pr: "36px",
                   fontSize: 14,
-                  bgcolor: "#f8fafc",
-                  border: "1px solid #e2e8f0",
+                  bgcolor: tokens.bgCanvas,
+                  border: `1px solid ${tokens.borderDefault}`,
                   borderRadius: "12px",
                   outline: "none",
-                  color: "#1e293b",
+                  color: tokens.textPrimary,
                   fontWeight: 500,
                   transition: "all 200ms",
-                  "&::placeholder": { color: "#94a3b8", opacity: 1 },
+                  "&::placeholder": { color: tokens.textDisabled, opacity: 1 },
                   "&:focus": {
-                    borderColor: "#34d399",
-                    bgcolor: "#fff",
+                    borderColor: tokens.accent,
+                    bgcolor: tokens.bgInput,
                     boxShadow: "0 0 0 4px rgba(52,211,153,0.25)",
                   },
                 }}
@@ -288,16 +289,16 @@ export function FilterBar({
                     width: 20,
                     height: 20,
                     borderRadius: "50%",
-                    bgcolor: "#cbd5e1",
+                    bgcolor: tokens.borderElevated,
                     border: 0,
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "#fff",
+                    color: tokens.textWhite,
                     p: 0,
                     animation: `${popIn} 140ms ease-out both`,
-                    "&:hover": { bgcolor: "#94a3b8" },
+                    "&:hover": { bgcolor: tokens.textDisabled },
                   }}
                 >
                   <CloseIcon sx={{ fontSize: 12 }} />
@@ -316,7 +317,7 @@ export function FilterBar({
                       top: "50%",
                       transform: "translateY(-50%)",
                       fontSize: 16,
-                      color: "#94a3b8",
+                      color: tokens.textDisabled,
                       pointerEvents: "none",
                     }}
                   />
@@ -333,16 +334,16 @@ export function FilterBar({
                       pl: "36px",
                       pr: "36px",
                       fontSize: 14,
-                      bgcolor: "#f8fafc",
-                      border: "1px solid #e2e8f0",
+                      bgcolor: tokens.bgCanvas,
+                      border: `1px solid ${tokens.borderDefault}`,
                       borderRadius: "12px",
                       outline: "none",
-                      color: "#1e293b",
+                      color: tokens.textPrimary,
                       fontWeight: 500,
                       transition: "all 200ms",
-                      "&::placeholder": { color: "#94a3b8", opacity: 1 },
+                      "&::placeholder": { color: tokens.textDisabled, opacity: 1 },
                       "&:focus": {
-                        borderColor: "#34d399",
+                        borderColor: tokens.accent,
                         boxShadow: "0 0 0 4px rgba(52,211,153,0.25)",
                       },
                     }}
@@ -359,15 +360,15 @@ export function FilterBar({
                       width: 20,
                       height: 20,
                       borderRadius: "50%",
-                      bgcolor: "#e2e8f0",
+                      bgcolor: tokens.borderDefault,
                       border: 0,
                       cursor: "pointer",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      color: "#475569",
+                      color: tokens.textSecondary,
                       p: 0,
-                      "&:hover": { bgcolor: "#cbd5e1" },
+                      "&:hover": { bgcolor: tokens.borderElevated },
                     }}
                   >
                     <CloseIcon sx={{ fontSize: 12 }} />
@@ -387,12 +388,12 @@ export function FilterBar({
                       height: 40,
                       px: 1.75,
                       borderRadius: "12px",
-                      bgcolor: "#f8fafc",
-                      border: "1px solid #e2e8f0",
-                      color: "#94a3b8",
+                      bgcolor: tokens.bgCanvas,
+                      border: `1px solid ${tokens.borderDefault}`,
+                      color: tokens.textDisabled,
                       cursor: "pointer",
                       transition: "border-color 200ms",
-                      "&:hover": { borderColor: "#cbd5e1" },
+                      "&:hover": { borderColor: tokens.borderElevated },
                     }}
                   >
                     <SearchIcon sx={{ fontSize: 16, flexShrink: 0 }} />
@@ -407,11 +408,11 @@ export function FilterBar({
                       height: 40,
                       width: 40,
                       borderRadius: "12px",
-                      bgcolor: "#f8fafc",
-                      border: "1px solid #e2e8f0",
-                      color: "#64748b",
+                      bgcolor: tokens.bgCanvas,
+                      border: `1px solid ${tokens.borderDefault}`,
+                      color: tokens.textMuted,
                       flexShrink: 0,
-                      "&:hover": { bgcolor: "#f1f5f9" },
+                      "&:hover": { bgcolor: tokens.bgSubtle },
                     }}
                   >
                     <TuneIcon sx={{ fontSize: 16 }} />
@@ -424,8 +425,8 @@ export function FilterBar({
                           width: 8,
                           height: 8,
                           borderRadius: "50%",
-                          bgcolor: "#10b981",
-                          boxShadow: "0 0 0 2px #fff",
+                          bgcolor: tokens.primary,
+                          boxShadow: `0 0 0 2px ${tokens.bgPanel}`,
                           animation: `${popIn} 140ms ease-out both`,
                         }}
                       />
@@ -436,7 +437,7 @@ export function FilterBar({
             </Box>
 
             {/* Divider */}
-            <Box sx={{ display: { xs: "none", md: "block" }, height: 24, width: "1px", bgcolor: "#e2e8f0", flexShrink: 0 }} />
+            <Box sx={{ display: { xs: "none", md: "block" }, height: 24, width: "1px", bgcolor: tokens.borderDefault, flexShrink: 0 }} />
 
             {/* Sort dropdown */}
             <Box sx={{ display: { xs: "none", md: "block" }, flexShrink: 0 }}>
@@ -451,22 +452,22 @@ export function FilterBar({
                   height: 40,
                   px: 1.75,
                   borderRadius: "12px",
-                  border: "1px solid #e2e8f0",
-                  bgcolor: "#fff",
-                  color: "#334155",
+                  border: `1px solid ${tokens.borderDefault}`,
+                  bgcolor: tokens.bgPanel,
+                  color: tokens.textSecondary,
                   fontSize: 14,
                   fontWeight: 600,
                   cursor: "pointer",
                   transition: "all 200ms",
-                  "&:hover": { borderColor: "#cbd5e1", bgcolor: "#f8fafc" },
+                  "&:hover": { borderColor: tokens.borderElevated, bgcolor: tokens.bgCanvas },
                 }}
               >
-                <CurrentSortIcon sx={{ fontSize: 14, color: "#64748b" }} />
+                <CurrentSortIcon sx={{ fontSize: 14, color: tokens.textMuted }} />
                 <Box component='span'>{currentSort.label}</Box>
                 <KeyboardArrowDownIcon
                   sx={{
                     fontSize: 14,
-                    color: "#94a3b8",
+                    color: tokens.textDisabled,
                     transition: "transform 200ms",
                     transform: sortAnchor ? "rotate(180deg)" : "rotate(0deg)",
                   }}
@@ -484,7 +485,7 @@ export function FilterBar({
                       mt: 1,
                       width: 192,
                       borderRadius: "16px",
-                      border: "1px solid #e2e8f0",
+                      border: `1px solid ${tokens.borderDefault}`,
                       boxShadow: "0 20px 25px -5px rgba(203,213,225,0.4)",
                       py: 0.75,
                     },
@@ -507,16 +508,16 @@ export function FilterBar({
                         gap: 1.5,
                         fontSize: 14,
                         fontWeight: 500,
-                        color: isActive ? "#047857" : "#334155",
-                        bgcolor: isActive ? "#ecfdf5" : "transparent",
-                        "&:hover": { bgcolor: isActive ? "#d1fae5" : "#f8fafc" },
+                        color: isActive ? tokens.successText : tokens.textSecondary,
+                        bgcolor: isActive ? tokens.primaryLight : "transparent",
+                        "&:hover": { bgcolor: isActive ? tokens.primarySubtle : tokens.bgCanvas },
                       }}
                     >
-                      <Icon sx={{ fontSize: 14, color: isActive ? "#10b981" : "#94a3b8" }} />
+                      <Icon sx={{ fontSize: 14, color: isActive ? tokens.primary : tokens.textDisabled }} />
                       <Box component='span' sx={{ flex: 1 }}>
                         {opt.label}
                       </Box>
-                      {isActive && <CheckCircleIcon sx={{ fontSize: 14, color: "#10b981" }} />}
+                      {isActive && <CheckCircleIcon sx={{ fontSize: 14, color: tokens.primary }} />}
                     </MenuItem>
                   );
                 })}
@@ -529,8 +530,8 @@ export function FilterBar({
                 sx={{
                   display: { xs: "none", md: "flex" },
                   alignItems: "center",
-                  bgcolor: "#f1f5f9",
-                  border: "1px solid #e2e8f0",
+                  bgcolor: tokens.bgSubtle,
+                  border: `1px solid ${tokens.borderDefault}`,
                   borderRadius: "12px",
                   p: 0.5,
                   gap: 0.25,
@@ -555,11 +556,11 @@ export function FilterBar({
                         borderRadius: "8px",
                         border: 0,
                         cursor: "pointer",
-                        color: isActive ? "#0f172a" : "#94a3b8",
-                        bgcolor: isActive ? "#fff" : "transparent",
+                        color: isActive ? tokens.textPrimary : tokens.textDisabled,
+                        bgcolor: isActive ? tokens.bgPanel : "transparent",
                         boxShadow: isActive ? "0 1px 2px rgba(0,0,0,0.05)" : "none",
                         transition: "all 200ms",
-                        "&:hover": { color: isActive ? "#0f172a" : "#475569" },
+                        "&:hover": { color: isActive ? tokens.textPrimary : tokens.textSecondary },
                       }}
                     >
                       <Icon sx={{ fontSize: 16 }} />
@@ -579,15 +580,15 @@ export function FilterBar({
                   height: 40,
                   px: 1.75,
                   borderRadius: "12px",
-                  bgcolor: "#f8fafc",
-                  border: "1px solid #e2e8f0",
+                  bgcolor: tokens.bgCanvas,
+                  border: `1px solid ${tokens.borderDefault}`,
                   flexShrink: 0,
                 }}
               >
-                <Box component='span' sx={{ fontSize: 14, fontWeight: 900, color: "#1e293b" }}>
+                <Box component='span' sx={{ fontSize: 14, fontWeight: 900, color: tokens.textPrimary }}>
                   {totalResults.toLocaleString()}
                 </Box>
-                <Box component='span' sx={{ fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>
+                <Box component='span' sx={{ fontSize: 12, color: tokens.textDisabled, fontWeight: 500 }}>
                   results
                 </Box>
               </Box>
@@ -608,13 +609,13 @@ export function FilterBar({
                   borderRadius: "12px",
                   fontSize: 14,
                   fontWeight: 600,
-                  color: "#e11d48",
-                  bgcolor: "#fff1f2",
-                  border: "1px solid #fecdd3",
+                  color: tokens.danger,
+                  bgcolor: tokens.dangerSubtle,
+                  border: `1px solid ${tokens.dangerBorder}`,
                   cursor: "pointer",
                   flexShrink: 0,
                   transition: "background-color 150ms",
-                  "&:hover": { bgcolor: "#ffe4e6" },
+                  "&:hover": { bgcolor: tokens.errorSubtle },
                   animation: `${fadeIn} 150ms ease-out both`,
                 }}
               >
@@ -665,14 +666,14 @@ export function FilterBar({
                       fontWeight: 700,
                       whiteSpace: "nowrap",
                       flexShrink: 0,
-                      border: active ? "1px solid #0f172a" : "1px solid #e2e8f0",
-                      bgcolor: active ? "#0f172a" : "#fff",
-                      color: active ? "#fff" : "#64748b",
+                      border: active ? `1px solid ${tokens.textPrimary}` : `1px solid ${tokens.borderDefault}`,
+                      bgcolor: active ? tokens.textPrimary : tokens.bgPanel,
+                      color: active ? tokens.textWhite : tokens.textMuted,
                       cursor: "pointer",
                       transition: "all 150ms",
                       "&:hover": {
-                        borderColor: active ? "#0f172a" : "#cbd5e1",
-                        color: active ? "#fff" : "#334155",
+                        borderColor: active ? tokens.textPrimary : tokens.borderElevated,
+                        color: active ? tokens.textWhite : tokens.textSecondary,
                       },
                     }}
                   >
@@ -691,7 +692,7 @@ export function FilterBar({
               gap: 1,
               px: 1.5,
               py: 1,
-              borderTop: "1px solid #f1f5f9",
+              borderTop: `1px solid ${tokens.borderSubtle}`,
               overflowX: "auto",
               scrollbarWidth: "none",
               "&::-webkit-scrollbar": { display: "none" },
@@ -703,7 +704,7 @@ export function FilterBar({
                 display: { xs: "none", sm: "block" },
                 fontSize: 10,
                 fontWeight: 700,
-                color: "#94a3b8",
+                color: tokens.textDisabled,
                 textTransform: "uppercase",
                 letterSpacing: "0.15em",
                 flexShrink: 0,
@@ -711,7 +712,7 @@ export function FilterBar({
             >
               Quick filters
             </Box>
-            <Box sx={{ display: { xs: "none", sm: "block" }, width: "1px", height: 16, bgcolor: "#e2e8f0", flexShrink: 0 }} />
+            <Box sx={{ display: { xs: "none", sm: "block" }, width: "1px", height: 16, bgcolor: tokens.borderDefault, flexShrink: 0 }} />
             {QUICK_FILTERS.map((qf) => {
               const Icon = qf.icon;
               const active = activeQuick.includes(qf.id);
@@ -753,7 +754,7 @@ export function FilterBar({
                   flexShrink: 0,
                   fontSize: 11,
                   fontWeight: 700,
-                  color: "#94a3b8",
+                  color: tokens.textDisabled,
                   display: { xs: "none", sm: "block" },
                 }}
               >
@@ -766,7 +767,7 @@ export function FilterBar({
           {pills.length > 0 && (
             <Box
               sx={{
-                borderTop: "1px dashed #e2e8f0",
+                borderTop: `1px dashed ${tokens.borderDefault}`,
                 display: "flex",
                 alignItems: "center",
                 gap: 1,
@@ -779,11 +780,11 @@ export function FilterBar({
             >
               <Box
                 component='span'
-                sx={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.15em", flexShrink: 0 }}
+                sx={{ fontSize: 10, fontWeight: 700, color: tokens.textDisabled, textTransform: "uppercase", letterSpacing: "0.15em", flexShrink: 0 }}
               >
                 Active
               </Box>
-              <Box sx={{ width: "1px", height: 16, bgcolor: "#e2e8f0", flexShrink: 0 }} />
+              <Box sx={{ width: "1px", height: 16, bgcolor: tokens.borderDefault, flexShrink: 0 }} />
               {pills.map((pill) => (
                 <ActivePill
                   key={pill.key}
@@ -806,7 +807,7 @@ export function FilterBar({
                   flexShrink: 0,
                   fontSize: 11,
                   fontWeight: 600,
-                  color: "#94a3b8",
+                  color: tokens.textDisabled,
                   bgcolor: "transparent",
                   border: 0,
                   cursor: "pointer",
@@ -814,7 +815,7 @@ export function FilterBar({
                   textUnderlineOffset: 2,
                   whiteSpace: "nowrap",
                   transition: "color 150ms",
-                  "&:hover": { color: "#f43f5e" },
+                  "&:hover": { color: tokens.danger },
                 }}
               >
                 Clear all
@@ -836,21 +837,21 @@ export function FilterBar({
               maxWidth: "92vw",
               display: "flex",
               flexDirection: "column",
-              bgcolor: "#fff",
+              bgcolor: tokens.bgPanel,
             },
           },
         }}
       >
         {/* Header */}
         <Box
-          sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 2.5, py: 2, borderBottom: "1px solid #f1f5f9" }}
+          sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 2.5, py: 2, borderBottom: `1px solid ${tokens.borderSubtle}` }}
         >
           <Box>
-            <Box component='h2' sx={{ fontSize: 16, fontWeight: 900, color: "#0f172a", letterSpacing: "-0.02em", m: 0 }}>
+            <Box component='h2' sx={{ fontSize: 16, fontWeight: 900, color: tokens.textPrimary, letterSpacing: "-0.02em", m: 0 }}>
               Filter &amp; Sort
             </Box>
             {pills.length > 0 && (
-              <Box component='p' sx={{ fontSize: 12, color: "#059669", fontWeight: 600, mt: 0.25, mb: 0 }}>
+              <Box component='p' sx={{ fontSize: 12, color: tokens.successText, fontWeight: 600, mt: 0.25, mb: 0 }}>
                 {pills.length} filter{pills.length !== 1 ? "s" : ""} active
               </Box>
             )}
@@ -861,9 +862,9 @@ export function FilterBar({
               width: 36,
               height: 36,
               borderRadius: "12px",
-              bgcolor: "#f1f5f9",
-              color: "#64748b",
-              "&:hover": { bgcolor: "#e2e8f0" },
+              bgcolor: tokens.bgSubtle,
+              color: tokens.textMuted,
+              "&:hover": { bgcolor: tokens.borderDefault },
             }}
           >
             <CloseIcon sx={{ fontSize: 16 }} />
@@ -876,7 +877,7 @@ export function FilterBar({
           <Box component='section'>
             <Box
               component='p'
-              sx={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.15em", mb: 1.5, m: 0 }}
+              sx={{ fontSize: 10, fontWeight: 700, color: tokens.textDisabled, textTransform: "uppercase", letterSpacing: "0.15em", mb: 1.5, m: 0 }}
             >
               Sort By
             </Box>
@@ -902,16 +903,16 @@ export function FilterBar({
                       border: "1px solid",
                       cursor: "pointer",
                       transition: "all 150ms",
-                      bgcolor: isActive ? "#0f172a" : "#f8fafc",
-                      color: isActive ? "#fff" : "#475569",
-                      borderColor: isActive ? "#0f172a" : "#e2e8f0",
+                      bgcolor: isActive ? tokens.textPrimary : tokens.bgCanvas,
+                      color: isActive ? tokens.textWhite : tokens.textSecondary,
+                      borderColor: isActive ? tokens.textPrimary : tokens.borderDefault,
                       "&:hover": {
-                        bgcolor: isActive ? "#0f172a" : "#f1f5f9",
-                        borderColor: isActive ? "#0f172a" : "#cbd5e1",
+                        bgcolor: isActive ? tokens.textPrimary : tokens.bgSubtle,
+                        borderColor: isActive ? tokens.textPrimary : tokens.borderElevated,
                       },
                     }}
                   >
-                    <Icon sx={{ fontSize: 14, color: isActive ? "#34d399" : "#94a3b8" }} />
+                    <Icon sx={{ fontSize: 14, color: isActive ? tokens.accent : tokens.textDisabled }} />
                     <Box component='span' sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {opt.label}
                     </Box>
@@ -925,7 +926,7 @@ export function FilterBar({
           <Box component='section'>
             <Box
               component='p'
-              sx={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.15em", mb: 1.5, m: 0 }}
+              sx={{ fontSize: 10, fontWeight: 700, color: tokens.textDisabled, textTransform: "uppercase", letterSpacing: "0.15em", mb: 1.5, m: 0 }}
             >
               Quick Filters
             </Box>
@@ -951,17 +952,17 @@ export function FilterBar({
                       border: "1px solid",
                       cursor: "pointer",
                       transition: "all 150ms",
-                      bgcolor: isActive ? "#0f172a" : "#f8fafc",
-                      color: isActive ? "#fff" : "#475569",
-                      borderColor: isActive ? "#0f172a" : "#e2e8f0",
-                      "&:hover": { bgcolor: isActive ? "#0f172a" : "#f1f5f9" },
+                      bgcolor: isActive ? tokens.textPrimary : tokens.bgCanvas,
+                      color: isActive ? tokens.textWhite : tokens.textSecondary,
+                      borderColor: isActive ? tokens.textPrimary : tokens.borderDefault,
+                      "&:hover": { bgcolor: isActive ? tokens.textPrimary : tokens.bgSubtle },
                     }}
                   >
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
-                      <Icon sx={{ fontSize: 14, color: isActive ? "#34d399" : "#94a3b8" }} />
+                      <Icon sx={{ fontSize: 14, color: isActive ? tokens.accent : tokens.textDisabled }} />
                       {qf.label}
                     </Box>
-                    {isActive && <CheckCircleIcon sx={{ fontSize: 16, color: "#34d399", flexShrink: 0 }} />}
+                    {isActive && <CheckCircleIcon sx={{ fontSize: 16, color: tokens.accent, flexShrink: 0 }} />}
                   </Box>
                 );
               })}
@@ -972,7 +973,7 @@ export function FilterBar({
           <Box component='section'>
             <Box
               component='p'
-              sx={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.15em", mb: 1.5, m: 0 }}
+              sx={{ fontSize: 10, fontWeight: 700, color: tokens.textDisabled, textTransform: "uppercase", letterSpacing: "0.15em", mb: 1.5, m: 0 }}
             >
               Category
             </Box>
@@ -997,14 +998,14 @@ export function FilterBar({
                       border: "1px solid",
                       cursor: "pointer",
                       transition: "all 150ms",
-                      bgcolor: isActive ? "#0f172a" : "#f8fafc",
-                      color: isActive ? "#fff" : "#475569",
-                      borderColor: isActive ? "#0f172a" : "#e2e8f0",
-                      "&:hover": { bgcolor: isActive ? "#0f172a" : "#f1f5f9" },
+                      bgcolor: isActive ? tokens.textPrimary : tokens.bgCanvas,
+                      color: isActive ? tokens.textWhite : tokens.textSecondary,
+                      borderColor: isActive ? tokens.textPrimary : tokens.borderDefault,
+                      "&:hover": { bgcolor: isActive ? tokens.textPrimary : tokens.bgSubtle },
                     }}
                   >
                     <Box component='span'>{cat.name}</Box>
-                    {isActive && <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: "#34d399", flexShrink: 0 }} />}
+                    {isActive && <Box sx={{ width: 8, height: 8, borderRadius: "50%", bgcolor: tokens.accent, flexShrink: 0 }} />}
                   </Box>
                 );
               })}
@@ -1016,7 +1017,7 @@ export function FilterBar({
             <Box component='section'>
               <Box
                 component='p'
-                sx={{ fontSize: 10, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.15em", mb: 1.5, m: 0 }}
+                sx={{ fontSize: 10, fontWeight: 700, color: tokens.textDisabled, textTransform: "uppercase", letterSpacing: "0.15em", mb: 1.5, m: 0 }}
               >
                 Display
               </Box>
@@ -1042,10 +1043,10 @@ export function FilterBar({
                         border: "1px solid",
                         cursor: "pointer",
                         transition: "all 150ms",
-                        bgcolor: isActive ? "#0f172a" : "#f8fafc",
-                        color: isActive ? "#fff" : "#475569",
-                        borderColor: isActive ? "#0f172a" : "#e2e8f0",
-                        "&:hover": { bgcolor: isActive ? "#0f172a" : "#f1f5f9" },
+                        bgcolor: isActive ? tokens.textPrimary : tokens.bgCanvas,
+                        color: isActive ? tokens.textWhite : tokens.textSecondary,
+                        borderColor: isActive ? tokens.textPrimary : tokens.borderDefault,
+                        "&:hover": { bgcolor: isActive ? tokens.textPrimary : tokens.bgSubtle },
                       }}
                     >
                       <Icon sx={{ fontSize: 16 }} />
@@ -1059,7 +1060,7 @@ export function FilterBar({
         </Box>
 
         {/* Footer */}
-        <Box sx={{ px: 2.5, py: 2, borderTop: "1px solid #f1f5f9", display: "flex", gap: 1.5, bgcolor: "#fff" }}>
+        <Box sx={{ px: 2.5, py: 2, borderTop: `1px solid ${tokens.borderSubtle}`, display: "flex", gap: 1.5, bgcolor: tokens.bgPanel }}>
           {hasAnyFilter && (
             <Box
               component='button'
@@ -1076,14 +1077,14 @@ export function FilterBar({
                 height: 44,
                 px: 2,
                 borderRadius: "12px",
-                border: "1px solid #e2e8f0",
+                border: `1px solid ${tokens.borderDefault}`,
                 bgcolor: "transparent",
-                color: "#475569",
+                color: tokens.textSecondary,
                 fontWeight: 700,
                 fontSize: 14,
                 cursor: "pointer",
                 transition: "background-color 150ms",
-                "&:hover": { bgcolor: "#f8fafc" },
+                "&:hover": { bgcolor: tokens.bgCanvas },
               }}
             >
               <RefreshIcon sx={{ fontSize: 14 }} />
@@ -1098,15 +1099,15 @@ export function FilterBar({
               flex: 1,
               height: 44,
               borderRadius: "12px",
-              bgcolor: "#0f172a",
-              color: "#fff",
+              bgcolor: tokens.textPrimary,
+              color: tokens.textWhite,
               fontWeight: 700,
               fontSize: 14,
               border: 0,
               cursor: "pointer",
               boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
               transition: "background-color 150ms",
-              "&:hover": { bgcolor: "#1e293b" },
+              "&:hover": { bgcolor: tokens.textSecondary },
             }}
           >
             Show Results{typeof totalResults === "number" ? ` (${totalResults.toLocaleString()})` : ""}

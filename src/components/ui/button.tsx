@@ -1,14 +1,22 @@
 import React from "react";
-import { Button as MuiButton, CircularProgress, type ButtonProps as MuiButtonProps } from "@mui/material";
+import {
+  Button as MuiButton,
+  ButtonBase as MuiButtonBase,
+  CircularProgress,
+  type ButtonProps as MuiButtonProps,
+  type ButtonBaseProps as MuiButtonBaseProps,
+} from "@mui/material";
 import { tokens } from "../../theme/theme";
 
 export type ButtonVariant =
   | "primary"
   | "default"
+  | "contained"
   | "secondary"
   | "outlined"
   | "outline"
   | "ghost"
+  | "text"
   | "danger"
   | "destructive"
   | "link";
@@ -21,14 +29,30 @@ export interface ButtonProps extends Omit<MuiButtonProps, "variant" | "size"> {
   loading?: boolean;
   loadingText?: React.ReactNode;
   component?: React.ElementType;
+  href?: string;
   download?: string;
   target?: string;
   rel?: string;
   asChild?: boolean;
 }
 
+export type ButtonBaseProps = MuiButtonBaseProps & {
+  component?: React.ElementType;
+  href?: string;
+  target?: string;
+  rel?: string;
+};
+
+export const ButtonBase = React.forwardRef<HTMLButtonElement, ButtonBaseProps>(function ButtonBase(
+  props,
+  ref
+) {
+  return <MuiButtonBase ref={ref} {...props} />;
+});
+
 export const Button: React.FC<ButtonProps> = ({
   variant = "primary",
+  color,
   loading = false,
   loadingText,
   disabled = false,
@@ -41,11 +65,13 @@ export const Button: React.FC<ButtonProps> = ({
   ...rest
 }) => {
   const isDisabled = disabled || loading;
+  const effectiveVariant = color === "error" && (variant === "contained" || variant === "primary") ? "danger" : variant;
 
   const getVariantStyles = () => {
-    switch (variant) {
+    switch (effectiveVariant) {
       case "primary":
       case "default":
+      case "contained":
         return {
           bgcolor: tokens.primary,
           color: tokens.textWhite,
@@ -69,15 +95,14 @@ export const Button: React.FC<ButtonProps> = ({
       case "outline":
         return {
           bgcolor: tokens.bgPanel,
-          color: tokens.textPrimary,
-          border: `1px solid ${tokens.borderDefault}`,
+          color: color === "error" ? tokens.danger : tokens.textPrimary,
+          border: `1px solid ${color === "error" ? tokens.dangerBorder : tokens.borderDefault}`,
           boxShadow: tokens.shadowSm,
-          fontWeight: 500,
+          fontWeight: 600,
           "&:hover": {
-            bgcolor: tokens.bgSubtle,
-            borderColor: tokens.primaryLight,
-            color: tokens.textPrimary,
-            boxShadow: tokens.shadowMd,
+            bgcolor: color === "error" ? tokens.dangerSubtle : tokens.bgSubtle,
+            borderColor: color === "error" ? tokens.danger : tokens.borderHover,
+            color: color === "error" ? tokens.danger : tokens.textPrimary,
           },
           "&.Mui-disabled": {
             bgcolor: tokens.bgInput,
@@ -88,15 +113,16 @@ export const Button: React.FC<ButtonProps> = ({
         };
 
       case "ghost":
+      case "text":
         return {
           bgcolor: "transparent",
-          color: tokens.textSecondary,
+          color: color === "error" ? tokens.danger : tokens.textSecondary,
           border: "1px solid transparent",
-          fontWeight: 500,
+          fontWeight: 600,
           boxShadow: "none",
           "&:hover": {
-            bgcolor: tokens.bgSubtle,
-            color: tokens.textPrimary,
+            bgcolor: color === "error" ? tokens.dangerSubtle : tokens.bgSubtle,
+            color: color === "error" ? tokens.danger : tokens.textPrimary,
           },
           "&.Mui-disabled": {
             color: tokens.textDisabled,
@@ -109,10 +135,10 @@ export const Button: React.FC<ButtonProps> = ({
           color: tokens.primary,
           border: "none",
           textDecoration: "underline",
-          fontWeight: 500,
+          fontWeight: 600,
           "&:hover": {
             bgcolor: "transparent",
-            color: tokens.primaryLight,
+            color: tokens.primaryHover,
             textDecoration: "underline",
           },
         };
@@ -120,16 +146,15 @@ export const Button: React.FC<ButtonProps> = ({
       case "danger":
       case "destructive":
         return {
-          bgcolor: tokens.dangerSubtle,
-          color: tokens.danger,
-          border: `1px solid ${tokens.dangerBorder}`,
+          bgcolor: tokens.danger,
+          color: tokens.textWhite,
+          border: `1px solid ${tokens.danger}`,
           fontWeight: 600,
           boxShadow: tokens.shadowSm,
           "&:hover": {
-            bgcolor: tokens.errorSubtle,
-            borderColor: tokens.error,
-            color: tokens.textPrimary,
-            boxShadow: tokens.shadowMd,
+            bgcolor: tokens.dangerHover,
+            borderColor: tokens.dangerHover,
+            color: tokens.textWhite,
           },
           "&.Mui-disabled": {
             bgcolor: tokens.bgInput,
@@ -146,7 +171,6 @@ export const Button: React.FC<ButtonProps> = ({
   const isIcon = size === "icon";
 
   const spinnerSize = isSmall ? 14 : isLarge ? 20 : 16;
-
   const muiSize: "small" | "medium" | "large" = isSmall ? "small" : isLarge ? "large" : "medium";
 
   return (
@@ -155,17 +179,19 @@ export const Button: React.FC<ButtonProps> = ({
       size={muiSize}
       startIcon={loading ? <CircularProgress size={spinnerSize} color='inherit' /> : startIcon}
       endIcon={loading ? undefined : endIcon}
-      sx={{
-        borderRadius: `${tokens.radiusMd}px`,
-        textTransform: "none",
-        fontSize: isSmall ? "0.82rem" : isLarge ? "0.98rem" : "0.88rem",
-        py: isIcon ? 0.8 : isSmall ? 0.6 : isLarge ? 1.2 : 0.9,
-        px: isIcon ? 0.8 : isSmall ? 1.8 : isLarge ? 3.2 : 2.4,
-        minWidth: isIcon ? 36 : undefined,
-        transition: "all 0.18s ease-in-out",
-        ...getVariantStyles(),
-        ...sx,
-      }}
+      sx={[
+        {
+          borderRadius: `${tokens.radiusMd}px`,
+          textTransform: "none",
+          fontSize: isSmall ? "0.82rem" : isLarge ? "0.98rem" : "0.88rem",
+          py: isIcon ? 0.8 : isSmall ? 0.6 : isLarge ? 1.2 : 0.9,
+          px: isIcon ? 0.8 : isSmall ? 1.8 : isLarge ? 3.2 : 2.4,
+          minWidth: isIcon ? 36 : undefined,
+          transition: "all 0.18s ease-in-out",
+          ...getVariantStyles(),
+        },
+        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+      ]}
       {...rest}
     >
       {loading && loadingText ? loadingText : children}
@@ -174,3 +200,4 @@ export const Button: React.FC<ButtonProps> = ({
 };
 
 export const buttonVariants = () => "";
+export default Button;

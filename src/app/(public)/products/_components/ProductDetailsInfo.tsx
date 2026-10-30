@@ -2,9 +2,10 @@
 
 import NextLink from "next/link";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import { keyframes } from "@emotion/react";
+import { Button } from "@/components/ui/button";
+import { tokens } from "@/theme/theme";
 
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
@@ -62,9 +63,9 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
             component='span'
             sx={{
               ...pillSx,
-              bgcolor: "action.hover",
-              borderColor: "divider",
-              color: "primary.main",
+              bgcolor: tokens.bgSubtle,
+              borderColor: tokens.borderDefault,
+              color: tokens.primary,
             }}
           >
             {product.category.name}
@@ -75,9 +76,9 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
             component='span'
             sx={{
               ...pillSx,
-              bgcolor: "rgba(139,92,246,0.1)",
-              borderColor: "rgba(139,92,246,0.2)",
-              color: (theme) => (theme.palette.mode === "dark" ? "#c4b5fd" : "#7c3aed"),
+              bgcolor: tokens.badgeGamingSubtle,
+              borderColor: tokens.badgeGamingSubtle,
+              color: tokens.badgeGaming,
             }}
           >
             {product.brand}
@@ -87,15 +88,15 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
           component='span'
           sx={{
             ...pillSx,
-            bgcolor: product.inStock ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.1)",
-            borderColor: product.inStock ? "rgba(16,185,129,0.2)" : "rgba(239,68,68,0.2)",
-            color: product.inStock ? { xs: "#059669", dark: "#34d399" } : { xs: "#dc2626", dark: "#f87171" },
+            bgcolor: product.inStock ? tokens.successSubtle : tokens.dangerSubtle,
+            borderColor: product.inStock ? tokens.successBorder : tokens.dangerBorder,
+            color: product.inStock ? tokens.successText : tokens.dangerHover,
           }}
         >
           {product.inStock ? "স্টকে আছে" : "স্টক শেষ"}
         </Box>
 
-        <Box sx={{ height: 1, width: { xs: 24, md: 32 }, bgcolor: "divider" }} />
+        <Box sx={{ height: 1, width: { xs: 24, md: 32 }, bgcolor: tokens.borderDefault }} />
 
         {product.rating && (
           <Box
@@ -103,20 +104,20 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
               display: "flex",
               alignItems: "center",
               gap: 0.5,
-              bgcolor: "rgba(234,179,8,0.1)",
+              bgcolor: tokens.warningSubtle,
               px: 1,
               py: 0.25,
               borderRadius: 999,
-              border: "1px solid rgba(234,179,8,0.2)",
+              border: `1px solid ${tokens.warningBorder}`,
             }}
           >
-            <StarIcon sx={{ fontSize: 12, color: "#eab308" }} />
+            <StarIcon sx={{ fontSize: 12, color: tokens.warning }} />
             <Box
               component='span'
               sx={{
                 fontSize: 10,
                 fontWeight: 700,
-                color: (theme) => (theme.palette.mode === "dark" ? "#eab308" : "#ca8a04"),
+                color: tokens.warningHover,
               }}
             >
               {product.rating}
@@ -135,7 +136,7 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
             letterSpacing: "-0.02em",
             lineHeight: 1.1,
             mb: 1,
-            color: "text.primary",
+            color: tokens.textPrimary,
           }}
         >
           {product.title}
@@ -145,7 +146,7 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
             sx={{
               fontSize: { xs: 12, md: 14 },
               fontWeight: 500,
-              color: "text.secondary",
+              color: tokens.textSecondary,
               letterSpacing: "0.15em",
             }}
           >
@@ -156,8 +157,8 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
 
       {/* Price row */}
       <Box sx={{ display: "flex", alignItems: "baseline", gap: 2, mb: { xs: 4, md: 5 }, flexWrap: "wrap" }}>
-        <Box component='span' sx={{ fontSize: { xs: 20, md: 24 }, fontWeight: 900, color: "text.primary" }}>
-          <Box component='span' sx={{ fontSize: 14, letterSpacing: "0.15em", color: "text.secondary" }}>
+        <Box component='span' sx={{ fontSize: { xs: 20, md: 24 }, fontWeight: 900, color: tokens.textPrimary }}>
+          <Box component='span' sx={{ fontSize: 14, letterSpacing: "0.15em", color: tokens.textSecondary }}>
             মূল্য:{" "}
           </Box>
           ৳{formatBnNumber(discountedPrice)}
@@ -168,7 +169,7 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
               component='span'
               sx={{
                 fontSize: { xs: 18, md: 20 },
-                color: "text.secondary",
+                color: tokens.textSecondary,
                 textDecoration: "line-through",
                 fontWeight: 300,
                 opacity: 0.5,
@@ -184,9 +185,9 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
                 px: 1,
                 py: 0.5,
                 borderRadius: "6px",
-                bgcolor: "rgba(244,63,94,0.1)",
-                color: "#f43f5e",
-                border: "1px solid rgba(244,63,94,0.2)",
+                bgcolor: tokens.dangerSubtle,
+                color: tokens.danger,
+                border: `1px solid ${tokens.dangerBorder}`,
               }}
             >
               -{formatBnNumber(discountPercent)}%
@@ -199,7 +200,7 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
       <Box sx={{ mb: 5 }}>
         <Typography
           sx={{
-            color: "text.secondary",
+            color: tokens.textSecondary,
             fontSize: { xs: 16, md: 18 },
             lineHeight: 1.65,
             fontWeight: 300,
@@ -222,15 +223,15 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
                   borderRadius: 999,
                   px: 2,
                   py: 0.75,
-                  bgcolor: "action.hover",
+                  bgcolor: tokens.bgSubtle,
                   border: "1px solid",
-                  borderColor: "divider",
-                  color: "text.secondary",
+                  borderColor: tokens.borderDefault,
+                  color: tokens.textSecondary,
                   cursor: "pointer",
                   transition: "all 200ms",
                   "&:hover": {
-                    borderColor: "primary.main",
-                    color: "primary.main",
+                    borderColor: tokens.primary,
+                    color: tokens.primary,
                     "& .tag-icon": { opacity: 1 },
                   },
                 }}
@@ -264,12 +265,12 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
                 fontWeight: 900,
                 letterSpacing: "0.15em",
                 textTransform: "uppercase",
-                color: "text.secondary",
+                color: tokens.textSecondary,
               }}
             >
               প্রযুক্তিগত বৈশিষ্ট্য
             </Typography>
-            <Box sx={{ height: "1px", flex: 1, bgcolor: "divider", opacity: 0.5 }} />
+            <Box sx={{ height: "1px", flex: 1, bgcolor: tokens.borderDefault, opacity: 0.5 }} />
           </Box>
           <Box
             sx={{
@@ -286,13 +287,13 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
                   flexDirection: "column",
                   p: 2,
                   borderRadius: "16px",
-                  bgcolor: "action.hover",
+                  bgcolor: tokens.bgSubtle,
                   border: "1px solid",
-                  borderColor: "divider",
+                  borderColor: tokens.borderDefault,
                   transition: "border-color 200ms",
                   "&:hover": {
-                    borderColor: "text.disabled",
-                    "& .spec-key": { color: "primary.main" },
+                    borderColor: tokens.textDisabled,
+                    "& .spec-key": { color: tokens.primary },
                   },
                 }}
               >
@@ -301,7 +302,7 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
                   className='spec-key'
                   sx={{
                     fontSize: 10,
-                    color: "text.secondary",
+                    color: tokens.textSecondary,
                     textTransform: "uppercase",
                     fontWeight: 700,
                     mb: 0.5,
@@ -315,7 +316,7 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
                   sx={{
                     fontSize: 14,
                     fontWeight: 500,
-                    color: "text.primary",
+                    color: tokens.textPrimary,
                     opacity: 0.8,
                   }}
                 >
@@ -334,8 +335,8 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
             sx={{
               borderRadius: "16px",
               border: "1px solid",
-              borderColor: "divider",
-              bgcolor: "action.hover",
+              borderColor: tokens.borderDefault,
+              bgcolor: tokens.bgSubtle,
               p: { xs: 2, md: 2.5 },
               display: "flex",
               flexDirection: "column",
@@ -350,7 +351,7 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
                   fontSize: { xs: 12, md: 14 },
                   textTransform: "uppercase",
                   letterSpacing: "0.15em",
-                  color: "text.secondary",
+                  color: tokens.textSecondary,
                 }}
               >
                 অর্ডারের পরিমাণ
@@ -359,9 +360,9 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
                 sx={{
                   display: "flex",
                   alignItems: "center",
-                  bgcolor: "action.selected",
+                  bgcolor: tokens.primarySubtle,
                   border: "1px solid",
-                  borderColor: "divider",
+                  borderColor: tokens.borderDefault,
                   borderRadius: { xs: "12px", md: "16px" },
                   p: { xs: 0.25, md: 0.5 },
                 }}
@@ -382,9 +383,9 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
                     cursor: "pointer",
                     fontSize: { xs: 18, md: 20 },
                     fontWeight: 700,
-                    color: "text.primary",
+                    color: tokens.textPrimary,
                     transition: "background-color 150ms",
-                    "&:hover": { bgcolor: "action.hover" },
+                    "&:hover": { bgcolor: tokens.bgSubtle },
                   }}
                 >
                   -
@@ -396,7 +397,7 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
                     textAlign: "center",
                     fontWeight: 900,
                     fontSize: { xs: 16, md: 18 },
-                    color: "text.primary",
+                    color: tokens.textPrimary,
                   }}
                 >
                   {qty}
@@ -417,9 +418,9 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
                     cursor: "pointer",
                     fontSize: { xs: 18, md: 20 },
                     fontWeight: 700,
-                    color: "text.primary",
+                    color: tokens.textPrimary,
                     transition: "background-color 150ms",
-                    "&:hover": { bgcolor: "action.hover" },
+                    "&:hover": { bgcolor: tokens.bgSubtle },
                   }}
                 >
                   +
@@ -428,11 +429,11 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
             </Box>
 
             <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
-              <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: 14, color: "text.secondary" }}>
+              <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: 14, color: tokens.textSecondary }}>
                 <Box component='span'>প্রতি ইউনিট মূল্য</Box>
                 <Box component='span'>৳{formatBnNumber(discountedPrice)}</Box>
               </Box>
-              <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: 14, color: "text.secondary" }}>
+              <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: 14, color: tokens.textSecondary }}>
                 <Box component='span'>মোট</Box>
                 <Box component='span'>৳{formatBnNumber(subtotal)}</Box>
               </Box>
@@ -443,7 +444,7 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
                     justifyContent: "space-between",
                     fontSize: 14,
                     fontWeight: 600,
-                    color: (theme) => (theme.palette.mode === "dark" ? "#34d399" : "#059669"),
+                    color: tokens.successText,
                   }}
                 >
                   <Box component='span'>ছাড় ({formatBnNumber(discountPercent)}%)</Box>
@@ -477,20 +478,20 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
               transition: "all 200ms",
               ...(isInCart
                 ? {
-                    bgcolor: "primary.main",
-                    color: "primary.contrastText",
+                    bgcolor: tokens.primary,
+                    color: tokens.textWhite,
                     "&.Mui-disabled": {
-                      bgcolor: "primary.main",
-                      color: "primary.contrastText",
+                      bgcolor: tokens.primary,
+                      color: tokens.textWhite,
                       opacity: 1,
                     },
                   }
                 : {
-                    borderColor: "divider",
-                    color: "text.primary",
+                    borderColor: tokens.borderDefault,
+                    color: tokens.textPrimary,
                     "&:hover": {
-                      borderColor: "divider",
-                      bgcolor: "action.hover",
+                      borderColor: tokens.borderDefault,
+                      bgcolor: tokens.bgSubtle,
                     },
                   }),
             }}
@@ -510,17 +511,17 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
               fontWeight: 900,
               borderRadius: { xs: "12px", md: "16px" },
               textTransform: "none",
-              bgcolor: "text.primary",
-              color: "background.default",
-              boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
+              bgcolor: tokens.textPrimary,
+              color: tokens.textWhite,
+              boxShadow: tokens.shadowLg,
               transition: "all 200ms",
               "&:hover": {
-                bgcolor: "text.primary",
+                bgcolor: tokens.textPrimary,
                 opacity: 0.9,
               },
               "&.Mui-disabled": {
-                bgcolor: "text.primary",
-                color: "background.default",
+                bgcolor: tokens.textPrimary,
+                color: tokens.textWhite,
                 opacity: 0.4,
               },
             }}
@@ -536,8 +537,8 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
             justifyContent: "space-between",
             borderRadius: "16px",
             border: "1px solid",
-            borderColor: "divider",
-            bgcolor: "background.paper",
+            borderColor: tokens.borderDefault,
+            bgcolor: tokens.bgPanel,
             p: 2,
           }}
         >
@@ -549,13 +550,13 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
               fontSize: 12,
               fontWeight: 700,
               letterSpacing: "0.05em",
-              color: "text.secondary",
+              color: tokens.textSecondary,
             }}
           >
             {product.inStock ? (
-              <Inventory2OutlinedIcon sx={{ fontSize: 16, color: "#10b981" }} />
+              <Inventory2OutlinedIcon sx={{ fontSize: 16, color: tokens.success }} />
             ) : (
-              <RemoveCircleOutlineIcon sx={{ fontSize: 16, color: "#ef4444" }} />
+              <RemoveCircleOutlineIcon sx={{ fontSize: 16, color: tokens.danger }} />
             )}
             স্টক অবস্থা
           </Box>
@@ -564,7 +565,7 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
             sx={{
               fontSize: 12,
               fontWeight: 900,
-              color: product.inStock ? "#10b981" : "#ef4444",
+              color: product.inStock ? tokens.success : tokens.danger,
             }}
           >
             {product.inStock ? "এখনই পাওয়া যাচ্ছে" : "বর্তমানে পাওয়া যাচ্ছে না"}

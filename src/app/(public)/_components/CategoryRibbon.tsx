@@ -3,7 +3,6 @@
 import NextLink from "next/link";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import IconButton from "@mui/material/IconButton";
 import LaptopMacOutlinedIcon from "@mui/icons-material/LaptopMacOutlined";
 import SmartphoneOutlinedIcon from "@mui/icons-material/SmartphoneOutlined";
 import WatchOutlinedIcon from "@mui/icons-material/WatchOutlined";

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Typography, { type TypographyProps } from "@mui/material/Typography";
+import { tokens } from "@/theme/theme";
 
 export interface LabelProps extends TypographyProps<"label"> {
   htmlFor?: string;
@@ -17,7 +18,7 @@ function Label({ htmlFor, sx, children, ...props }: LabelProps) {
         display: "inline-block",
         fontSize: "0.875rem",
         fontWeight: 600,
-        color: "text.primary",
+        color: tokens.textPrimary,
         lineHeight: 1.4,
         mb: 0.5,
         userSelect: "none",

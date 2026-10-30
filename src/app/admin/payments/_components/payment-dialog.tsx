@@ -8,19 +8,14 @@ import { format } from "date-fns";
 import { useToast } from "@/context/toast-context";
 
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogActions from "@mui/material/DialogActions";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
+import { Button } from "@/components/ui/button";
+import { TextField } from "@/components/ui/input";
+import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@/components/ui/dialog";
+import { FormControl, Select, MenuItem } from "@/components/ui/select";
 
-import { createPayment, updatePayment } from "@/actions/payment";
+import { PaymentEndpoints } from "@/query-client/payments";
+import { tokens } from "@/theme/theme";
 
 const formSchema = z.object({
   amount: z.coerce.number().min(1, "Amount must be greater than 0"),
@@ -135,12 +130,15 @@ export function PaymentDialog({ initialData, open, onOpenChange, onSuccess }: Pa
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       if (initialData) {
-        const result = await updatePayment(initialData.id, {
-          ...values,
-          date: values.date || new Date(),
+        const result = await PaymentEndpoints.updatePayment({
+          id: initialData.id,
+          data: {
+            ...values,
+            date: values.date || new Date(),
+          },
         });
 
-        if (result.success) {
+        if (result?.success) {
           toast.success("Payment updated successfully");
           onOpenChange(false);
           form.reset();
@@ -149,12 +147,12 @@ export function PaymentDialog({ initialData, open, onOpenChange, onSuccess }: Pa
           toast.error("Failed to update payment");
         }
       } else {
-        const result = await createPayment({
+        const result = await PaymentEndpoints.createPayment({
           ...values,
           date: values.date || new Date(),
         });
 
-        if (result.success) {
+        if (result?.success) {
           toast.success("Payment added successfully");
           onOpenChange(false);
           form.reset();

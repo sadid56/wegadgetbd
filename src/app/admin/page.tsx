@@ -2,8 +2,8 @@
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import CircularProgress from "@mui/material/CircularProgress";
+import { Button } from "@/components/ui/button";
+import { CircularProgress } from "@/components/ui/spinner";
 import NextLink from "next/link";
 
 import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
@@ -95,7 +95,7 @@ export default function AdminDashboard() {
             Dashboard
           </Typography>
           <Typography sx={{ fontSize: 13.5, color: "text.secondary", mt: 0.5 }}>
-            Welcome to BongoNex admin overview and real-time business metrics.
+            Welcome to We Gadget BD admin overview and real-time business metrics.
           </Typography>
         </Box>
 

@@ -7,6 +7,7 @@ import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { tokens } from "@/theme/theme";
 
 export interface ContentSection {
   title?: string;
@@ -25,11 +26,11 @@ export interface ContentPageLayoutProps {
 const markdownComponents: Components = {
   h1: ({ children }) => (
     <Typography
-      component='h2'
+      component="h2"
       sx={{
         fontSize: { xs: "1.35rem", md: "1.5rem" },
         fontWeight: 800,
-        color: "text.primary",
+        color: tokens.textPrimary,
         mt: 4,
         mb: 2,
         "&:first-of-type": { mt: 0 },
@@ -40,12 +41,12 @@ const markdownComponents: Components = {
   ),
   h2: ({ children }) => (
     <Typography
-      component='h2'
+      component="h2"
       sx={{
-        fontSize: { xs: 18, md: 20 },
+        fontSize: { xs: "1.15rem", md: "1.25rem" },
         fontWeight: 700,
-        color: "text.primary",
-        lineHeight: 1.3,
+        color: tokens.textPrimary,
+        lineHeight: 1.35,
         mt: 3.5,
         mb: 1.5,
         "&:first-of-type": { mt: 0 },
@@ -56,11 +57,11 @@ const markdownComponents: Components = {
   ),
   h3: ({ children }) => (
     <Typography
-      component='h3'
+      component="h3"
       sx={{
-        fontSize: { xs: 16, md: 17 },
+        fontSize: { xs: "1rem", md: "1.05rem" },
         fontWeight: 700,
-        color: "text.primary",
+        color: tokens.textPrimary,
         lineHeight: 1.4,
         mt: 2.5,
         mb: 1,
@@ -71,11 +72,11 @@ const markdownComponents: Components = {
   ),
   p: ({ children }) => (
     <Typography
-      component='p'
+      component="p"
       sx={{
         fontSize: "inherit",
-        lineHeight: 1.7,
-        color: "text.secondary",
+        lineHeight: 1.75,
+        color: tokens.textSecondary,
         mb: 2,
         "&:last-child": { mb: 0 },
       }}
@@ -85,7 +86,7 @@ const markdownComponents: Components = {
   ),
   ul: ({ children }) => (
     <Box
-      component='ul'
+      component="ul"
       sx={{
         pl: 3,
         my: 1.5,
@@ -101,7 +102,7 @@ const markdownComponents: Components = {
   ),
   ol: ({ children }) => (
     <Box
-      component='ol'
+      component="ol"
       sx={{
         pl: 3,
         my: 1.5,
@@ -117,32 +118,31 @@ const markdownComponents: Components = {
   ),
   li: ({ children }) => (
     <Typography
-      component='li'
+      component="li"
       sx={{
         fontSize: "inherit",
         lineHeight: 1.65,
-        color: "text.secondary",
+        color: tokens.textSecondary,
       }}
     >
       {children}
     </Typography>
   ),
   strong: ({ children }) => (
-    <Box component='strong' sx={{ color: "text.primary", fontWeight: 700 }}>
+    <Box component="strong" sx={{ color: tokens.textPrimary, fontWeight: 700 }}>
       {children}
     </Box>
   ),
   a: ({ href, children }) => (
     <Box
-      component='a'
+      component="a"
       href={href}
       target={href?.startsWith("http") ? "_blank" : undefined}
       rel={href?.startsWith("http") ? "noopener noreferrer" : undefined}
       sx={{
-        color: "primary.main",
+        color: tokens.primary,
         textDecoration: "none",
         fontWeight: 500,
-        transition: "text-decoration 200ms",
         "&:hover": { textDecoration: "underline" },
       }}
     >
@@ -152,14 +152,15 @@ const markdownComponents: Components = {
   blockquote: ({ children }) => (
     <Box
       sx={{
-        borderLeft: "4px solid",
-        borderColor: "primary.main",
+        borderLeft: "3px solid",
+        borderColor: tokens.primary,
         pl: 2.5,
         py: 1,
-        my: 2,
+        my: 2.5,
         fontStyle: "italic",
-        bgcolor: "action.hover",
+        bgcolor: tokens.bgSubtle,
         borderRadius: "0 8px 8px 0",
+        color: tokens.textSecondary,
       }}
     >
       {children}
@@ -171,7 +172,7 @@ const markdownComponents: Components = {
         my: 4,
         border: "none",
         borderTop: "1px solid",
-        borderColor: "divider",
+        borderColor: tokens.borderSubtle,
       }}
     />
   ),
@@ -187,14 +188,13 @@ export function ContentPageLayout({
 }: ContentPageLayoutProps) {
   const renderTitle = () => {
     if (!highlightedWord) {
-      // Default: highlight the last word if title has multiple words
       const words = title.split(" ");
       if (words.length > 1) {
         const last = words.pop();
         return (
           <>
             {words.join(" ")}{" "}
-            <Box component='span' sx={{ color: "primary.main" }}>
+            <Box component="span" sx={{ color: tokens.primary }}>
               {last}
             </Box>
           </>
@@ -207,7 +207,7 @@ export function ContentPageLayout({
     const parts = title.split(regex);
     return parts.map((part, index) =>
       part.toLowerCase() === highlightedWord.toLowerCase() ? (
-        <Box key={index} component='span' sx={{ color: "primary.main" }}>
+        <Box key={index} component="span" sx={{ color: tokens.primary }}>
           {part}
         </Box>
       ) : (
@@ -219,78 +219,41 @@ export function ContentPageLayout({
   return (
     <Box
       sx={{
-        position: "relative",
         minHeight: "100vh",
-        bgcolor: "background.default",
-        py: { xs: 8, md: 10 },
-        px: { xs: 2, md: 4 },
+        bgcolor: tokens.bgCanvas,
+        py: { xs: 5, md: 8 },
+        px: { xs: 2, sm: 3 },
       }}
     >
-      {/* Background ambient lighting */}
-      <Box
-        sx={{
-          position: "absolute",
-          inset: 0,
-          overflow: "hidden",
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      >
-        <Box
-          sx={{
-            position: "absolute",
-            top: "-10%",
-            left: "-10%",
-            width: "40%",
-            height: "40%",
-            borderRadius: "50%",
-            bgcolor: "rgba(99,102,241,0.08)",
-            filter: "blur(120px)",
-          }}
-        />
-        <Box
-          sx={{
-            position: "absolute",
-            bottom: "-10%",
-            right: "-10%",
-            width: "40%",
-            height: "40%",
-            borderRadius: "50%",
-            bgcolor: "rgba(96,165,250,0.08)",
-            filter: "blur(120px)",
-          }}
-        />
-      </Box>
-
-      <Container maxWidth='md' sx={{ position: "relative", zIndex: 1 }}>
+      <Container maxWidth="md">
         {/* Header */}
-        <Box sx={{ mb: { xs: 4, md: 6 } }}>
-          <NextLink href='/' style={{ textDecoration: "none" }}>
-            <Box
+        <Box sx={{ mb: { xs: 3, md: 5 } }}>
+          <NextLink href="/" style={{ textDecoration: "none" }}>
+            <Typography
+              component="span"
               sx={{
                 display: "inline-block",
+                fontSize: 13,
+                fontWeight: 600,
+                color: tokens.textSecondary,
                 mb: 2,
-                color: "primary.main",
-                fontWeight: 500,
-                textDecoration: "none",
-                transition: "text-decoration 200ms",
-                "&:hover": { textDecoration: "underline" },
+                transition: "color 150ms",
+                "&:hover": { color: tokens.primary },
               }}
             >
-              ← Back to Home
-            </Box>
+              ← হোমপেজে ফিরে যান
+            </Typography>
           </NextLink>
 
           <Typography
-            component='h1'
+            component="h1"
             sx={{
-              fontSize: { xs: "2.25rem", md: "3rem" },
-              fontWeight: 900,
-              letterSpacing: "-0.02em",
-              textTransform: "uppercase",
-              mb: lastUpdated ? 1.5 : 0,
-              lineHeight: 1.1,
-              color: "text.primary",
+              fontSize: { xs: "1.75rem", md: "2.35rem" },
+              fontWeight: 800,
+              letterSpacing: "-0.03em",
+              lineHeight: 1.2,
+              color: tokens.textPrimary,
+              mb: lastUpdated ? 1 : 0,
             }}
           >
             {renderTitle()}
@@ -299,33 +262,32 @@ export function ContentPageLayout({
           {lastUpdated && (
             <Typography
               sx={{
-                color: "text.secondary",
-                textTransform: "uppercase",
-                letterSpacing: "0.15em",
+                color: tokens.textMuted,
                 fontSize: 12,
-                fontWeight: 700,
+                fontWeight: 600,
+                letterSpacing: "0.05em",
+                textTransform: "uppercase",
               }}
             >
-              Last Updated: {lastUpdated}
+              সর্বশেষ আপডেট: {lastUpdated}
             </Typography>
           )}
         </Box>
 
-        {/* Content Card */}
+        {/* Solid Content Card (No Gradients) */}
         <Box
           sx={{
+            bgcolor: tokens.bgPanel,
             border: "1px solid",
-            borderColor: "divider",
-            bgcolor: "action.hover",
-            backdropFilter: "blur(12px)",
+            borderColor: tokens.borderDefault,
             borderRadius: "16px",
-            p: { xs: 3.5, md: 6 },
+            p: { xs: 3, sm: 4, md: 5 },
             display: "flex",
             flexDirection: "column",
-            gap: 4,
-            fontSize: { xs: 14, md: 16 },
-            lineHeight: 1.7,
-            color: "text.secondary",
+            gap: 3,
+            fontSize: { xs: 14, md: 15 },
+            lineHeight: 1.75,
+            color: tokens.textSecondary,
           }}
         >
           {markdown && (
@@ -336,15 +298,15 @@ export function ContentPageLayout({
 
           {sections &&
             sections.map((section, idx) => (
-              <Box key={idx} component='section' sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <Box key={idx} component="section" sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
                 {section.title && (
                   <Typography
-                    component='h2'
+                    component="h2"
                     sx={{
-                      fontSize: 20,
+                      fontSize: { xs: 17, md: 19 },
                       fontWeight: 700,
-                      color: "text.primary",
-                      lineHeight: 1.3,
+                      color: tokens.textPrimary,
+                      lineHeight: 1.35,
                     }}
                   >
                     {section.title}
@@ -368,4 +330,3 @@ export function ContentPageLayout({
 }
 
 export default ContentPageLayout;
-

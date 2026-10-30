@@ -6,22 +6,14 @@ import { format } from "date-fns";
 import { useToast } from "@/context/toast-context";
 
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
-import Chip from "@mui/material/Chip";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import CardHeader from "@mui/material/CardHeader";
-import FormControl from "@mui/material/FormControl";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import CircularProgress from "@mui/material/CircularProgress";
-import Dialog from "@mui/material/Dialog";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogActions from "@mui/material/DialogActions";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { Chip } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { FormControl, Select, MenuItem } from "@/components/ui/select";
+import { CircularProgress } from "@/components/ui/spinner";
+import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@/components/ui/dialog";
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import BlockIcon from "@mui/icons-material/Block";
@@ -35,6 +27,7 @@ import MonitorIcon from "@mui/icons-material/Monitor";
 import { useUser, useUpdateUser } from "@/query-client/users";
 import { useRevokeSession } from "@/query-client/admin";
 import { parseDevice } from "@/lib/parse-device";
+import { tokens } from "@/theme/theme";
 
 const cardSx = {
   border: "1px solid",
@@ -251,9 +244,9 @@ export default function UserDetailsPage() {
                         height: 22,
                         fontSize: 11,
                         fontWeight: 700,
-                        bgcolor: "#f0fdf4",
-                        color: "#15803d",
-                        borderColor: "#bbf7d0",
+                        bgcolor: tokens.accentLight,
+                        color: tokens.successText,
+                        borderColor: tokens.successBorder,
                         "& .MuiChip-label": { px: 1.25 },
                       }}
                     />
@@ -340,9 +333,9 @@ export default function UserDetailsPage() {
             <CardContent sx={{ pt: 1 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
                 {user.role === "ADMIN" ? (
-                  <GppBadIcon sx={{ fontSize: 20, color: "#ef4444" }} />
+                  <GppBadIcon sx={{ fontSize: 20, color: tokens.danger }} />
                 ) : (
-                  <ShieldOutlinedIcon sx={{ fontSize: 20, color: "#3b82f6" }} />
+                  <ShieldOutlinedIcon sx={{ fontSize: 20, color: tokens.info }} />
                 )}
                 <Box component='span' sx={{ fontWeight: 500, color: "text.primary" }}>
                   Current Role: {user.role}
@@ -409,10 +402,10 @@ export default function UserDetailsPage() {
                             width: 32,
                             height: 32,
                             flexShrink: 0,
-                            color: "#ef4444",
+                            color: tokens.danger,
                             "&:hover": {
-                              color: "#dc2626",
-                              bgcolor: "rgba(239,68,68,0.1)",
+                              color: tokens.dangerHover,
+                              bgcolor: tokens.dangerSubtle,
                             },
                           }}
                         >
@@ -470,9 +463,9 @@ export default function UserDetailsPage() {
               fontWeight: 600,
               fontSize: 14,
               borderRadius: "8px",
-              bgcolor: "#ef4444",
-              color: "#fff",
-              "&:hover": { bgcolor: "#dc2626" },
+              bgcolor: tokens.danger,
+              color: tokens.textWhite,
+              "&:hover": { bgcolor: tokens.dangerHover },
             }}
           >
             Revoke
