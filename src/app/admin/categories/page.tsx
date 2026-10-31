@@ -20,8 +20,9 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined";
 
-import { useCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from "@/query-client/categories";
+import { useAdminCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from "@/query-client/categories";
 import { uploadFileToStorage, getAssetUrl, stripAssetDomain } from "@/lib/storage";
+import { slugify } from "@/lib/utils";
 import { tokens } from "@/theme/theme";
 
 const categorySchema = z.object({
@@ -43,23 +44,18 @@ const inputSx = {
   },
 } as const;
 
-const slugify = (value: string) =>
-  value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "");
-
 export default function CategoriesPage() {
   const toast = useToast();
-  const { data: categories, isLoading } = useCategories();
+  const { data: categories, isLoading } = useAdminCategories();
   const { mutate: createCategory, isPending: isCreating } = useCreateCategory();
   const { mutate: updateCategory, isPending: isUpdating } = useUpdateCategory();
-  const { mutate: deleteCategory } = useDeleteCategory();
+  const { mutate: deleteCategory, isPending: isDeleting } = useDeleteCategory();
 
   const [isOpen, setIsOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
+  const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
 
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(categorySchema),
@@ -72,9 +68,11 @@ export default function CategoriesPage() {
 
   const onSubmit = (values: CategoryFormValues) => {
     const payload = {
-      ...values,
-      icon: values.icon ? stripAssetDomain(values.icon) : undefined,
+      name: values.name.trim(),
+      slug: values.slug.trim(),
+      icon: values.icon ? stripAssetDomain(values.icon) : null,
     };
+
     if (editingId) {
       updateCategory(
         { id: editingId, data: payload },
@@ -82,6 +80,7 @@ export default function CategoriesPage() {
           onSuccess: () => {
             setIsOpen(false);
             setEditingId(null);
+            setIsSlugManuallyEdited(false);
             form.reset();
           },
         },
@@ -90,14 +89,27 @@ export default function CategoriesPage() {
       createCategory(payload, {
         onSuccess: () => {
           setIsOpen(false);
+          setIsSlugManuallyEdited(false);
           form.reset();
         },
       });
     }
   };
 
+  const handleOpenAdd = () => {
+    setEditingId(null);
+    setIsSlugManuallyEdited(false);
+    form.reset({
+      name: "",
+      slug: "",
+      icon: "",
+    });
+    setIsOpen(true);
+  };
+
   const handleEdit = (category: any) => {
     setEditingId(category.id);
+    setIsSlugManuallyEdited(true);
     form.reset({
       name: category.name,
       slug: category.slug,
@@ -106,10 +118,16 @@ export default function CategoriesPage() {
     setIsOpen(true);
   };
 
+  const selectedCategoryToDelete = categories?.find((c) => c.id === categoryToDelete);
+  const hasProducts = Number(selectedCategoryToDelete?._count?.products ?? 0) > 0;
+
   const confirmDelete = () => {
     if (categoryToDelete) {
-      deleteCategory(categoryToDelete);
-      setCategoryToDelete(null);
+      deleteCategory(categoryToDelete, {
+        onSuccess: () => {
+          setCategoryToDelete(null);
+        },
+      });
     }
   };
 
@@ -135,6 +153,7 @@ export default function CategoriesPage() {
     setIsOpen(open);
     if (!open) {
       setEditingId(null);
+      setIsSlugManuallyEdited(false);
       form.reset({ name: "", slug: "", icon: "" });
     }
   };
@@ -167,7 +186,7 @@ export default function CategoriesPage() {
         <Button
           variant='contained'
           disableElevation
-          onClick={() => setIsOpen(true)}
+          onClick={handleOpenAdd}
           startIcon={<AddIcon sx={{ fontSize: 16 }} />}
           sx={{
             textTransform: "none",
@@ -188,7 +207,7 @@ export default function CategoriesPage() {
       <Dialog
         open={isOpen}
         onClose={(_, reason) => {
-          if (reason === "backdropClick" || reason === "escapeKeyDown") {
+          if (!isSubmitting && (reason === "backdropClick" || reason === "escapeKeyDown")) {
             handleOpenChange(false);
           }
         }}
@@ -228,8 +247,8 @@ export default function CategoriesPage() {
                   sx={inputSx}
                   {...form.register("name", {
                     onChange: (e) => {
-                      if (!editingId && !form.getValues("slug")) {
-                        form.setValue("slug", slugify(e.target.value));
+                      if (!editingId && !isSlugManuallyEdited) {
+                        form.setValue("slug", slugify(e.target.value), { shouldValidate: true });
                       }
                     },
                   })}
@@ -258,7 +277,11 @@ export default function CategoriesPage() {
                   fullWidth
                   size='small'
                   sx={inputSx}
-                  {...form.register("slug")}
+                  {...form.register("slug", {
+                    onChange: () => {
+                      setIsSlugManuallyEdited(true);
+                    },
+                  })}
                   error={!!form.formState.errors.slug}
                   helperText={form.formState.errors.slug?.message}
                 />
@@ -341,7 +364,25 @@ export default function CategoriesPage() {
             </Box>
           </DialogContent>
 
-          <DialogActions sx={{ p: 2 }}>
+          <DialogActions sx={{ p: 2, gap: 1 }}>
+            <Button
+              type='button'
+              variant='outlined'
+              disableElevation
+              onClick={() => handleOpenChange(false)}
+              disabled={isSubmitting}
+              sx={{
+                textTransform: "none",
+                fontWeight: 600,
+                fontSize: 14,
+                borderRadius: "8px",
+                borderColor: "divider",
+                color: "text.primary",
+                "&:hover": { borderColor: "text.disabled", bgcolor: "action.hover" },
+              }}
+            >
+              Cancel
+            </Button>
             <Button
               type='submit'
               variant='contained'
@@ -358,7 +399,7 @@ export default function CategoriesPage() {
                 "&:hover": { bgcolor: "primary.dark" },
               }}
             >
-              Save
+              {isSubmitting ? "Saving..." : "Save"}
             </Button>
           </DialogActions>
         </Box>
@@ -470,7 +511,7 @@ export default function CategoriesPage() {
                       <IconButton
                         size='small'
                         onClick={() => handleEdit(cat)}
-                        aria-label='Edit category'
+                        aria-label={`Edit ${cat.name}`}
                         sx={{
                           width: 32,
                           height: 32,
@@ -483,7 +524,7 @@ export default function CategoriesPage() {
                       <IconButton
                         size='small'
                         onClick={() => handleDelete(cat.id)}
-                        aria-label='Delete category'
+                        aria-label={`Delete ${cat.name}`}
                         sx={{
                           width: 32,
                           height: 32,
@@ -502,18 +543,33 @@ export default function CategoriesPage() {
         </Table>
       </TableContainer>
 
-      {/* Delete confirmation */}
+      {/* Delete confirmation dialog */}
       <Dialog
         open={!!categoryToDelete}
-        onClose={() => setCategoryToDelete(null)}
+        onClose={() => !isDeleting && setCategoryToDelete(null)}
         maxWidth='xs'
         fullWidth
         slotProps={{ paper: { sx: { borderRadius: "12px" } } }}
       >
-        <DialogTitle sx={{ fontSize: 18, fontWeight: 700 }}>Are you absolutely sure?</DialogTitle>
+        <DialogTitle sx={{ fontSize: 18, fontWeight: 700 }}>
+          {hasProducts ? "Cannot Delete Category" : "Are you absolutely sure?"}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ fontSize: 14, color: "text.secondary" }}>
-            This action cannot be undone. This will permanently delete the category and may affect associated products.
+            {hasProducts ? (
+              <Box component='span' sx={{ display: "block", color: "text.primary" }}>
+                This category <strong>&ldquo;{selectedCategoryToDelete?.name}&rdquo;</strong> currently has{" "}
+                <Box component='span' sx={{ color: "error.main", fontWeight: 700 }}>
+                  {selectedCategoryToDelete?._count?.products}
+                </Box>{" "}
+                associated product(s).
+                <br />
+                <br />
+                To delete this category, please delete or reassign its products first.
+              </Box>
+            ) : (
+              `This action cannot be undone. This will permanently delete the category "${selectedCategoryToDelete?.name}".`
+            )}
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ p: 2, gap: 1 }}>
@@ -521,6 +577,7 @@ export default function CategoriesPage() {
             onClick={() => setCategoryToDelete(null)}
             variant='outlined'
             disableElevation
+            disabled={isDeleting}
             sx={{
               textTransform: "none",
               fontWeight: 600,
@@ -531,24 +588,28 @@ export default function CategoriesPage() {
               "&:hover": { borderColor: "text.disabled", bgcolor: "action.hover" },
             }}
           >
-            Cancel
+            {hasProducts ? "Close" : "Cancel"}
           </Button>
-          <Button
-            onClick={confirmDelete}
-            variant='contained'
-            disableElevation
-            sx={{
-              textTransform: "none",
-              fontWeight: 600,
-              fontSize: 14,
-              borderRadius: "8px",
-              bgcolor: tokens.danger,
-              color: tokens.textWhite,
-              "&:hover": { bgcolor: tokens.dangerHover },
-            }}
-          >
-            Delete
-          </Button>
+          {!hasProducts && (
+            <Button
+              onClick={confirmDelete}
+              variant='contained'
+              disableElevation
+              disabled={isDeleting}
+              startIcon={isDeleting ? <CircularProgress size={14} sx={{ color: "inherit" }} /> : undefined}
+              sx={{
+                textTransform: "none",
+                fontWeight: 600,
+                fontSize: 14,
+                borderRadius: "8px",
+                bgcolor: tokens.danger,
+                color: tokens.textWhite,
+                "&:hover": { bgcolor: tokens.dangerHover },
+              }}
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
     </Box>

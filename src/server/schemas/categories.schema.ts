@@ -14,6 +14,12 @@ export const categorySchema = z.object({
     .optional(),
 });
 
+export const publicCategorySchema = z.object({
+  name: z.string(),
+  slug: z.string(),
+  icon: z.string().nullable().optional(),
+});
+
 export const createCategoryInputSchema = z.object({
   name: z.string().min(1, "Name is required"),
   slug: z.string().min(1, "Slug is required"),
@@ -26,6 +32,7 @@ export const updateCategoryInputSchema = z.object({
 });
 
 export type Category = z.infer<typeof categorySchema>;
+export type PublicCategory = z.infer<typeof publicCategorySchema>;
 export type CreateCategoryInput = z.infer<typeof createCategoryInputSchema>;
 export type UpdateCategoryInput = z.infer<typeof updateCategoryInputSchema>;
 

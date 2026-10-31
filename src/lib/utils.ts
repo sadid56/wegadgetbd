@@ -13,3 +13,11 @@ export function formatBnNumber(value: number | string): string {
   if (!Number.isFinite(numericValue)) return "0";
   return new Intl.NumberFormat("bn-BD").format(numericValue);
 }
+
+export function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}

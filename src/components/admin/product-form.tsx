@@ -23,10 +23,11 @@ import CloseIcon from "@mui/icons-material/Close";
 import VideocamOutlinedIcon from "@mui/icons-material/VideocamOutlined";
 
 import { useCreateProduct, useUpdateProduct } from "@/query-client/products";
-import { useCategories } from "@/query-client/categories";
+import { useAdminCategories } from "@/query-client/categories";
 import { useToast } from "@/context/toast-context";
 import { uploadFileToStorage, getAssetUrl, stripAssetDomain } from "@/lib/storage";
 import { normalizeVideoInput } from "@/lib/video-links";
+import { slugify } from "@/lib/utils";
 import { tokens } from "@/theme/theme";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
@@ -93,7 +94,7 @@ const labelSx = {
 export function ProductForm({ initialData }: ProductFormProps) {
   const router = useRouter();
   const toast = useToast();
-  const { data: categories } = useCategories();
+  const { data: categories } = useAdminCategories();
   const { mutate: createProduct, isPending: isCreating } = useCreateProduct();
   const { mutate: updateProduct, isPending: isUpdating } = useUpdateProduct();
   const [uploading, setUploading] = useState(false);
@@ -264,14 +265,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
                 helperText={form.formState.errors.title?.message}
                 onChange={(e) => {
                   field.onChange(e);
-                  if (!initialData && !form.getValues("slug")) {
-                    form.setValue(
-                      "slug",
-                      e.target.value
-                        .toLowerCase()
-                        .replace(/[^a-z0-9]+/g, "-")
-                        .replace(/^-|-$/g, "")
-                    );
+                  if (!initialData && !form.formState.dirtyFields.slug) {
+                    form.setValue("slug", slugify(e.target.value));
                   }
                 }}
               />

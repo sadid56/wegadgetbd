@@ -2,11 +2,13 @@ import { z } from "zod";
 import { publicProcedure, adminProcedure } from "@/server/init";
 import {
   categorySchema,
+  publicCategorySchema,
   createCategoryInputSchema,
   updateCategoryInputSchema,
 } from "@/server/schemas/categories.schema";
 
 import { ListCategoriesUseCase } from "@/server/use-case/categories/list-categories";
+import { AdminListCategoriesUseCase } from "@/server/use-case/categories/admin-list-categories";
 import { GetCategoryBySlugUseCase } from "@/server/use-case/categories/get-category-by-slug";
 import { CreateCategoryUseCase } from "@/server/use-case/categories/create-category";
 import { UpdateCategoryUseCase } from "@/server/use-case/categories/update-category";
@@ -21,8 +23,19 @@ export const categoriesRouter = {
       tags: ["Categories"],
     })
     .input(z.object({}).optional())
-    .output(z.array(categorySchema))
+    .output(z.array(publicCategorySchema))
     .handler(async ({ context }) => new ListCategoriesUseCase(context.db).execute()),
+
+  adminList: adminProcedure
+    .route({
+      method: "GET",
+      path: "/admin/categories",
+      summary: "List categories for admin management",
+      tags: ["Categories"],
+    })
+    .input(z.object({}).optional())
+    .output(z.array(categorySchema))
+    .handler(async ({ context }) => new AdminListCategoriesUseCase(context.db).execute()),
 
   bySlug: publicProcedure
     .route({

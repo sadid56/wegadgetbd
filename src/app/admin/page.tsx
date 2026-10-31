@@ -137,6 +137,25 @@ export default function AdminDashboard() {
           >
             View Orders
           </Button>
+          <Button
+            component={NextLink}
+            href='/admin/categories'
+            variant='outlined'
+            size='small'
+            endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
+            sx={{
+              borderRadius: "10px",
+              px: 2,
+              py: 0.9,
+              fontWeight: 600,
+              fontSize: 13,
+              borderColor: "divider",
+              color: "text.primary",
+              "&:hover": { borderColor: "primary.main", color: "primary.main" },
+            }}
+          >
+            Categories
+          </Button>
         </Box>
       </Box>
 

@@ -31,9 +31,10 @@ import Inventory2Icon from "@mui/icons-material/Inventory2";
 
 // ─── Types ────────────────────────────────────────────────
 interface Category {
-  id: string;
+  id?: string;
   name: string;
   slug: string;
+  icon?: string | null;
 }
 
 export interface FilterBarProps {
@@ -653,7 +654,7 @@ export function FilterBar({
                 const active = category === cat.slug;
                 return (
                   <Box
-                    key={cat.id}
+                    key={cat.slug}
                     component='button'
                     type='button'
                     onClick={() => onParamChange("category", cat.slug)}
@@ -982,7 +983,7 @@ export function FilterBar({
                 const isActive = category === cat.slug;
                 return (
                   <Box
-                    key={cat.id}
+                    key={cat.slug}
                     component='button'
                     type='button'
                     onClick={() => onParamChange("category", cat.slug)}

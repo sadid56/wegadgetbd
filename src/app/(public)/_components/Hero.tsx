@@ -81,16 +81,16 @@ export function Hero() {
     <Box
       component="section"
       sx={{
-        position: "relative",
-        width: "100%",
-        minHeight: { xs: "auto", md: 540, lg: 640 },
-        display: "flex",
-        alignItems: "center",
+        position: 'relative',
+        width: '100%',
+        minHeight: { xs: 'auto', md: 540, lg: 640 },
+        display: 'flex',
+        alignItems: 'center',
         bgcolor: tokens.bgDark,
         borderBottomLeftRadius: { xs: 24, md: 36 },
         borderBottomRightRadius: { xs: 24, md: 36 },
         borderBottom: `1px solid ${tokens.borderDark}`,
-        overflow: "hidden",
+        overflow: 'hidden',
         pt: { xs: 9, md: 10.5 },
         pb: { xs: 10, md: 12 },
       }}
@@ -98,12 +98,12 @@ export function Hero() {
       {/* Background Image */}
       <Box
         sx={{
-          position: "absolute",
+          position: 'absolute',
           inset: 0,
           backgroundImage: "url('/images/hero-banner-dark.jpg')",
-          backgroundSize: "cover",
-          backgroundPosition: "center right",
-          filter: "brightness(0.9) contrast(1.05)",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center right',
+          filter: 'brightness(0.9) contrast(1.05)',
           zIndex: 1,
         }}
       />
@@ -111,11 +111,11 @@ export function Hero() {
       {/* Dark Gradient Overlay */}
       <Box
         sx={{
-          position: "absolute",
+          position: 'absolute',
           inset: 0,
           background: {
-            xs: "linear-gradient(180deg, rgba(9,14,28,0.92) 0%, rgba(9,14,28,0.86) 60%, rgba(9,14,28,0.95) 100%)",
-            md: "linear-gradient(90deg, rgba(9,14,28,0.95) 0%, rgba(9,14,28,0.86) 45%, rgba(9,14,28,0.45) 75%, rgba(9,14,28,0.85) 100%)",
+            xs: 'linear-gradient(180deg, rgba(9,14,28,0.92) 0%, rgba(9,14,28,0.86) 60%, rgba(9,14,28,0.95) 100%)',
+            md: 'linear-gradient(90deg, rgba(9,14,28,0.95) 0%, rgba(9,14,28,0.86) 45%, rgba(9,14,28,0.45) 75%, rgba(9,14,28,0.85) 100%)',
           },
           zIndex: 2,
         }}
@@ -125,11 +125,11 @@ export function Hero() {
       <SectionContainer
         component="div"
         sx={{
-          position: "relative",
+          position: 'relative',
           zIndex: 3,
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: "1.15fr 0.85fr", lg: "1.2fr 0.8fr" },
-          alignItems: "center",
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: '1.15fr 0.85fr', lg: '1.2fr 0.8fr' },
+          alignItems: 'center',
           gap: { xs: 5, md: 4, lg: 6 },
         }}
       >
@@ -139,22 +139,22 @@ export function Hero() {
             component="h1"
             sx={{
               fontWeight: 800,
-              fontSize: { xs: "2.1rem", sm: "2.6rem", md: "2.9rem", lg: "3.2rem" },
+              fontSize: { xs: '2.1rem', sm: '2.6rem', md: '2.9rem', lg: '3.2rem' },
               lineHeight: 1.1,
-              letterSpacing: "-0.03em",
+              letterSpacing: '-0.03em',
               color: tokens.textWhite,
               mb: 2,
             }}
           >
             The Right Gadgets <br />
-            for a{" "}
+            for a{' '}
             <Box
               component="span"
               sx={{
                 color: tokens.accent,
                 background: `linear-gradient(120deg, ${tokens.accent} 0%, ${tokens.primaryLight} 100%)`,
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
               }}
             >
               Brighter You
@@ -165,14 +165,13 @@ export function Hero() {
             sx={{
               fontSize: { xs: 14, sm: 15 },
               lineHeight: 1.6,
-              color: "rgba(255, 255, 255, 0.72)",
+              color: 'rgba(255, 255, 255, 0.72)',
               mb: 2.5,
               maxWidth: 520,
             }}
           >
-            Discover carefully selected tech, from everyday essentials to
-            high-performance gear — designed to make your life smarter, easier
-            and more enjoyable.
+            Discover carefully selected tech, from everyday essentials to high-performance gear —
+            designed to make your life smarter, easier and more enjoyable.
           </Typography>
 
           {/* Search Bar */}
@@ -180,24 +179,24 @@ export function Hero() {
             component="form"
             onSubmit={handleSearchSubmit}
             sx={{
-              display: "flex",
-              alignItems: "center",
+              display: 'flex',
+              alignItems: 'center',
               gap: 1.5,
-              bgcolor: "rgba(255, 255, 255, 0.08)",
-              backdropFilter: "blur(16px)",
-              WebkitBackdropFilter: "blur(16px)",
+              bgcolor: 'rgba(255, 255, 255, 0.08)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
               border: `1px solid ${tokens.borderDarkSubtle}`,
               borderRadius: `${tokens.radiusPill}px`,
-              p: "5px 7px 5px 16px",
+              p: '5px 7px 5px 16px',
               maxWidth: 500,
               mb: 2.5,
-              transition: "border-color 0.2s ease",
-              "&:focus-within": {
+              transition: 'border-color 0.2s ease',
+              '&:focus-within': {
                 borderColor: tokens.primary,
               },
             }}
           >
-            <SearchIcon sx={{ color: "rgba(255, 255, 255, 0.5)", fontSize: 21 }} />
+            <SearchIcon sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: 21 }} />
             <InputBase
               placeholder="Search gadgets, brands, or accessories..."
               value={searchValue}
@@ -206,8 +205,8 @@ export function Hero() {
               sx={{
                 color: tokens.textWhite,
                 fontSize: 14.5,
-                "& input::placeholder": {
-                  color: "rgba(255, 255, 255, 0.45)",
+                '& input::placeholder': {
+                  color: 'rgba(255, 255, 255, 0.45)',
                   opacity: 1,
                 },
               }}
@@ -219,9 +218,9 @@ export function Hero() {
                 color: tokens.textWhite,
                 width: 38,
                 height: 38,
-                borderRadius: "50%",
+                borderRadius: '50%',
                 flexShrink: 0,
-                "&:hover": {
+                '&:hover': {
                   bgcolor: tokens.primaryHover,
                 },
               }}
@@ -234,21 +233,21 @@ export function Hero() {
         {/* ═══ RIGHT: MINIMAL EDITORIAL PRODUCT CARD ═══ */}
         <Box
           sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: { xs: "center", md: "flex-end" },
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: { xs: 'center', md: 'flex-end' },
           }}
         >
           <Box
             sx={{
-              width: "100%",
+              width: '100%',
               maxWidth: 340,
               bgcolor: tokens.bgPanel,
               borderRadius: `${tokens.radiusLg}px`,
               border: `1px solid ${tokens.borderDefault}`,
               p: 1.75,
-              "&:hover .hero-card-thumb": {
-                transform: "scale(1.05)",
+              '&:hover .hero-card-thumb': {
+                transform: 'scale(1.05)',
               },
             }}
           >
@@ -257,12 +256,12 @@ export function Hero() {
               component={NextLink}
               href={activeProduct.link}
               sx={{
-                display: "block",
-                width: "100%",
+                display: 'block',
+                width: '100%',
                 height: 190,
                 borderRadius: `${tokens.radiusMd}px`,
                 bgcolor: tokens.bgSubtle,
-                overflow: "hidden",
+                overflow: 'hidden',
                 mb: 1.75,
               }}
             >
@@ -272,10 +271,10 @@ export function Hero() {
                 src={activeProduct.image}
                 alt={activeProduct.title}
                 sx={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  transition: "transform 0.35s ease",
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  transition: 'transform 0.35s ease',
                 }}
               />
             </Box>
@@ -283,9 +282,9 @@ export function Hero() {
             {/* Category + Rating Row */}
             <Box
               sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
                 mb: 0.4,
               }}
             >
@@ -293,15 +292,15 @@ export function Hero() {
                 sx={{
                   fontSize: 11,
                   fontWeight: 600,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.06em",
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
                   color: tokens.textMuted,
                 }}
               >
                 {activeProduct.category}
               </Typography>
 
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.4 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
                 <StarIcon sx={{ color: tokens.warning, fontSize: 14 }} />
                 <Typography sx={{ fontSize: 12, fontWeight: 700, color: tokens.textPrimary }}>
                   {activeProduct.rating}
@@ -314,11 +313,11 @@ export function Hero() {
               component={NextLink}
               href={activeProduct.link}
               sx={{
-                display: "block",
+                display: 'block',
                 fontWeight: 700,
                 fontSize: 16.5,
                 color: tokens.textPrimary,
-                textDecoration: "none",
+                textDecoration: 'none',
                 lineHeight: 1.3,
                 mb: 0.25,
               }}
@@ -339,14 +338,14 @@ export function Hero() {
             {/* Bottom Row: Price + Minimal Action Button */}
             <Box
               sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
                 pt: 1.25,
                 borderTop: `1px solid ${tokens.borderSubtle}`,
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.8 }}>
+              <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.8 }}>
                 <Typography sx={{ fontSize: 18, fontWeight: 800, color: tokens.textPrimary }}>
                   {activeProduct.price}
                 </Typography>
@@ -354,7 +353,7 @@ export function Hero() {
                   sx={{
                     fontSize: 12,
                     color: tokens.textDisabled,
-                    textDecoration: "line-through",
+                    textDecoration: 'line-through',
                   }}
                 >
                   {activeProduct.originalPrice}
@@ -368,11 +367,11 @@ export function Hero() {
                 sx={{
                   width: 36,
                   height: 36,
-                  borderRadius: "50%",
+                  borderRadius: '50%',
                   bgcolor: tokens.primarySubtle,
                   color: tokens.primary,
                   border: `1px solid ${tokens.primaryBorder}`,
-                  "&:hover": {
+                  '&:hover': {
                     bgcolor: tokens.primary,
                     color: tokens.textWhite,
                   },
@@ -386,20 +385,30 @@ export function Hero() {
           {/* Minimal Slider Counter & Prev/Next */}
           <Box
             sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              width: "100%",
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              width: '100%',
               maxWidth: 340,
               mt: 1.25,
               px: 0.5,
             }}
           >
-            <Typography sx={{ fontSize: 12.5, fontWeight: 600, color: "rgba(255, 255, 255, 0.7)", letterSpacing: "0.08em" }}>
-              0{currentIndex + 1} <Box component="span" sx={{ opacity: 0.45 }}>/ 0{SPOTLIGHT_PRODUCTS.length}</Box>
+            <Typography
+              sx={{
+                fontSize: 12.5,
+                fontWeight: 600,
+                color: 'rgba(255, 255, 255, 0.7)',
+                letterSpacing: '0.08em',
+              }}
+            >
+              0{currentIndex + 1}{' '}
+              <Box component="span" sx={{ opacity: 0.45 }}>
+                / 0{SPOTLIGHT_PRODUCTS.length}
+              </Box>
             </Typography>
 
-            <Box sx={{ display: "flex", gap: 0.75 }}>
+            <Box sx={{ display: 'flex', gap: 0.75 }}>
               <IconButton
                 onClick={handlePrev}
                 size="small"
@@ -407,8 +416,8 @@ export function Hero() {
                   width: 28,
                   height: 28,
                   color: tokens.textWhite,
-                  border: "1px solid rgba(255, 255, 255, 0.18)",
-                  "&:hover": { bgcolor: "rgba(255, 255, 255, 0.08)" },
+                  border: '1px solid rgba(255, 255, 255, 0.18)',
+                  '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.08)' },
                 }}
               >
                 <ChevronLeftIcon sx={{ fontSize: 16 }} />
@@ -420,8 +429,8 @@ export function Hero() {
                   width: 28,
                   height: 28,
                   color: tokens.textWhite,
-                  border: "1px solid rgba(255, 255, 255, 0.18)",
-                  "&:hover": { bgcolor: "rgba(255, 255, 255, 0.08)" },
+                  border: '1px solid rgba(255, 255, 255, 0.18)',
+                  '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.08)' },
                 }}
               >
                 <ChevronRightIcon sx={{ fontSize: 16 }} />
