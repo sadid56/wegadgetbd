@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { category } from "@/db/schema";
 import type { Context } from "@/server/context";
 import type { UpdateCategoryInput } from "@/server/schemas/categories.schema";
+import { cacheService, CACHE_KEYS } from "@/server/services/cache";
 
 export class UpdateCategoryUseCase {
   constructor(private readonly db: Context["db"]) {}
@@ -16,6 +17,8 @@ export class UpdateCategoryUseCase {
       })
       .where(eq(category.id, id))
       .returning();
+
+    await cacheService.deletePattern(CACHE_KEYS.categoriesPattern);
 
     return updatedCategory;
   }

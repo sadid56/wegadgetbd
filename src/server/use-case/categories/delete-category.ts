@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { category, product } from "@/db/schema";
 import type { Context } from "@/server/context";
 import { ORPCError } from "@orpc/server";
+import { cacheService, CACHE_KEYS } from "@/server/services/cache";
 
 export class DeleteCategoryUseCase {
   constructor(private readonly db: Context["db"]) {}
@@ -30,6 +31,8 @@ export class DeleteCategoryUseCase {
         message: "Category not found",
       });
     }
+
+    await cacheService.deletePattern(CACHE_KEYS.categoriesPattern);
 
     return deletedCategory;
   }

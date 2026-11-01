@@ -1,58 +1,67 @@
 "use client";
 
+import React, { useEffect, useRef, useState } from "react";
 import NextLink from "next/link";
-import { useEffect, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import Box from "@mui/material/Box";
 import { IconButton } from "@/components/ui/icon-button";
-import { Menu, MenuItem } from "@/components/ui/menu";
 import { CountBadge as Badge } from "@/components/ui/badge";
 
-import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
-import SupportAgentOutlinedIcon from "@mui/icons-material/SupportAgentOutlined";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import WhatshotOutlinedIcon from "@mui/icons-material/WhatshotOutlined";
+import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
+import ArticleOutlinedIcon from "@mui/icons-material/ArticleOutlined";
+import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
+import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import MenuIcon from "@mui/icons-material/Menu";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
-
 import { useCart } from "@/hooks/useCart";
+import { useCategories } from "@/query-client/categories";
 import { tokens } from "@/theme/theme";
 import { SectionContainer } from "@/components/common/SectionContainer";
 import { BrandLogo } from "@/components/common/BrandLogo";
 import { NavbarUserDropdown } from "./navbar-user-dropdown";
+import { NavbarMegaMenu } from "./navbar-mega-menu";
 import { NavbarMobile, type NavLinkItem } from "./navbar-mobile";
 
-const NAV_LINKS: NavLinkItem[] = [
-  { name: "Home", href: "/" },
-  { name: "All Categories", href: "/products" },
-  { name: "Laptops", href: "/products?category=laptops" },
-  { name: "Smartphones", href: "/products?category=smartphones" },
-  { name: "Accessories", href: "/products?category=accessories" },
-  { name: "Audio", href: "/products?category=audio" },
-  { name: "Gaming", href: "/products?category=gaming" },
-];
+interface ExtendedNavItem extends NavLinkItem {
+  badge?: string;
+  hasDropdown?: boolean;
+}
 
-const MORE_LINKS = [
-  { label: "All Products", href: "/products", Icon: StorefrontOutlinedIcon },
-  { label: "About Us", href: "/about", Icon: InfoOutlinedIcon },
-  { label: "Contact & Support", href: "/contact-us", Icon: SupportAgentOutlinedIcon },
+const NAV_ITEMS: ExtendedNavItem[] = [
+  {
+    name: "Products",
+    href: "/products",
+    Icon: StorefrontOutlinedIcon,
+    hasDropdown: true,
+  },
+  {
+    name: "Deals",
+    href: "/products?sort=discount",
+    Icon: WhatshotOutlinedIcon,
+    badge: "HOT",
+  },
+  { name: "Offers", href: "/products?filter=offers", Icon: LocalOfferOutlinedIcon },
+  { name: "About", href: "/about", Icon: ArticleOutlinedIcon },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
-  const router = useRouter();
   const isHome = pathname === "/";
 
   const [navState, setNavState] = useState<"top" | "visible" | "hidden">("top");
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [moreAnchor, setMoreAnchor] = useState<HTMLElement | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [productsMenuOpen, setProductsMenuOpen] = useState(false);
+
+  const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const headerContainerRef = useRef<HTMLDivElement | null>(null);
 
   const { totalCount } = useCart();
+  const { data: categories = [] } = useCategories();
 
+  // Scroll visibility
   useEffect(() => {
-    let lastY =
-      window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
-
+    let lastY = window.scrollY || document.documentElement.scrollTop || 0;
     let ticking = false;
 
     const onScroll = () => {
@@ -60,8 +69,7 @@ export function Navbar() {
       ticking = true;
 
       requestAnimationFrame(() => {
-        const currentY =
-          window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+        const currentY = window.scrollY || document.documentElement.scrollTop || 0;
 
         if (currentY <= 15) {
           setNavState("top");
@@ -77,156 +85,209 @@ export function Navbar() {
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
-    document.addEventListener("scroll", onScroll, { passive: true, capture: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
+  // Close dropdown on outside click or Escape
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (headerContainerRef.current && !headerContainerRef.current.contains(e.target as Node)) {
+        setProductsMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setProductsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener("scroll", onScroll);
-      document.removeEventListener("scroll", onScroll, { capture: true });
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
 
+  // Close dropdown on route change
+  useEffect(() => {
+    setProductsMenuOpen(false);
+  }, [pathname]);
+
+  const handleMouseEnter = () => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+    setProductsMenuOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current);
+    }
+    closeTimerRef.current = setTimeout(() => {
+      setProductsMenuOpen(false);
+    }, 200);
+  };
+
   return (
     <>
-      {!isHome && <Box sx={{ height: { xs: 64, md: 70 } }} />}
+      {/* Spacer for non-home pages so page content isn't covered */}
+      {!isHome && <Box sx={{ height: { xs: 64, md: 72 } }} />}
 
       <Box
-        component="header"
+        ref={headerContainerRef}
+        component='header'
         sx={{
           position: "fixed",
           top: 0,
           left: 0,
           right: 0,
-          zIndex: 1100,
           width: "100%",
+          zIndex: 1100,
           bgcolor: navState === "top" && isHome ? "transparent" : tokens.bgDark,
           borderBottom:
-            navState === "visible" ? `1px solid ${tokens.borderDarkSubtle}` : "1px solid transparent",
-          boxShadow: navState === "visible" ? "0 10px 30px -10px rgba(0, 0, 0, 0.5)" : "none",
-          "@keyframes navSlideDown": {
-            from: { transform: "translateY(-100%)" },
-            to: { transform: "translateY(0)" },
-          },
-          "@keyframes navSlideUp": {
-            from: { transform: "translateY(0)" },
-            to: { transform: "translateY(-100%)" },
-          },
+            navState === "top" && isHome ? "1px solid transparent" : "1px solid rgba(0, 191, 166, 0.22)",
+          boxShadow: navState === "top" && isHome ? "none" : "0 8px 24px rgba(0, 0, 0, 0.45)",
           transform: navState === "hidden" ? "translateY(-100%)" : "translateY(0)",
-          animation:
-            navState === "visible"
-              ? "navSlideDown 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards"
-              : navState === "hidden"
-                ? "navSlideUp 0.3s cubic-bezier(0.22, 1, 0.36, 1) forwards"
-                : "none",
-          transition: "background-color 0.25s ease",
+          transition:
+            "transform 0.32s cubic-bezier(0.2, 0.9, 0.3, 1), background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease",
         }}
       >
         <SectionContainer
-          component="div"
+          component='div'
           sx={{
-            height: { xs: 64, md: 70 },
+            height: { xs: 64, md: 72 },
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: 2,
+            position: "relative",
           }}
         >
-          <BrandLogo variant="dark" size="md" href="/" />
+          {/* Left: Brand Logo */}
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <BrandLogo variant='dark' size='md' href='/' />
+          </Box>
 
+          {/* Center: Sleek Cyber Navigation */}
           <Box
             sx={{
               display: { xs: "none", md: "flex" },
               alignItems: "center",
-              gap: { md: 2.5, lg: 3.5 },
+              gap: { md: 1, lg: 1.5 },
             }}
           >
-            {NAV_LINKS.map((link) => {
-              const isActive =
-                link.href === "/" ? pathname === "/" : pathname.startsWith(link.href);
+            {NAV_ITEMS.map((item) => {
+              const Icon = item.Icon;
+              const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+              const isProducts = item.hasDropdown;
+
               return (
                 <Box
-                  key={link.name}
+                  key={item.name}
                   component={NextLink}
-                  href={link.href}
+                  href={item.href}
+                  onMouseEnter={isProducts ? handleMouseEnter : undefined}
+                  onMouseLeave={isProducts ? handleMouseLeave : undefined}
                   sx={{
-                    position: "relative",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 0.75,
                     textDecoration: "none",
-                    fontSize: 14,
-                    fontWeight: isActive ? 600 : 400,
-                    color: isActive ? tokens.textWhite : "rgba(255, 255, 255, 0.75)",
-                    py: 1,
-                    transition: "color 0.2s ease",
-                    "&:hover": { color: tokens.textWhite },
-                    "&::after": isActive
-                      ? {
-                          content: '""',
-                          position: "absolute",
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          height: "2px",
-                          bgcolor: tokens.primary,
-                          borderRadius: "2px",
-                        }
-                      : undefined,
+                    fontSize: 13,
+                    fontWeight: isActive || (isProducts && productsMenuOpen) ? 600 : 500,
+                    color: isActive || (isProducts && productsMenuOpen) ? tokens.primary : "rgba(255, 255, 255, 0.78)",
+                    px: 1.6,
+                    py: 0.65,
+                    borderRadius: "999px",
+                    bgcolor: isActive || (isProducts && productsMenuOpen) ? "rgba(0, 191, 166, 0.15)" : "transparent",
+                    border: isActive || (isProducts && productsMenuOpen) ? "1px solid rgba(0, 191, 166, 0.35)" : "1px solid transparent",
+                    boxShadow: isActive || (isProducts && productsMenuOpen) ? "0 0 12px rgba(0, 191, 166, 0.25)" : "none",
+                    position: "relative",
+                    transition: "color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease",
+                    "&:hover": {
+                      color: tokens.textWhite,
+                      bgcolor: isActive || (isProducts && productsMenuOpen) ? "rgba(0, 191, 166, 0.2)" : "rgba(255, 255, 255, 0.08)",
+                      "& .nav-icon": {
+                        color: tokens.primary,
+                      },
+                    },
                   }}
                 >
-                  {link.name}
+                  {Icon && (
+                    <Icon
+                      className='nav-icon'
+                      sx={{
+                        fontSize: 17,
+                        color: isActive || (isProducts && productsMenuOpen) ? tokens.primary : "rgba(255, 255, 255, 0.65)",
+                        transition: "color 0.2s ease",
+                      }}
+                    />
+                  )}
+                  {item.name}
+
+                  {/* Dropdown Chevron for Products */}
+                  {isProducts && (
+                    <KeyboardArrowDownRoundedIcon
+                      sx={{
+                        fontSize: 15,
+                        color: productsMenuOpen ? tokens.primary : "rgba(255, 255, 255, 0.5)",
+                        transition: "transform 0.2s ease, color 0.2s ease",
+                        transform: productsMenuOpen ? "rotate(180deg)" : "rotate(0deg)",
+                      }}
+                    />
+                  )}
+
+                  {/* Micro Badge (e.g. HOT on Deals) */}
+                  {item.badge && (
+                    <Box
+                      component='span'
+                      sx={{
+                        fontSize: 9,
+                        fontWeight: 800,
+                        px: 0.75,
+                        py: 0.15,
+                        borderRadius: "999px",
+                        bgcolor: "#ff4d4f",
+                        color: "#ffffff",
+                        letterSpacing: "0.04em",
+                        boxShadow: "0 0 8px rgba(255, 77, 79, 0.6)",
+                      }}
+                    >
+                      {item.badge}
+                    </Box>
+                  )}
                 </Box>
               );
             })}
-
-            <Box
-              onClick={(e) => setMoreAnchor(e.currentTarget)}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 0.25,
-                fontSize: 14,
-                color: "rgba(255, 255, 255, 0.75)",
-                cursor: "pointer",
-                py: 1,
-                "&:hover": { color: tokens.textWhite },
-              }}
-            >
-              More
-              <KeyboardArrowDownIcon sx={{ fontSize: 16 }} />
-            </Box>
-
-            <Menu
-              anchorEl={moreAnchor}
-              open={Boolean(moreAnchor)}
-              onClose={() => setMoreAnchor(null)}
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              transformOrigin={{ vertical: "top", horizontal: "right" }}
-              slotProps={{
-                paper: { sx: { minWidth: 185 } },
-              }}
-            >
-              {MORE_LINKS.map(({ label, href, Icon }) => (
-                <MenuItem
-                  key={label}
-                  onClick={() => {
-                    setMoreAnchor(null);
-                    router.push(href);
-                  }}
-                >
-                  <Icon />
-                  {label}
-                </MenuItem>
-              ))}
-            </Menu>
           </Box>
 
-          <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.5, sm: 1 } }}>
+          {/* Right: Actions (User Dropdown, Cart, Mobile Menu) */}
+          <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.5, sm: 1.25 } }}>
+            {/* User Profile */}
+            <NavbarUserDropdown />
+
+            {/* Shopping Cart Button */}
             <IconButton
               component={NextLink}
-              href="/cart"
+              href='/cart'
               sx={{
                 color: "rgba(255, 255, 255, 0.85)",
                 p: 1,
-                "&:hover": { color: tokens.textWhite, bgcolor: "rgba(255, 255, 255, 0.08)" },
+                borderRadius: "50%",
+                bgcolor: "rgba(255, 255, 255, 0.05)",
+                border: "1px solid rgba(255, 255, 255, 0.08)",
+                transition: "all 0.2s ease",
+                "&:hover": {
+                  color: tokens.textWhite,
+                  bgcolor: "rgba(0, 191, 166, 0.15)",
+                  borderColor: "rgba(0, 191, 166, 0.35)",
+                  boxShadow: "0 0 12px rgba(0, 191, 166, 0.3)",
+                },
               }}
-              aria-label="Shopping Cart"
+              aria-label='Shopping Cart'
             >
               <Badge
                 badgeContent={totalCount}
@@ -235,35 +296,44 @@ export function Navbar() {
                     bgcolor: tokens.primary,
                     color: tokens.textWhite,
                     fontSize: 10,
-                    height: 17,
-                    minWidth: 17,
+                    height: 18,
+                    minWidth: 18,
                     borderRadius: "999px",
                     fontWeight: 700,
+                    boxShadow: "0 0 8px rgba(0, 191, 166, 0.6)",
                   },
                 }}
               >
-                <ShoppingBagOutlinedIcon sx={{ fontSize: 21 }} />
+                <ShoppingBagOutlinedIcon sx={{ fontSize: 20 }} />
               </Badge>
             </IconButton>
 
-            <NavbarUserDropdown />
-
+            {/* Mobile Hamburger Menu Icon */}
             <IconButton
-              onClick={() => setMenuOpen(true)}
+              onClick={() => setMobileMenuOpen(true)}
               sx={{
                 display: { xs: "inline-flex", md: "none" },
                 color: tokens.textWhite,
                 p: 1,
               }}
-              aria-label="Menu"
+              aria-label='Open Menu'
             >
               <MenuIcon />
             </IconButton>
           </Box>
         </SectionContainer>
 
-        <NavbarMobile open={menuOpen} onClose={() => setMenuOpen(false)} links={NAV_LINKS} />
+        {/* Clean Products Mega Menu on Hover */}
+        <NavbarMegaMenu
+          open={productsMenuOpen}
+          onClose={() => setProductsMenuOpen(false)}
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+        />
       </Box>
+
+      {/* Mobile Drawer */}
+      <NavbarMobile open={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} links={NAV_ITEMS} categories={categories} />
     </>
   );
 }

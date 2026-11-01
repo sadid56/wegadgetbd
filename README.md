@@ -22,7 +22,7 @@
 - **Customer Reviews Moderation**: Approve, reject, or feature customer ratings and review media.
 
 ### 🔐 Authentication (SSR Server Actions)
-- **Server Actions Architecture**: Authentication operations are handled entirely on the server (`src/actions/auth.ts`) using Supabase Auth with secure HTTP cookies (`sb-access-token`, `sb-refresh-token`).
+- **Server Actions Architecture**: Authentication operations are handled entirely on the server (`src/actions/auth.ts`) using Supabase Auth with secure HTTP cookies (`access-token`, `refresh-token`).
 - **Flexible Sign In / Sign Up**: Email and password credentials with client-side Zod validation, alongside seamless Google OAuth sign-in.
 - **Clean & Cohesive UI**: Minimalist, distraction-free auth layout matching the storefront aesthetic with one-click "Back to Home" navigation.
 

@@ -28,7 +28,7 @@ function parseCookies(cookieHeader: string | null): Record<string, string> {
 }
 
 function extractToken(headers: Headers): string | null {
-  const cookieToken = parseCookies(headers.get("cookie"))["sb-access-token"];
+  const cookieToken = parseCookies(headers.get("cookie"))["access-token"];
   if (cookieToken) return cookieToken;
   return headers.get("authorization")?.replace("Bearer ", "") || null;
 }
@@ -41,7 +41,7 @@ async function resolveToken(reqHeaders?: Headers): Promise<string | null> {
 
   try {
     const store = await cookies();
-    const t = store.get("sb-access-token")?.value;
+    const t = store.get("access-token")?.value;
     if (t) return t;
   } catch {}
 

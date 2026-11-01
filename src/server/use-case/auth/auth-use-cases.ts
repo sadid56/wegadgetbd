@@ -37,12 +37,12 @@ const COOKIE_BASE = {
 
 async function setAuthCookies(session: SupabaseSession, role: Role) {
   const cookieStore = await cookies();
-  cookieStore.set("sb-access-token", session.access_token, {
+  cookieStore.set("access-token", session.access_token, {
     ...COOKIE_BASE,
     maxAge: ACCESS_MAX_AGE,
   });
   if (session.refresh_token) {
-    cookieStore.set("sb-refresh-token", session.refresh_token, {
+    cookieStore.set("refresh-token", session.refresh_token, {
       ...COOKIE_BASE,
       maxAge: REFRESH_MAX_AGE,
     });
@@ -55,8 +55,8 @@ async function setAuthCookies(session: SupabaseSession, role: Role) {
 
 async function clearAuthCookies() {
   const cookieStore = await cookies();
-  cookieStore.delete("sb-access-token");
-  cookieStore.delete("sb-refresh-token");
+  cookieStore.delete("access-token");
+  cookieStore.delete("refresh-token");
   cookieStore.delete("user-role");
 }
 

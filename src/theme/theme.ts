@@ -2,55 +2,55 @@ import { createTheme } from "@mui/material";
 
 export const tokens = {
   // Surfaces & Backgrounds - Clean, crisp e-commerce canvas with deep dark obsidian surfaces
-  bgCanvas: "#f0f4f9", // Eye-peace cool ice-slate canvas (Sapphire Tech Theme)
+  bgCanvas: "#F5F5F0", // Brand Off-white canvas (#F5F5F0)
   bgPanel: "#ffffff", // Pure crisp white panels & cards
   bgInput: "#ffffff", // Pure white form controls
   bgElevated: "#ffffff", // Elevated menus, popovers, modals
-  bgSubtle: "#e5edf7", // Soft muted hover states & tags
-  bgOverlay: "rgba(8, 13, 26, 0.75)",
-  bgBackdrop: "rgba(8, 13, 26, 0.5)",
-  bgBlack: "#080d1a",
+  bgSubtle: "#ebebe3", // Soft muted hover states & tags
+  bgOverlay: "rgba(16, 24, 32, 0.75)",
+  bgBackdrop: "rgba(16, 24, 32, 0.5)",
+  bgBlack: "#0b1016",
 
-  // Dark obsidian & deep sapphire surfaces (Hero, banners, footer)
-  bgDark: "#090e1c",
-  bgDarkSurface: "#0e162a",
-  bgDarkElevated: "#141f3b",
+  // Dark obsidian & deep midnight surfaces (Hero, banners, footer)
+  bgDark: "#101820", // Brand Midnight (#101820)
+  bgDarkSurface: "#18232e", // Deep midnight surface
+  bgDarkElevated: "#1f2c3a", // Elevated midnight card
   bgDarkSubtle: "rgba(255, 255, 255, 0.05)",
 
   // Borders - Crisp modern lines
-  borderDefault: "#dbe3f0", // Soft slate-sapphire border
-  borderSubtle: "#e9eff8", // Subtle border
-  borderElevated: "#c9d5e8", // Elevated border
-  borderHover: "#94a5c5", // Border hover
-  borderActive: "#2563eb", // Royal Cobalt Sapphire
-  borderDisabled: "#e9eff8",
+  borderDefault: "#e2e2dc", // Soft slate-offwhite border
+  borderSubtle: "#ecece6", // Subtle border
+  borderElevated: "#d5d5ce", // Elevated border
+  borderHover: "#a3b2b8", // Border hover
+  borderActive: "#00BFA6", // Brand Teal (#00BFA6)
+  borderDisabled: "#ecece6",
   borderDark: "rgba(255, 255, 255, 0.08)",
-  borderDarkSubtle: "rgba(37, 99, 235, 0.22)",
+  borderDarkSubtle: "rgba(0, 191, 166, 0.22)",
 
-  // Primary / Brand (Sapphire Cobalt Tech Theme - Worldwide Standard & Eye Peace)
-  primary: "#2563eb", // Cobalt 600
-  primaryHover: "#1d4ed8", // Cobalt 700
-  primaryLight: "#eff6ff", // Blue 50 soft soothing tint
-  primarySubtle: "rgba(37, 99, 235, 0.08)",
-  primaryDisabled: "rgba(37, 99, 235, 0.35)",
-  primaryBorder: "rgba(37, 99, 235, 0.25)",
+  // Primary / Brand (Teal Brand Theme - #00BFA6)
+  primary: "#00BFA6", // Brand Teal
+  primaryHover: "#00a892", // Deep Teal Hover
+  primaryLight: "#e6f9f6", // Teal soft soothing tint
+  primarySubtle: "rgba(0, 191, 166, 0.10)",
+  primaryDisabled: "rgba(0, 191, 166, 0.35)",
+  primaryBorder: "rgba(0, 191, 166, 0.25)",
 
-  // Secondary / Accent (Sky Cyan Highlight)
-  accent: "#0ea5e9", // Sky 500
-  accentHover: "#0284c7", // Sky 600
-  accentLight: "#f0f9ff", // Sky 50
-  accentSubtle: "rgba(14, 165, 233, 0.10)",
+  // Secondary / Accent (Amber Glow Highlight - #FFB547)
+  accent: "#FFB547", // Brand Accent
+  accentHover: "#f5a631", // Deep Amber Hover
+  accentLight: "#fff8ec", // Warm soft amber tint
+  accentSubtle: "rgba(255, 181, 71, 0.15)",
 
   // Badge specific tags
-  badgeNew: "#2563eb",
-  badgeNewSubtle: "rgba(37, 99, 235, 0.10)",
-  badgeSale: "#f97316",
-  badgeSaleSubtle: "rgba(249, 115, 22, 0.12)",
+  badgeNew: "#00BFA6",
+  badgeNewSubtle: "rgba(0, 191, 166, 0.12)",
+  badgeSale: "#FFB547",
+  badgeSaleSubtle: "rgba(255, 181, 71, 0.15)",
   badgeGaming: "#8b5cf6",
   badgeGamingSubtle: "rgba(139, 92, 246, 0.12)",
 
   // Typography Colors - High readability, professional contrast
-  textPrimary: "#0f172a", // Slate 900
+  textPrimary: "#101820", // Brand Midnight (#101820)
   textSecondary: "#475569", // Slate 600
   textMuted: "#64748b", // Slate 500
   textDisabled: "#94a3b8", // Slate 400
@@ -91,8 +91,8 @@ export const tokens = {
   shadowPopover: "0 12px 28px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.08)",
   shadowDrawerRight: "-10px 0 30px rgba(15, 23, 42, 0.08)",
   shadowDrawerLeft: "10px 0 30px rgba(15, 23, 42, 0.08)",
-  shadowPrimary: "0 4px 14px rgba(37, 99, 235, 0.25)",
-  shadowPrimaryHover: "0 6px 20px rgba(37, 99, 235, 0.35)",
+  shadowPrimary: "0 4px 14px rgba(0, 191, 166, 0.25)",
+  shadowPrimaryHover: "0 6px 20px rgba(0, 191, 166, 0.35)",
 
   // Border Radii
   radiusSm: 6,
@@ -107,15 +107,15 @@ export const theme = createTheme({
     mode: "light",
     primary: {
       main: tokens.primary,
-      light: "#60a5fa",
+      light: "#33ccb8",
       dark: tokens.primaryHover,
       contrastText: "#ffffff",
     },
     secondary: {
       main: tokens.accent,
-      light: "#38bdf8",
+      light: "#ffc46b",
       dark: tokens.accentHover,
-      contrastText: "#ffffff",
+      contrastText: "#101820",
     },
     background: {
       default: tokens.bgCanvas,
@@ -128,7 +128,7 @@ export const theme = createTheme({
     divider: tokens.borderDefault,
     action: {
       hover: tokens.bgSubtle,
-      selected: "rgba(37, 99, 235, 0.08)",
+      selected: "rgba(0, 191, 166, 0.10)",
       disabled: tokens.textDisabled,
     },
     success: {

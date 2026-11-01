@@ -12,6 +12,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { tokens } from "@/theme/theme";
 import { Button } from "@/components/ui/button";
 import { SectionContainer } from "@/components/common/SectionContainer";
+import { getAssetUrl } from "@/lib/storage";
 
 const PILLARS = [
   {
@@ -84,9 +85,9 @@ export function WhyChooseUsBanner() {
           }}
         >
           <Box
-            component="img"
-            src="/images/workspace-banner.jpg"
-            alt="Workspace"
+            component='img'
+            src={getAssetUrl("banners/hero-slide-2.png")}
+            alt='Workspace'
             sx={{
               width: "100%",
               height: "100%",
@@ -113,7 +114,7 @@ export function WhyChooseUsBanner() {
           </Typography>
 
           <Typography
-            component="h3"
+            component='h3'
             sx={{
               fontWeight: 800,
               fontSize: { xs: "1.6rem", md: "2rem" },
@@ -133,13 +134,12 @@ export function WhyChooseUsBanner() {
               mb: 1,
             }}
           >
-            We bring you the best gadgets, trusted brands, and a shopping
-            experience that feels personal, fast and reliable.
+            We bring you the best gadgets, trusted brands, and a shopping experience that feels personal, fast and reliable.
           </Typography>
 
           <Button
             component={NextLink}
-            href="/about"
+            href='/about'
             sx={{
               bgcolor: "transparent",
               color: tokens.textWhite,
@@ -210,9 +210,7 @@ export function WhyChooseUsBanner() {
                   >
                     {pillar.title}
                   </Typography>
-                  <Typography sx={{ fontSize: 12, color: tokens.textDarkMuted }}>
-                    {pillar.description}
-                  </Typography>
+                  <Typography sx={{ fontSize: 12, color: tokens.textDarkMuted }}>{pillar.description}</Typography>
                 </Box>
               </Box>
             );

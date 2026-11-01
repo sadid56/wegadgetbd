@@ -16,8 +16,8 @@ body {
   overflow-x: clip;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  background-color: #f0f4f9;
-  color: #0f172a;
+  background-color: #F5F5F0;
+  color: #101820;
   font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -51,7 +51,7 @@ a {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(37, 99, 235, 0.75);
+  background: rgba(0, 191, 166, 0.75);
 }
 
 .montserrat {
@@ -75,8 +75,8 @@ input:autofill:focus,
 input:autofill:active {
   -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
   box-shadow: 0 0 0 1000px #ffffff inset !important;
-  -webkit-text-fill-color: #0f172a !important;
-  caret-color: #0f172a !important;
+  -webkit-text-fill-color: #101820 !important;
+  caret-color: #101820 !important;
   transition: background-color 5000s ease-in-out 0s;
   border-radius: inherit !important;
 }

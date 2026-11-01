@@ -22,9 +22,9 @@ function getCookie(name: string): string | null {
 function syncSupabaseCookies(session: any) {
   if (typeof document === "undefined") return;
   if (session?.access_token) {
-    setCookie("sb-access-token", session.access_token, ACCESS_MAX_AGE);
+    setCookie("access-token", session.access_token, ACCESS_MAX_AGE);
     if (session.refresh_token) {
-      setCookie("sb-refresh-token", session.refresh_token, REFRESH_MAX_AGE);
+      setCookie("refresh-token", session.refresh_token, REFRESH_MAX_AGE);
     }
     const role = session.user?.user_metadata?.role || "USER";
     setCookie("user-role", role, ACCESS_MAX_AGE);
@@ -33,8 +33,8 @@ function syncSupabaseCookies(session: any) {
 
 function clearAuthCookiesClient() {
   if (typeof document === "undefined") return;
-  setCookie("sb-access-token", "", 0);
-  setCookie("sb-refresh-token", "", 0);
+  setCookie("access-token", "", 0);
+  setCookie("refresh-token", "", 0);
   setCookie("user-role", "", 0);
 }
 
@@ -96,8 +96,8 @@ export function useSession() {
       }
 
       // Check if cookies exist from Server Action or prior login
-      const token = getCookie("sb-access-token");
-      const refresh = getCookie("sb-refresh-token");
+      const token = getCookie("access-token");
+      const refresh = getCookie("refresh-token");
       if (token) {
         try {
           const { data: setRes } = await supabase.auth.setSession({

@@ -7,6 +7,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 import { tokens } from "@/theme/theme";
 import { SectionContainer } from "@/components/common/SectionContainer";
+import { getAssetUrl } from "@/lib/storage";
 import { ProductCard, type ProductCardItem } from "./ProductCard";
 
 const ARTICLES: ProductCardItem[] = [
@@ -16,7 +17,7 @@ const ARTICLES: ProductCardItem[] = [
     tagVariant: "guide",
     title: "How to Choose the Right Laptop in 2025",
     readTime: "5 min read",
-    image: "/images/workspace-banner.jpg",
+    image: getAssetUrl("banners/hero-slide-1.png"),
     link: "/about",
   },
   {

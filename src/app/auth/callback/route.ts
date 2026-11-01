@@ -19,13 +19,13 @@ export async function GET(request: Request) {
   const response = NextResponse.redirect(new URL(next, url.origin));
   const { access_token, refresh_token } = data.session;
 
-  response.cookies.set("sb-access-token", access_token, {
+  response.cookies.set("access-token", access_token, {
     ...COOKIE_OPTS,
     maxAge: ACCESS_MAX_AGE,
   });
 
   if (refresh_token) {
-    response.cookies.set("sb-refresh-token", refresh_token, {
+    response.cookies.set("refresh-token", refresh_token, {
       ...COOKIE_OPTS,
       maxAge: REFRESH_MAX_AGE,
     });

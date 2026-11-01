@@ -7,46 +7,50 @@ export const ASSETS_URL = process.env.NEXT_PUBLIC_ASSETS_URL || "https://bftjqob
 
 const ASSETS_BASE = ASSETS_URL.replace(/\/+$/, "");
 const OBJECT_PREFIX = "storage/v1/object/public/";
-const LOCAL_PREFIXES = ["/images/", "/logo", "/avatars/", "/placeholder", "images/", "logo", "avatars/"];
 
 type UploadOptions = {
   file: File;
   folder?: string;
 };
 
-function sanitizePath(folderPath: string) {
+function sanitizePath(folderPath: string): string {
   return folderPath
     .split("/")
     .map((segment) => segment.trim().replace(/\s+/g, "-").toLowerCase())
     .join("/");
 }
 
-export function generateStorageKey(fileName: string, folderPath?: string) {
+function parseHttpUrl(path: string): URL | null {
+  if (!path.startsWith("http://") && !path.startsWith("https://")) return null;
+  try {
+    return new URL(path);
+  } catch {
+    return null;
+  }
+}
+
+export function generateStorageKey(fileName: string, folderPath?: string): string {
   const folder = folderPath ? sanitizePath(folderPath) : "";
   const name = `${Date.now()}-${fileName.replace(/\s+/g, "-")}`;
   return folder ? `${folder}/${name}` : name;
 }
 
-export function getStoragePath(key: string, bucket = BUCKET_NAME) {
-  return `${bucket}/${key.replace(/^\/+/, "")}`;
+export function getStoragePath(key: string, bucket?: string): string {
+  const cleanKey = key.replace(/^\/+/, "");
+  return bucket && bucket !== BUCKET_NAME ? `${bucket}/${cleanKey}` : cleanKey;
 }
 
 export function getAssetUrl(path?: string | null): string {
   if (!path) return "";
 
-  if (path.startsWith("http://") || path.startsWith("https://")) {
-    try {
-      const url = new URL(path);
-      if (url.hostname.endsWith(".supabase.co") && url.pathname.includes(`/${OBJECT_PREFIX}`)) {
-        return `${ASSETS_BASE}${url.pathname}`;
-      }
-    } catch {}
-    return path;
+  const url = parseHttpUrl(path);
+  if (url) {
+    const isSupabase = url.hostname.endsWith(".supabase.co");
+    const hasObjectPrefix = url.pathname.includes(`/${OBJECT_PREFIX}`);
+    return isSupabase && hasObjectPrefix ? `${ASSETS_BASE}${url.pathname}` : path;
   }
 
-  if (LOCAL_PREFIXES.some((p) => path.startsWith(p))) {
-    return path.startsWith("/") ? path : `/${path}`;
-  }
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
 
   const clean = path.replace(/^\/+/, "");
 
@@ -65,25 +69,20 @@ export const getImageUrl = getAssetUrl;
 
 export function stripAssetDomain(urlOrPath?: string | null): string {
   if (!urlOrPath) return "";
-  let clean = urlOrPath.trim();
 
-  if (clean.startsWith("http://") || clean.startsWith("https://")) {
-    try {
-      clean = new URL(clean).pathname;
-    } catch {}
-  }
-
-  clean = clean.replace(/^\/+/, "");
+  const input = urlOrPath.trim();
+  const url = parseHttpUrl(input);
+  let clean = (url ? url.pathname : input).replace(/^\/+/, "");
 
   if (clean.startsWith(OBJECT_PREFIX)) {
     clean = clean.substring(OBJECT_PREFIX.length);
   }
 
-  if (["images/", "logo", "avatars/", "placeholder"].some((p) => clean.startsWith(p))) {
-    return `/${clean}`;
+  if (clean.startsWith(`${BUCKET_NAME}/`)) {
+    return clean.substring(BUCKET_NAME.length + 1);
   }
 
-  return clean.startsWith(`${BUCKET_NAME}/`) ? clean : `${BUCKET_NAME}/${clean}`;
+  return clean;
 }
 
 export function getStorageKeyFromUrl(urlOrPath: string, bucket = BUCKET_NAME): string {
@@ -109,12 +108,12 @@ export async function uploadFileToStorage({ file, folder }: UploadOptions) {
   };
 }
 
-export async function deleteFileFromStorage(keyOrUrl: string) {
+export async function deleteFileFromStorage(keyOrUrl: string): Promise<void> {
   const { error } = await storage.remove([getStorageKeyFromUrl(keyOrUrl)]);
   if (error) throw error;
 }
 
-export async function deleteMultipleFilesFromStorage(keysOrUrls: string[]) {
+export async function deleteMultipleFilesFromStorage(keysOrUrls: string[]): Promise<void> {
   if (keysOrUrls.length === 0) return;
   const { error } = await storage.remove(keysOrUrls.map((k) => getStorageKeyFromUrl(k)));
   if (error) throw error;
@@ -123,6 +122,7 @@ export async function deleteMultipleFilesFromStorage(keysOrUrls: string[]) {
 export async function moveFileInStorage(oldKeyOrUrl: string, newKey: string) {
   const { error } = await storage.move(getStorageKeyFromUrl(oldKeyOrUrl), newKey);
   if (error) throw error;
+
   const path = getStoragePath(newKey);
   return { publicUrl: getAssetUrl(path), path, url: path, key: newKey };
 }

@@ -29,6 +29,7 @@
     "@tanstack/react-query": "^5.105.0",
     "@toolpad/core": "^0.16.0",
     "@uiw/react-md-editor": "^4.1.6",
+    "@upstash/redis": "^1.40.0",
     "axios": "^1.21.0",
     "date-fns": "^4.4.0",
     "dotenv": "^18.0.9",
@@ -42,7 +43,9 @@
     "react-markdown": "^10.1.0",
     "react-zoom-pan-pinch": "^4.2.0",
     "recharts": "^3.10.1",
+    "reflect-metadata": "^0.2.2",
     "remark-gfm": "^4.0.1",
+    "tsyringe": "^4.10.0",
     "ua-parser-js": "^2.0.10",
     "zod": "^4.6.7"
   },

@@ -1,6 +1,7 @@
 import { db } from "@/db";
 import { auth } from "@/lib/auth";
 import { headers as getHeaders } from "next/headers";
+import { cacheService } from "./services/cache";
 
 export interface CreateContextOptions {
   headers?: Headers;
@@ -21,6 +22,7 @@ export async function createContext(opts?: CreateContextOptions) {
     session: sessionData?.session ?? null,
     user: sessionData?.user ?? null,
     headers,
+    cache: cacheService,
   };
 }
 

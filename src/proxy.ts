@@ -53,7 +53,7 @@ function signInRedirect(request: NextRequest, pathname: string) {
 export function middleware(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
-  const token = request.cookies.get("sb-access-token")?.value;
+  const token = request.cookies.get("access-token")?.value;
   const roleCookie = request.cookies.get("user-role")?.value;
   const payload = decodeJwt(token);
   const isAuthenticated = payload !== null;
