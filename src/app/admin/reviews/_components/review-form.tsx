@@ -21,19 +21,9 @@ import { useCreateReview, useUpdateReview } from "@/query-client/reviews/index";
 import { orpcClient } from "@/lib/orpc/client";
 import { uploadFileToStorage, getAssetUrl, stripAssetDomain } from "@/lib/storage";
 import { tokens } from "@/theme/theme";
+import { createAdminReviewInputSchema, type CreateAdminReviewInput } from "@/server/schemas/admin.schema";
 
-const reviewSchema = z.object({
-  customerName: z.string().min(1, "Name is required"),
-  customerPic: z.string().optional(),
-  mediaUrl: z.string().optional(),
-  mediaType: z.string().optional(),
-  rating: z.coerce.number().min(1).max(5),
-  review: z.string().min(1, "Review text is required"),
-  status: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
-  productId: z.string().optional(),
-});
-
-type ReviewFormValues = z.infer<typeof reviewSchema>;
+type ReviewFormValues = CreateAdminReviewInput;
 
 interface ReviewFormProps {
   initialData?: any;
@@ -105,7 +95,7 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
   }, []);
 
   const form = useForm<ReviewFormValues>({
-    resolver: zodResolver(reviewSchema) as any,
+    resolver: zodResolver(createAdminReviewInputSchema) as any,
     defaultValues: {
       customerName: "",
       customerPic: "",

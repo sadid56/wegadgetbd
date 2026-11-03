@@ -177,6 +177,7 @@ export function Hero() {
           >
             <SearchIcon sx={{ color: "rgba(255, 255, 255, 0.5)", fontSize: 21 }} />
             <InputBase
+              variant='plain'
               placeholder='Search gadgets, brands, or accessories...'
               value={searchValue}
               onChange={(e) => setSearchValue(e.target.value)}

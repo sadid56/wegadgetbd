@@ -70,7 +70,6 @@ export function ProductHero({ search, totalProducts }: ProductHeroProps) {
 
                 <Typography
                   component='h1'
-                  className='bricolage'
                   sx={{
                     fontSize: {
                       xs: "1.25rem",
@@ -91,7 +90,6 @@ export function ProductHero({ search, totalProducts }: ProductHeroProps) {
                 </Typography>
 
                 <Box
-                  className='roboto'
                   sx={{
                     display: "flex",
                     flexWrap: "wrap",
@@ -123,7 +121,6 @@ export function ProductHero({ search, totalProducts }: ProductHeroProps) {
               <>
                 <Typography
                   component='h1'
-                  className='bricolage'
                   sx={{
                     fontSize: {
                       xs: "1.25rem",
@@ -144,7 +141,6 @@ export function ProductHero({ search, totalProducts }: ProductHeroProps) {
                 </Typography>
 
                 <Typography
-                  className='roboto'
                   sx={{
                     display: { xs: "none", sm: "block" },
                     fontSize: { sm: 14, md: 16, lg: 18 },
@@ -158,7 +154,6 @@ export function ProductHero({ search, totalProducts }: ProductHeroProps) {
                 </Typography>
 
                 <Typography
-                  className='roboto'
                   sx={{
                     display: { xs: "block", sm: "none" },
                     fontSize: 12,

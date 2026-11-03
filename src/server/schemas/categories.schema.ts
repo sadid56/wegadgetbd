@@ -21,8 +21,8 @@ export const publicCategorySchema = z.object({
 });
 
 export const createCategoryInputSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  slug: z.string().min(1, "Slug is required"),
+  name: z.string().min(2, "Name is required"),
+  slug: z.string().min(2, "Slug is required"),
   icon: z.string().nullable().optional(),
 });
 

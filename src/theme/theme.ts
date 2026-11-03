@@ -1,6 +1,9 @@
 import { createTheme } from "@mui/material";
 
+export const APP_FONT_FAMILY = "var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+
 export const tokens = {
+  fontFamily: APP_FONT_FAMILY,
   // Surfaces & Backgrounds - Clean, crisp e-commerce canvas with deep dark obsidian surfaces
   bgCanvas: "#F5F5F0", // Brand Off-white canvas (#F5F5F0)
   bgPanel: "#ffffff", // Pure crisp white panels & cards
@@ -142,7 +145,7 @@ export const theme = createTheme({
     },
   },
   typography: {
-    fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+    fontFamily: APP_FONT_FAMILY,
     h1: { fontWeight: 800, letterSpacing: "-0.025em", color: tokens.textPrimary },
     h2: { fontWeight: 700, letterSpacing: "-0.02em", color: tokens.textPrimary },
     h3: { fontWeight: 700, letterSpacing: "-0.02em", color: tokens.textPrimary },
@@ -159,9 +162,16 @@ export const theme = createTheme({
   components: {
     MuiCssBaseline: {
       styleOverrides: {
+        html: {
+          fontFamily: APP_FONT_FAMILY,
+        },
         body: {
+          fontFamily: APP_FONT_FAMILY,
           backgroundColor: tokens.bgCanvas,
           color: tokens.textPrimary,
+        },
+        "input, button, textarea, select": {
+          fontFamily: "inherit",
         },
       },
     },

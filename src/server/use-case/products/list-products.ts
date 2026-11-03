@@ -1,5 +1,5 @@
 import { eq, and, or, ilike, desc, asc, count, sql } from "drizzle-orm";
-import { product, category, type ProductLabel } from "@/db/schema";
+import { product, category } from "@/db/schema";
 import type { Context } from "@/server/context";
 import type { ListProductsInput } from "@/server/schemas/products.schema";
 import { formatProduct } from "./_shared";
@@ -16,7 +16,7 @@ const ORDER_BY_MAP: Record<string, (p: typeof product) => OrderByClause> = {
 export class ListProductsUseCase {
   constructor(private readonly db: Context["db"]) {}
 
-  async execute(input: ListProductsInput) {
+  async execute(input: Partial<ListProductsInput> = {}) {
     const { page = 1, limit = 12 } = input;
     const offset = (page - 1) * limit;
 
@@ -38,16 +38,12 @@ export class ListProductsUseCase {
     };
   }
 
-  private buildWhereClause({ search, label, featured }: Pick<ListProductsInput, "search" | "label" | "featured">) {
+  private buildWhereClause({ search, featured }: Partial<Pick<ListProductsInput, "search" | "featured">> = {}) {
     const conditions = [eq(product.status, "ACTIVE")];
 
     if (featured) {
       conditions.push(eq(product.isFeatured, true));
       conditions.push(eq(product.inStock, true));
-    }
-
-    if (label) {
-      conditions.push(eq(product.label, label as ProductLabel));
     }
 
     if (search) {

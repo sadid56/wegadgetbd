@@ -32,7 +32,6 @@ export function HotDealsSection() {
           <LocalFireDepartmentIcon sx={{ fontSize: 24, color: tokens.primary }} />
           <Typography
             component='h2'
-            className='bricolage'
             sx={{
               fontWeight: 700,
               letterSpacing: "-0.02em",

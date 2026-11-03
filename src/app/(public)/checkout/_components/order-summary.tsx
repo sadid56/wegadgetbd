@@ -314,7 +314,7 @@ export function OrderSummary({
       >
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
           <Box sx={{ display: "flex", justifyContent: "space-between", color: tokens.textSecondary }}>
-            <Box component='span' sx={{ fontFamily: "serif", color: tokens.textPrimary, fontSize: 14 }}>
+            <Box component='span' sx={{ color: tokens.textPrimary, fontSize: 14 }}>
               সাবটোটাল:
             </Box>
             <Box component='span' sx={{ fontWeight: 900, fontSize: 14 }}>
@@ -331,7 +331,7 @@ export function OrderSummary({
                 fontSize: 14,
               }}
             >
-              <Box component='span' sx={{ fontFamily: "serif" }}>
+              <Box component='span'>
                 ডিসকাউন্টঃ
               </Box>
               <Box component='span'>-৳{discountAmount}</Box>
@@ -339,7 +339,7 @@ export function OrderSummary({
           )}
 
           <Box sx={{ display: "flex", justifyContent: "space-between", color: tokens.textSecondary }}>
-            <Box component='span' sx={{ fontFamily: "serif", fontSize: 14, color: tokens.textPrimary }}>
+            <Box component='span' sx={{ fontSize: 14, color: tokens.textPrimary }}>
               ডেলিভারি-চার্জ:
             </Box>
             <Box component='span' sx={{ fontSize: 14 }}>

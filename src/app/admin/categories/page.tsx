@@ -24,14 +24,9 @@ import { useAdminCategories, useCreateCategory, useUpdateCategory, useDeleteCate
 import { uploadFileToStorage, getAssetUrl, stripAssetDomain } from "@/lib/storage";
 import { slugify } from "@/lib/utils";
 import { tokens } from "@/theme/theme";
+import { createCategoryInputSchema, type CreateCategoryInput } from "@/server/schemas/categories.schema";
 
-const categorySchema = z.object({
-  name: z.string().min(2, "Name is required"),
-  slug: z.string().min(2, "Slug is required"),
-  icon: z.string().optional(),
-});
-
-type CategoryFormValues = z.infer<typeof categorySchema>;
+type CategoryFormValues = CreateCategoryInput;
 
 const inputSx = {
   "& .MuiOutlinedInput-root": {
@@ -58,7 +53,7 @@ export default function CategoriesPage() {
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
 
   const form = useForm<CategoryFormValues>({
-    resolver: zodResolver(categorySchema),
+    resolver: zodResolver(createCategoryInputSchema),
     defaultValues: {
       name: "",
       slug: "",

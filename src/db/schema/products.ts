@@ -19,9 +19,6 @@ import { customerReview } from "./reviews";
 export const productStatusEnum = pgEnum("ProductStatus", ["PENDING", "ACTIVE", "INACTIVE"]);
 export type ProductStatus = (typeof productStatusEnum.enumValues)[number];
 
-export const productLabelEnum = pgEnum("ProductLabel", ["NONE", "NEW", "SPECIAL", "BEST_SELLER"]);
-export type ProductLabel = (typeof productLabelEnum.enumValues)[number];
-
 // ==========================================
 // TABLES
 // ==========================================
@@ -64,8 +61,6 @@ export const product = pgTable(
       .notNull()
       .default(sql`'{}'::text[]`),
     isFeatured: boolean("isFeatured").default(false).notNull(),
-    featuredBanner: text("featuredBanner"),
-    label: productLabelEnum("label").default("NONE").notNull(),
     inStock: boolean("inStock").default(true).notNull(),
     rating: doublePrecision("rating").default(5.0).notNull(),
     videoLinks: text("videoLinks")
@@ -76,7 +71,6 @@ export const product = pgTable(
     brand: text("brand"),
     whyBuyText: text("whyBuyText"),
     soldCount: integer("soldCount").default(360).notNull(),
-    messengerUrl: text("messengerUrl"),
     createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updatedAt", { mode: "date" })
       .notNull()

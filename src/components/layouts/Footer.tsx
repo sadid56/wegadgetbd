@@ -41,7 +41,7 @@ const FOOTER_GROUPS = {
     title: "Company",
     links: [
       { label: "About Us", href: "/about" },
-      { label: "Blog / Journal", href: "/about" },
+      { label: "Our Story", href: "/about" },
       { label: "Careers", href: "/about" },
       { label: "Privacy Policy", href: "/privacy" },
       { label: "Terms & Conditions", href: "/terms" },

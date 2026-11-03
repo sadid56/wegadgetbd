@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 
@@ -12,7 +11,7 @@ import Typography from "@mui/material/Typography";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { TextField, InputAdornment } from "@/components/ui/input";
-import { FormControl, Select, MenuItem, FormControlLabel } from "@/components/ui/select";
+import { FormControl, Select, MenuItem } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Chip } from "@/components/ui/badge";
 import { CircularProgress } from "@/components/ui/spinner";
@@ -29,44 +28,11 @@ import { uploadFileToStorage, getAssetUrl, stripAssetDomain } from "@/lib/storag
 import { normalizeVideoInput } from "@/lib/video-links";
 import { slugify } from "@/lib/utils";
 import { tokens } from "@/theme/theme";
+import { createProductInputSchema, type CreateProductInput } from "@/server/schemas/products.schema";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
-const productSchema = z.object({
-  title: z.string().min(2, "Title is required"),
-  slug: z
-    .string()
-    .min(2, "Slug is required")
-    .regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with hyphens"),
-  description: z.string().min(10, "Description is required"),
-  markdown_description: z.string().optional(),
-  price: z.string().regex(/^\d+(\.\d{1,2})?$/, "Invalid price format"),
-  discountPrice: z
-    .string()
-    .regex(/^\d+(\.\d{1,2})?$/, "Invalid price format")
-    .optional()
-    .or(z.literal("")),
-  categoryId: z.string().min(1, "Category is required"),
-  status: z.enum(["PENDING", "ACTIVE", "INACTIVE"]),
-  images: z.array(z.string()).min(1, "At least one image is required"),
-  featuredBanner: z.string().optional().nullable(),
-  label: z.enum(["NONE", "NEW", "SPECIAL", "BEST_SELLER"]),
-  specifications: z.record(z.string(), z.string()).optional(),
-  tags: z.array(z.string()),
-  inStock: z.boolean().default(true),
-  rating: z
-    .string()
-    .regex(/^\d+(\.\d{1})?$/, "Invalid rating format")
-    .optional(),
-  videoLinks: z.array(z.string()).max(2, "Maximum 2 video links allowed"),
-  model: z.string().optional(),
-  brand: z.string().optional(),
-  whyBuyText: z.string().optional(),
-  soldCount: z.coerce.number().min(0, "Sold count cannot be negative").default(360),
-  messengerUrl: z.string().optional(),
-});
-
-export type ProductFormValues = z.infer<typeof productSchema>;
+export type ProductFormValues = CreateProductInput;
 
 interface ProductFormProps {
   initialData?: any;
@@ -101,48 +67,42 @@ export function ProductForm({ initialData }: ProductFormProps) {
   const [tagInput, setTagInput] = useState("");
 
   const form = useForm<ProductFormValues>({
-    resolver: zodResolver(productSchema) as any,
+    resolver: zodResolver(createProductInputSchema) as any,
     defaultValues: initialData
       ? {
           ...initialData,
-          price: initialData.price.toString(),
-          discountPrice: initialData.discountPrice?.toString() || "",
+          price: initialData.price ? Number(initialData.price) : ("" as any),
+          discountPrice: initialData.discountPrice != null ? Number(initialData.discountPrice) : ("" as any),
           images: initialData.images || [],
-          featuredBanner: initialData.featuredBanner || null,
-          label: initialData.label || "NONE",
           specifications: initialData.specifications || {},
           tags: initialData.tags || [],
           inStock: initialData.inStock ?? true,
-          rating: initialData.rating?.toString() || "5.0",
+          rating: Number(initialData.rating || 5),
           videoLinks: initialData.videoLinks || ["", ""],
           model: initialData.model || "",
           brand: initialData.brand || "",
           whyBuyText: initialData.whyBuyText || "",
           soldCount: Number(initialData.soldCount || 360),
-          messengerUrl: initialData.messengerUrl || "",
           markdown_description: initialData.markdown_description || "",
         }
       : {
           title: "",
           slug: "",
           description: "",
-          price: "",
-          discountPrice: "",
+          price: "" as any,
+          discountPrice: "" as any,
           categoryId: "",
           status: "PENDING",
           images: [],
-          featuredBanner: null,
-          label: "NONE",
           specifications: {},
           tags: [],
           inStock: true,
-          rating: "5.0",
+          rating: 5,
           videoLinks: ["", ""],
           model: "",
           brand: "",
           whyBuyText: "",
           soldCount: 360,
-          messengerUrl: "",
           markdown_description: "",
         },
   });
@@ -150,12 +110,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
   const onSubmit = (values: ProductFormValues) => {
     const payload = {
       ...values,
-      featuredBanner: values.featuredBanner ? stripAssetDomain(values.featuredBanner) : null,
       images: (values.images || []).map((img) => stripAssetDomain(img)),
-      price: parseFloat(values.price),
-      discountPrice: values.discountPrice ? parseFloat(values.discountPrice) : null,
-      rating: parseFloat(values.rating || "5.0"),
-      videoLinks: values.videoLinks?.map((link) => normalizeVideoInput(link)).filter((link) => link.trim() !== "") || [],
+      videoLinks: values.videoLinks?.map((link) => normalizeVideoInput(link)).filter((link) => link && link.trim() !== "") || [],
     };
 
     if (initialData) {
@@ -181,22 +137,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
           toast.error(err?.message || "Failed to create product");
         },
       });
-    }
-  };
-
-  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.length) return;
-    setUploading(true);
-
-    try {
-      const file = e.target.files[0];
-      const { url } = await uploadFileToStorage({ file, folder: "banners" });
-      form.setValue("featuredBanner", url);
-      toast.success("Banner uploaded");
-    } catch (error: any) {
-      toast.error("Banner upload failed: " + error.message);
-    } finally {
-      setUploading(false);
     }
   };
 
@@ -243,7 +183,11 @@ export function ProductForm({ initialData }: ProductFormProps) {
   const isPending = isCreating || isUpdating || uploading;
 
   return (
-    <Box component='form' onSubmit={form.handleSubmit(onSubmit as any)} sx={{ display: "flex", flexDirection: "column", gap: 3.5, width: "100%" }}>
+    <Box
+      component='form'
+      onSubmit={form.handleSubmit(onSubmit as any)}
+      sx={{ display: "flex", flexDirection: "column", gap: 3.5, width: "100%" }}
+    >
       {/* Title & Slug */}
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 3 }}>
         <Box>
@@ -297,8 +241,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
         </Box>
       </Box>
 
-      {/* Category, Status, Label, Price, DiscountPrice */}
-      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "repeat(5, 1fr)" }, gap: 2.5 }}>
+      {/* Category, Status, Price, DiscountPrice */}
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "repeat(4, 1fr)" }, gap: 2.5 }}>
         {/* Category */}
         <Box>
           <Box component='label' sx={labelSx}>
@@ -340,30 +284,15 @@ export function ProductForm({ initialData }: ProductFormProps) {
             render={({ field }) => (
               <FormControl fullWidth size='small'>
                 <Select {...field} sx={inputSx}>
-                  <MenuItem value='PENDING' sx={{ fontSize: 14 }}>Pending</MenuItem>
-                  <MenuItem value='ACTIVE' sx={{ fontSize: 14 }}>Active</MenuItem>
-                  <MenuItem value='INACTIVE' sx={{ fontSize: 14 }}>Inactive</MenuItem>
-                </Select>
-              </FormControl>
-            )}
-          />
-        </Box>
-
-        {/* Label */}
-        <Box>
-          <Box component='label' sx={labelSx}>
-            Label
-          </Box>
-          <Controller
-            name='label'
-            control={form.control}
-            render={({ field }) => (
-              <FormControl fullWidth size='small'>
-                <Select {...field} sx={inputSx}>
-                  <MenuItem value='NONE' sx={{ fontSize: 14 }}>None</MenuItem>
-                  <MenuItem value='NEW' sx={{ fontSize: 14 }}>New Product</MenuItem>
-                  <MenuItem value='SPECIAL' sx={{ fontSize: 14 }}>Special Product</MenuItem>
-                  <MenuItem value='BEST_SELLER' sx={{ fontSize: 14 }}>Top Selling</MenuItem>
+                  <MenuItem value='PENDING' sx={{ fontSize: 14 }}>
+                    Pending
+                  </MenuItem>
+                  <MenuItem value='ACTIVE' sx={{ fontSize: 14 }}>
+                    Active
+                  </MenuItem>
+                  <MenuItem value='INACTIVE' sx={{ fontSize: 14 }}>
+                    Inactive
+                  </MenuItem>
                 </Select>
               </FormControl>
             )}
@@ -421,8 +350,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
         </Box>
       </Box>
 
-      {/* Brand, Model, Rating */}
-      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" }, gap: 2.5 }}>
+      {/* Brand, Model, Rating, Sold count */}
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "repeat(4, 1fr)" }, gap: 2.5 }}>
         <Box>
           <Box component='label' sx={labelSx}>
             Brand
@@ -430,9 +359,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
           <Controller
             name='brand'
             control={form.control}
-            render={({ field }) => (
-              <TextField {...field} placeholder='Brand name' fullWidth size='small' sx={inputSx} />
-            )}
+            render={({ field }) => <TextField {...field} placeholder='Brand name' fullWidth size='small' sx={inputSx} />}
           />
         </Box>
 
@@ -443,9 +370,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
           <Controller
             name='model'
             control={form.control}
-            render={({ field }) => (
-              <TextField {...field} placeholder='Model name/number' fullWidth size='small' sx={inputSx} />
-            )}
+            render={({ field }) => <TextField {...field} placeholder='Model name/number' fullWidth size='small' sx={inputSx} />}
           />
         </Box>
 
@@ -471,10 +396,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
             )}
           />
         </Box>
-      </Box>
 
-      {/* Sold count, Messenger URL */}
-      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 2fr" }, gap: 2.5 }}>
         <Box>
           <Box component='label' sx={labelSx}>
             Sold Count
@@ -497,26 +419,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
             )}
           />
         </Box>
-
-        <Box>
-          <Box component='label' sx={labelSx}>
-            Messenger URL
-          </Box>
-          <Controller
-            name='messengerUrl'
-            control={form.control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                placeholder='https://m.me/your-page'
-                fullWidth
-                size='small'
-                sx={inputSx}
-                helperText="Used by 'Talk to Us' section on product page"
-              />
-            )}
-          />
-        </Box>
       </Box>
 
       {/* Stock Availability */}
@@ -525,18 +427,17 @@ export function ProductForm({ initialData }: ProductFormProps) {
           name='inStock'
           control={form.control}
           render={({ field }) => (
-            <FormControlLabel
-              control={<Switch checked={field.value} onChange={(e) => field.onChange(e.target.checked)} color='primary' />}
-              label={
-                <Box>
-                  <Typography sx={{ fontSize: 14, fontWeight: 600 }}>Stock Availability</Typography>
-                  <Typography variant='caption' sx={{ color: "text.secondary" }}>
-                    Whether this product is currently available or out of stock
-                  </Typography>
-                </Box>
-              }
-              sx={{ m: 0, width: "100%", justifyContent: "space-between" }}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <Box>
+                <Typography sx={{ fontSize: 14, fontWeight: 600 }}>Stock Availability</Typography>
+                <Typography variant='caption' sx={{ color: "text.secondary", display: "block", mt: 0.25 }}>
+                  {field.value
+                    ? "In Stock — product is currently available for purchase"
+                    : "Out of Stock — product is marked as unavailable"}
+                </Typography>
+              </Box>
+              <Switch checked={field.value} onChange={(e) => field.onChange(e.target.checked)} color='primary' />
+            </Box>
           )}
         />
       </Paper>
@@ -662,66 +563,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
         />
       </Box>
 
-      {/* Hero Banner */}
-      <Box>
-        <Box component='label' sx={labelSx}>
-          Hero Banner (HD - 16:9 or 21:9)
-        </Box>
-        {form.watch("featuredBanner") ? (
-          <Box sx={{ position: "relative", width: "100%", maxHeight: 220, borderRadius: "10px", overflow: "hidden", border: "1px solid", borderColor: "divider" }}>
-            <Box
-              component='img'
-              src={getAssetUrl(form.watch("featuredBanner"))}
-              alt='Hero Banner'
-              sx={{ width: "100%", maxHeight: 220, objectFit: "cover" }}
-            />
-            <IconButton
-              size='small'
-              onClick={() => form.setValue("featuredBanner", null)}
-              sx={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-                bgcolor: tokens.danger,
-                color: tokens.textWhite,
-                "&:hover": { bgcolor: tokens.dangerHover },
-              }}
-            >
-              <CloseIcon sx={{ fontSize: 16 }} />
-            </IconButton>
-          </Box>
-        ) : (
-          <Box
-            component='label'
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              p: 3,
-              borderRadius: "10px",
-              border: "2px dashed",
-              borderColor: "divider",
-              bgcolor: "action.hover",
-              cursor: uploading ? "not-allowed" : "pointer",
-              "&:hover": { borderColor: "primary.main" },
-            }}
-          >
-            {uploading ? (
-              <CircularProgress size={24} sx={{ color: "primary.main" }} />
-            ) : (
-              <>
-                <CloudUploadOutlinedIcon sx={{ fontSize: 32, color: "text.secondary", mb: 1 }} />
-                <Typography sx={{ fontSize: 13, fontWeight: 500, color: "text.secondary" }}>
-                  Upload Hero Banner
-                </Typography>
-              </>
-            )}
-            <input type='file' accept='image/*' hidden onChange={handleBannerUpload} disabled={uploading} />
-          </Box>
-        )}
-      </Box>
-
       {/* Images */}
       <Box>
         <Box component='label' sx={labelSx}>
@@ -827,7 +668,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
         </Typography>
         <Box data-color-mode='dark' sx={{ borderRadius: "8px", overflow: "hidden", border: "1px solid", borderColor: "divider" }}>
           <MDEditor
-            value={form.watch("markdown_description")}
+            value={form.watch("markdown_description") || ""}
             onChange={(v) => form.setValue("markdown_description", v ?? "")}
             height={400}
           />

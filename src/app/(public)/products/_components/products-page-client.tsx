@@ -122,7 +122,6 @@ function ShopPageContent() {
           >
             <CircularProgress size={48} sx={{ color: tokens.primary, mb: 3 }} />
             <Box
-              className='bricolage'
               sx={{
                 fontSize: 10,
                 fontWeight: 900,
@@ -147,7 +146,6 @@ function ShopPageContent() {
             }}
           >
             <Typography
-              className='bricolage'
               sx={{
                 color: tokens.textMuted,
                 fontWeight: 500,

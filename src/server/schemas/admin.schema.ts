@@ -137,10 +137,12 @@ export const adminReviewSchema = z.object({
 });
 
 export const createAdminReviewInputSchema = z.object({
-  customerName: z.string().min(1),
+  customerName: z.string().min(1, "Name is required"),
   customerPic: z.string().nullable().optional(),
-  review: z.string().min(1),
-  rating: z.number().min(1).max(5),
+  mediaUrl: z.string().nullable().optional(),
+  mediaType: z.string().nullable().optional(),
+  review: z.string().min(1, "Review text is required"),
+  rating: z.coerce.number().min(1).max(5),
   status: z.enum(["PENDING", "APPROVED", "REJECTED"]).default("PENDING"),
   productId: z.string().nullable().optional(),
 });
@@ -149,8 +151,10 @@ export const updateAdminReviewInputSchema = z.object({
   id: z.string(),
   customerName: z.string().optional(),
   customerPic: z.string().nullable().optional(),
+  mediaUrl: z.string().nullable().optional(),
+  mediaType: z.string().nullable().optional(),
   review: z.string().optional(),
-  rating: z.number().min(1).max(5).optional(),
+  rating: z.coerce.number().min(1).max(5).optional(),
   status: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
   productId: z.string().nullable().optional(),
 });

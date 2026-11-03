@@ -2,7 +2,6 @@ import { z } from "zod";
 import { paginationInputSchema } from "./common.schema";
 
 export const productStatusSchema = z.enum(["PENDING", "ACTIVE", "INACTIVE"]);
-export const productLabelSchema = z.enum(["NONE", "NEW", "SPECIAL", "BEST_SELLER"]);
 
 export const productCategorySchema = z.object({
   id: z.string(),
@@ -23,9 +22,7 @@ export const productSchema = z.object({
   categoryId: z.string(),
   category: productCategorySchema.optional(),
   status: productStatusSchema,
-  label: productLabelSchema,
   isFeatured: z.boolean(),
-  featuredBanner: z.string().nullable().optional(),
   stockCount: z.number().default(0),
   inStock: z.boolean().default(true),
   soldCount: z.number().default(0),
@@ -36,7 +33,6 @@ export const productSchema = z.object({
   brand: z.string().nullable().optional(),
   model: z.string().nullable().optional(),
   whyBuyText: z.string().nullable().optional(),
-  messengerUrl: z.string().nullable().optional(),
   specifications: z.any().optional(),
   createdAt: z.date().or(z.string()),
   updatedAt: z.date().or(z.string()),
@@ -45,7 +41,6 @@ export const productSchema = z.object({
 export const listProductsInputSchema = paginationInputSchema.extend({
   search: z.string().optional(),
   category: z.string().optional(),
-  label: productLabelSchema.optional(),
   featured: z.boolean().optional(),
   sort: z.enum(["newest", "price-asc", "price-desc", "best-selling"]).optional(),
 });
@@ -57,6 +52,25 @@ export const listProductsOutputSchema = z.object({
   limit: z.number(),
   totalPages: z.number(),
 });
+
+export const topPickProductSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  slug: z.string(),
+  brand: z.string().nullable().optional(),
+  badge: z.string().nullable().optional(),
+  badgeVariant: z.string().nullable().optional(),
+  rating: z.string().or(z.number()),
+  reviewCount: z.string().or(z.number()),
+  price: z.number(),
+  originalPrice: z.number().nullable().optional(),
+  image: z.string().nullable().optional(),
+  inStock: z.boolean().default(true),
+});
+
+export type TopPickProduct = z.infer<typeof topPickProductSchema>;
+
+export { testimonialItemSchema, type TestimonialItem } from "./testimonials.schema";
 
 export const customerReviewSchema = z.object({
   id: z.string(),
@@ -71,26 +85,28 @@ export const customerReviewSchema = z.object({
 
 export const createProductInputSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters"),
-  slug: z.string().min(2, "Slug must be at least 2 characters"),
-  description: z.string(),
+  slug: z
+    .string()
+    .min(2, "Slug must be at least 2 characters")
+    .regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with hyphens"),
+  description: z.string().min(10, "Description must be at least 10 characters"),
   markdown_description: z.string().nullable().optional(),
-  price: z.number().positive("Price must be positive"),
-  discountPrice: z.number().positive().nullable().optional(),
-  images: z.array(z.string()).default([]),
-  categoryId: z.string(),
+  price: z.coerce.number().positive("Price must be positive"),
+  discountPrice: z.coerce.number().positive().nullable().optional(),
+  images: z.array(z.string()).min(1, "At least one image is required").default([]),
+  categoryId: z.string().min(1, "Category is required"),
   status: productStatusSchema.default("ACTIVE"),
-  label: productLabelSchema.default("NONE"),
   isFeatured: z.boolean().default(false),
-  featuredBanner: z.string().nullable().optional(),
-  stockCount: z.number().int().nonnegative().default(0),
+  stockCount: z.coerce.number().int().nonnegative().default(0),
+  inStock: z.boolean().default(true),
+  rating: z.coerce.number().min(0).max(5).default(5),
   tags: z.array(z.string()).default([]),
-  videoLinks: z.array(z.string()).optional(),
+  videoLinks: z.array(z.string()).max(2, "Maximum 2 video links allowed").optional(),
   brand: z.string().nullable().optional(),
   model: z.string().nullable().optional(),
   whyBuyText: z.string().nullable().optional(),
-  messengerUrl: z.string().nullable().optional(),
   specifications: z.any().nullable().optional(),
-  soldCount: z.number().int().nonnegative().optional(),
+  soldCount: z.coerce.number().int().nonnegative().optional().default(360),
 });
 
 export const updateProductInputSchema = z.object({
@@ -99,7 +115,6 @@ export const updateProductInputSchema = z.object({
 });
 
 export type ProductStatus = z.infer<typeof productStatusSchema>;
-export type ProductLabel = z.infer<typeof productLabelSchema>;
 export type Product = z.infer<typeof productSchema>;
 export type ListProductsInput = z.infer<typeof listProductsInputSchema>;
 export type ListProductsOutput = z.infer<typeof listProductsOutputSchema>;

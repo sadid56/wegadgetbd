@@ -34,8 +34,6 @@ import { useToast } from "@/context/toast-context";
 import { ProductDetailsSkeleton } from "./ProductDetailsSkeleton";
 import { ProductReviews } from "./ProductReviews";
 
-const BN_FONT = "'Hind Siliguri', 'Inter', -apple-system, sans-serif";
-
 type TabKey = "desc" | "video" | "reviews";
 
 type ProductExtras = {
@@ -64,7 +62,6 @@ const getTabSx = (active: boolean) => ({
   border: 0,
   borderBottom: active ? `2px solid ${tokens.primary}` : "2px solid transparent",
   cursor: "pointer",
-  fontFamily: BN_FONT,
   transition: "color 150ms",
 });
 
@@ -148,10 +145,10 @@ export default function ProductDetailsPage() {
     return (
       <Box sx={{ minHeight: "70vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", bgcolor: tokens.bgCanvas, p: 3, textAlign: "center" }}>
         <Inventory2OutlinedIcon sx={{ fontSize: 64, color: tokens.textMuted, mb: 2 }} />
-        <Typography sx={{ fontSize: 20, fontWeight: 700, color: tokens.textPrimary, mb: 1, fontFamily: BN_FONT }}>
+        <Typography sx={{ fontSize: 20, fontWeight: 700, color: tokens.textPrimary, mb: 1 }}>
           দুঃখিত, পণ্যটি পাওয়া যায়নি
         </Typography>
-        <Typography sx={{ fontSize: 14, color: tokens.textSecondary, mb: 3, fontFamily: BN_FONT }}>
+        <Typography sx={{ fontSize: 14, color: tokens.textSecondary, mb: 3 }}>
           হয়তো পণ্যটি স্টক আউট হয়েছে বা লিংকটি পরিবর্তিত হয়েছে।
         </Typography>
         <Button variant="primary" onClick={() => router.push("/products")}>
@@ -173,7 +170,7 @@ export default function ProductDetailsPage() {
   ];
 
   return (
-    <Box sx={{ bgcolor: tokens.bgCanvas, minHeight: "100vh", py: { xs: 2.5, md: 5 }, fontFamily: BN_FONT }}>
+    <Box sx={{ bgcolor: tokens.bgCanvas, minHeight: "100vh", py: { xs: 2.5, md: 5 } }}>
       <Container maxWidth="lg">
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3, flexWrap: "wrap", fontSize: 13, color: tokens.textMuted }}>
           <NextLink href="/" style={{ textDecoration: "none", color: tokens.textSecondary, fontWeight: 500 }}>

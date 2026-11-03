@@ -142,7 +142,6 @@ export function CheckoutForm({ register, errors, locationValue, setValue }: Chec
               "& .MuiOutlinedInput-input": {
                 ...textareaSx["& .MuiOutlinedInput-input"],
                 minHeight: "50px !important",
-                fontFamily: BN.fontFamily,
               },
             }}
           />
@@ -245,7 +244,6 @@ export function CheckoutForm({ register, errors, locationValue, setValue }: Chec
                 "& .MuiOutlinedInput-input": {
                   ...textareaSx["& .MuiOutlinedInput-input"],
                   minHeight: "53px !important",
-                  fontFamily: BN.fontFamily,
                 },
               }}
             />

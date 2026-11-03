@@ -4,7 +4,14 @@ import { useQuery } from "@tanstack/react-query";
 
 export type ProductsResponse = Awaited<ReturnType<typeof orpcClient.products.list>>;
 export type SingleProductResponse = Awaited<ReturnType<typeof orpcClient.products.bySlug>>;
+export type TopPicksResponse = Awaited<ReturnType<typeof orpcClient.products.topPicks>>;
+export type LatestArrivalsResponse = Awaited<ReturnType<typeof orpcClient.products.latestArrivals>>;
 export type Product = ProductsResponse["products"][number];
+export type TopPickItem = TopPicksResponse[number];
+export type LatestArrivalItem = LatestArrivalsResponse[number];
+
+// Re-export dedicated queries for backwards compatibility
+export { useTestimonials, type TestimonialItem } from "../testimonials";
 
 type ListParams = Parameters<typeof orpcClient.products.list>[0];
 type AdminListParams = Parameters<typeof orpcClient.products.adminList>[0];
@@ -16,12 +23,20 @@ const adminProductKeys = orpc.products.adminList.queryOptions({ input: {} }).que
 const singleProductKeys = orpc.products.bySlug.queryOptions({ input: { slug: "" } }).queryKey;
 
 export const ProductEndpoints = {
+  getTopPicks: (limit: number = 4) => orpcClient.products.topPicks({ limit }),
+  getLatestArrivals: (limit: number = 4) => orpcClient.products.latestArrivals({ limit }),
   getProducts: (params?: ListParams) => orpcClient.products.list(params ?? {}),
   getProduct: (slug: string) => orpcClient.products.bySlug({ slug }),
   createProduct: (data: CreatePayload) => orpcClient.products.create(data),
   updateProduct: (data: UpdatePayload) => orpcClient.products.update(data),
   deleteProduct: (id: string) => orpcClient.products.delete({ id }),
 };
+
+export const useTopPicks = (limit: number = 4) =>
+  useQuery(orpc.products.topPicks.queryOptions({ input: { limit } }));
+
+export const useLatestArrivals = (limit: number = 4) =>
+  useQuery(orpc.products.latestArrivals.queryOptions({ input: { limit } }));
 
 export const useProducts = (params?: ListParams) => useQuery(orpc.products.list.queryOptions({ input: params ?? {} }));
 

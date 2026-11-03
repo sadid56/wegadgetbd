@@ -3,355 +3,231 @@
 import * as React from "react";
 import MuiMenu, { type MenuProps as MuiMenuProps } from "@mui/material/Menu";
 import MuiMenuItem, { type MenuItemProps as MuiMenuItemProps } from "@mui/material/MenuItem";
-import MuiDivider from "@mui/material/Divider";
-import MuiListSubheader from "@mui/material/ListSubheader";
+import MuiDivider, { type DividerProps as MuiDividerProps } from "@mui/material/Divider";
+import MuiListSubheader, { type ListSubheaderProps as MuiListSubheaderProps } from "@mui/material/ListSubheader";
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import CheckIcon from "@mui/icons-material/Check";
-import CircleIcon from "@mui/icons-material/Circle";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import type { SxProps, Theme } from "@mui/material/styles";
+import { type SxProps, type Theme } from "@mui/material/styles";
 import { tokens } from "@/theme/theme";
 
-interface DropdownContextValue {
-  anchorEl: HTMLElement | null;
-  setAnchorEl: (el: HTMLElement | null) => void;
-  open: boolean;
-  close: () => void;
+export interface DropdownMenuProps extends Omit<MuiMenuProps, "open"> {
+  trigger?: React.ReactNode;
+  open?: boolean;
+  anchorEl?: HTMLElement | null;
+  onClose?: (event: {}, reason: "backdropClick" | "escapeKeyDown") => void;
+  align?: "left" | "right" | "center" | "start" | "end";
+  children?: React.ReactNode;
 }
 
-const DropdownContext = React.createContext<DropdownContextValue | null>(null);
-
-function useDropdownContext() {
-  return React.useContext(DropdownContext);
-}
-
-function DropdownMenu({ children }: { children?: React.ReactNode }) {
-  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
-  const open = Boolean(anchorEl);
-  const close = React.useCallback(() => setAnchorEl(null), []);
-
-  return (
-    <DropdownContext.Provider value={{ anchorEl, setAnchorEl, open, close }}>
-      {children}
-    </DropdownContext.Provider>
-  );
-}
-
-function DropdownMenuTrigger({
-  asChild,
+export function DropdownMenu({
+  trigger,
+  open: controlledOpen,
+  anchorEl: controlledAnchorEl,
+  onClose,
+  align = "end",
   children,
-  onClick,
+  slotProps,
+  sx,
+  disableScrollLock = true,
   ...props
-}: {
-  asChild?: boolean;
-  children?: React.ReactNode;
-  onClick?: React.MouseEventHandler;
-  [key: string]: unknown;
-}) {
-  const ctx = useDropdownContext();
+}: DropdownMenuProps) {
+  const [internalAnchorEl, setInternalAnchorEl] = React.useState<HTMLElement | null>(null);
 
-  const handleClick = (e: React.MouseEvent<HTMLElement>) => {
-    onClick?.(e);
-    ctx?.setAnchorEl(e.currentTarget);
+  const isControlled = controlledAnchorEl !== undefined || controlledOpen !== undefined;
+  const anchorEl = isControlled ? controlledAnchorEl : internalAnchorEl;
+  const open = isControlled ? (controlledOpen ?? Boolean(controlledAnchorEl)) : Boolean(internalAnchorEl);
+
+  const handleTriggerClick = (e: React.MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+    if (!isControlled) {
+      setInternalAnchorEl(e.currentTarget);
+    }
   };
 
-  if (asChild && React.isValidElement(children)) {
-    return React.cloneElement(children as React.ReactElement<{ onClick?: React.MouseEventHandler }>, {
-      onClick: (e: React.MouseEvent) => {
-        (children.props as { onClick?: React.MouseEventHandler }).onClick?.(e);
-        handleClick(e as any);
-      },
-    });
-  }
-
-  return (
-    <Box component='button' type='button' onClick={handleClick as any} {...props} sx={{ cursor: "pointer", bgcolor: "transparent", border: 0, p: 0 }}>
-      {children}
-    </Box>
-  );
-}
-
-function DropdownMenuPortal({ children }: { children?: React.ReactNode }) {
-  return <>{children}</>;
-}
-
-interface DropdownMenuContentProps extends Omit<MuiMenuProps, "open" | "anchorEl"> {
-  children?: React.ReactNode;
-  sideOffset?: number;
-  sx?: SxProps<Theme>;
-}
-
-function DropdownMenuContent({ children, sx, onClose, ...props }: DropdownMenuContentProps) {
-  const ctx = useDropdownContext();
-
-  const handleClose = (e: React.MouseEvent) => {
-    ctx?.close();
-    onClose?.(e as any, "backdropClick");
+  const handleClose = (event: {}, reason: "backdropClick" | "escapeKeyDown") => {
+    if (!isControlled) {
+      setInternalAnchorEl(null);
+    }
+    onClose?.(event, reason);
   };
 
-  return (
+  const isRight = align === "right" || align === "end";
+  const isCenter = align === "center";
+  const horizontal = isRight ? "right" : isCenter ? "center" : "left";
+
+  const paperProps = (slotProps?.paper as Record<string, any>) ?? {};
+  const listProps = (slotProps?.list as Record<string, any>) ?? {};
+
+  const menu = (
     <MuiMenu
-      anchorEl={ctx?.anchorEl}
-      open={ctx?.open ?? false}
+      anchorEl={anchorEl}
+      open={open}
       onClose={handleClose}
+      disableScrollLock={disableScrollLock}
+      anchorOrigin={{
+        vertical: "bottom",
+        horizontal,
+      }}
+      transformOrigin={{
+        vertical: "top",
+        horizontal,
+      }}
       slotProps={{
+        ...slotProps,
         paper: {
-          sx: {
-            mt: 0.5,
-            minWidth: 160,
-            borderRadius: `${tokens.radiusMd}px`,
-            border: `1px solid ${tokens.borderDefault}`,
-            bgcolor: tokens.bgElevated,
-            backgroundImage: "none",
-            boxShadow: tokens.shadowPopover,
-            p: 0.5,
-            ...sx,
-          },
+          ...paperProps,
+          sx: [
+            {
+              mt: 0.75,
+              minWidth: 160,
+              borderRadius: `${tokens.radiusMd}px`,
+              border: `1px solid ${tokens.borderDefault}`,
+              bgcolor: tokens.bgElevated,
+              backgroundImage: "none",
+              boxShadow: tokens.shadowPopover,
+              p: 0.5,
+              color: tokens.textPrimary,
+            },
+            ...(Array.isArray(paperProps.sx) ? paperProps.sx : paperProps.sx ? [paperProps.sx] : []),
+          ],
+        },
+        list: {
+          ...listProps,
+          sx: [
+            { p: 0.25 },
+            ...(Array.isArray(listProps.sx) ? listProps.sx : listProps.sx ? [listProps.sx] : []),
+          ],
         },
       }}
-      {...props}
-    >
-      {children}
-    </MuiMenu>
-  );
-}
-
-function DropdownMenuGroup({ children }: { children?: React.ReactNode }) {
-  return <Box sx={{ display: "flex", flexDirection: "column" }}>{children}</Box>;
-}
-
-interface MenuItemCustomProps extends MuiMenuItemProps {
-  inset?: boolean;
-  variant?: "default" | "destructive";
-}
-
-function DropdownMenuItem({ inset, variant = "default", onClick, sx, children, ...props }: MenuItemCustomProps) {
-  const ctx = useDropdownContext();
-
-  const handleClick = (e: React.MouseEvent<HTMLLIElement>) => {
-    onClick?.(e);
-    ctx?.close();
-  };
-
-  const isDestructive = variant === "destructive";
-
-  return (
-    <MuiMenuItem
-      onClick={handleClick}
-      sx={{
-        fontSize: 13,
-        fontWeight: 500,
-        borderRadius: 1,
-        py: 0.8,
-        px: 1.5,
-        pl: inset ? 3.5 : 1.5,
-        color: isDestructive ? tokens.danger : tokens.textPrimary,
-        gap: 1.5,
-        "&:hover": {
-          bgcolor: isDestructive ? tokens.dangerSubtle : tokens.bgSubtle,
-        },
-        ...sx,
-      }}
-      {...props}
-    >
-      {children}
-    </MuiMenuItem>
-  );
-}
-
-function DropdownMenuCheckboxItem({
-  checked,
-  children,
-  onClick,
-  sx,
-  ...props
-}: MenuItemCustomProps & { checked?: boolean }) {
-  const ctx = useDropdownContext();
-
-  const handleClick = (e: React.MouseEvent<HTMLLIElement>) => {
-    onClick?.(e);
-    ctx?.close();
-  };
-
-  return (
-    <MuiMenuItem
-      onClick={handleClick}
-      sx={{
-        fontSize: 13,
-        fontWeight: 500,
-        borderRadius: 1,
-        py: 0.8,
-        px: 1.5,
-        gap: 1.5,
-        ...sx,
-      }}
-      {...props}
-    >
-      <Box sx={{ width: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        {checked && <CheckIcon sx={{ fontSize: 16 }} />}
-      </Box>
-      {children}
-    </MuiMenuItem>
-  );
-}
-
-function DropdownMenuRadioGroup({ children }: { children?: React.ReactNode }) {
-  return <Box sx={{ display: "flex", flexDirection: "column" }}>{children}</Box>;
-}
-
-function DropdownMenuRadioItem({
-  children,
-  onClick,
-  sx,
-  ...props
-}: MenuItemCustomProps & { value?: string }) {
-  const ctx = useDropdownContext();
-
-  const handleClick = (e: React.MouseEvent<HTMLLIElement>) => {
-    onClick?.(e);
-    ctx?.close();
-  };
-
-  return (
-    <MuiMenuItem
-      onClick={handleClick}
-      sx={{
-        fontSize: 13,
-        fontWeight: 500,
-        borderRadius: 1,
-        py: 0.8,
-        px: 1.5,
-        gap: 1.5,
-        ...sx,
-      }}
-      {...props}
-    >
-      <Box sx={{ width: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <CircleIcon sx={{ fontSize: 8 }} />
-      </Box>
-      {children}
-    </MuiMenuItem>
-  );
-}
-
-function DropdownMenuLabel({
-  inset,
-  children,
-  sx,
-  ...props
-}: {
-  inset?: boolean;
-  children?: React.ReactNode;
-  sx?: SxProps<Theme>;
-}) {
-  return (
-    <MuiListSubheader
-      sx={{
-        lineHeight: 2,
-        fontSize: 11,
-        fontWeight: 700,
-        textTransform: "uppercase",
-        letterSpacing: "0.05em",
-        color: "text.secondary",
-        bgcolor: "transparent",
-        pl: inset ? 3.5 : 1.5,
-        ...sx,
-      }}
-      {...props}
-    >
-      {children}
-    </MuiListSubheader>
-  );
-}
-
-function DropdownMenuSeparator({ sx, ...props }: React.ComponentProps<typeof MuiDivider>) {
-  return <MuiDivider sx={{ my: 0.5, ...sx }} {...props} />;
-}
-
-function DropdownMenuShortcut({
-  children,
-  sx,
-  ...props
-}: {
-  children?: React.ReactNode;
-  sx?: SxProps<Theme>;
-}) {
-  return (
-    <Typography
-      variant='caption'
-      sx={{
-        ml: "auto",
-        fontSize: 11,
-        color: "text.disabled",
-        letterSpacing: "0.05em",
-        ...sx,
-      }}
-      {...props}
-    >
-      {children}
-    </Typography>
-  );
-}
-
-function DropdownMenuSub({ children }: { children?: React.ReactNode }) {
-  return <Box sx={{ position: "relative" }}>{children}</Box>;
-}
-
-function DropdownMenuSubTrigger({
-  children,
-  sx,
-  ...props
-}: MenuItemCustomProps) {
-  return (
-    <MuiMenuItem
-      sx={{
-        fontSize: 13,
-        fontWeight: 500,
-        borderRadius: 1,
-        py: 0.8,
-        px: 1.5,
-        gap: 1.5,
-        ...sx,
-      }}
-      {...props}
-    >
-      {children}
-      <ChevronRightIcon sx={{ fontSize: 16, ml: "auto", color: "text.secondary" }} />
-    </MuiMenuItem>
-  );
-}
-
-function DropdownMenuSubContent({
-  children,
-  sx,
-  ...props
-}: DropdownMenuContentProps) {
-  return (
-    <MuiMenu
-      open={false}
       sx={sx}
       {...props}
     >
-      {children}
+      {React.Children.map(children, (child) => {
+        if (!React.isValidElement(child)) return child;
+        const originalOnClick = (child.props as any)?.onClick;
+        return React.cloneElement(child as React.ReactElement<any>, {
+          onClick: (e: React.MouseEvent) => {
+            originalOnClick?.(e);
+            if (!isControlled) {
+              setInternalAnchorEl(null);
+            }
+          },
+        });
+      })}
     </MuiMenu>
   );
+
+  if (trigger) {
+    return (
+      <>
+        {React.isValidElement(trigger) ? (
+          React.cloneElement(trigger as React.ReactElement<any>, {
+            onClick: (e: React.MouseEvent<HTMLElement>) => {
+              (trigger.props as any)?.onClick?.(e);
+              handleTriggerClick(e);
+            },
+          })
+        ) : (
+          <Box component='span' onClick={handleTriggerClick} sx={{ display: "inline-flex", cursor: "pointer" }}>
+            {trigger}
+          </Box>
+        )}
+        {menu}
+      </>
+    );
+  }
+
+  return menu;
 }
 
-export {
-  DropdownMenu,
-  DropdownMenuPortal,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuLabel,
-  DropdownMenuItem,
-  DropdownMenuCheckboxItem,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuSubContent,
-};
+export interface DropdownMenuItemProps extends Omit<MuiMenuItemProps, "component"> {
+  variant?: "default" | "destructive";
+  component?: React.ElementType;
+  href?: string;
+  target?: string;
+}
+
+export const DropdownMenuItem = React.forwardRef<HTMLLIElement, DropdownMenuItemProps>(
+  function DropdownMenuItem({ variant = "default", sx, children, ...props }, ref) {
+    const isDestructive = variant === "destructive";
+
+    return (
+      <MuiMenuItem
+        ref={ref}
+        sx={[
+          {
+            fontSize: 13,
+            fontWeight: 500,
+            borderRadius: `${tokens.radiusSm}px`,
+            py: 0.8,
+            px: 1.5,
+            gap: 1.25,
+            color: isDestructive ? tokens.danger : tokens.textPrimary,
+            "& .MuiSvgIcon-root": {
+              fontSize: 18,
+              color: isDestructive ? tokens.danger : tokens.textSecondary,
+            },
+            "&:hover": {
+              bgcolor: isDestructive ? tokens.dangerSubtle : tokens.bgSubtle,
+            },
+          },
+          ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+        ]}
+        {...props}
+      >
+        {children}
+      </MuiMenuItem>
+    );
+  }
+);
+
+export interface DropdownMenuLabelProps extends MuiListSubheaderProps {}
+
+export const DropdownMenuLabel = React.forwardRef<HTMLLIElement, DropdownMenuLabelProps>(
+  function DropdownMenuLabel({ sx, ...props }, ref) {
+    return (
+      <MuiListSubheader
+        ref={ref}
+        sx={[
+          {
+            bgcolor: "transparent",
+            fontSize: 11,
+            fontWeight: 700,
+            color: tokens.textSecondary,
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            lineHeight: "28px",
+            px: 1.5,
+          },
+          ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+        ]}
+        {...props}
+      />
+    );
+  }
+);
+
+export interface DropdownMenuSeparatorProps extends MuiDividerProps {}
+
+export const DropdownMenuSeparator = React.forwardRef<HTMLHRElement, DropdownMenuSeparatorProps>(
+  function DropdownMenuSeparator({ sx, ...props }, ref) {
+    return (
+      <MuiDivider
+        ref={ref}
+        sx={[
+          {
+            my: 0.5,
+            borderColor: tokens.borderDefault,
+          },
+          ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+        ]}
+        {...props}
+      />
+    );
+  }
+);
+
+// Aliases
+export const DropdownItem = DropdownMenuItem;
+export const DropdownSeparator = DropdownMenuSeparator;
+export const DropdownLabel = DropdownMenuLabel;
+export default DropdownMenu;

@@ -5,14 +5,12 @@ import Typography from "@mui/material/Typography";
 import { Button } from "@/components/ui/button";
 import { CircularProgress } from "@/components/ui/spinner";
 import NextLink from "next/link";
-
 import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
 import LocalMallOutlinedIcon from "@mui/icons-material/LocalMallOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-
 import { useDashboardStats } from "@/query-client/admin/dashboard";
 import { SalesChart } from "./_components/sales-chart";
 import { RecentUsers } from "./_components/recent-users";
@@ -101,21 +99,7 @@ export default function AdminDashboard() {
 
         {/* Quick Actions */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, flexWrap: "wrap" }}>
-          <Button
-            component={NextLink}
-            href='/admin/products/new'
-            variant='contained'
-            size='small'
-            startIcon={<AddIcon />}
-            sx={{
-              borderRadius: "10px",
-              px: 2,
-              py: 0.9,
-              fontWeight: 600,
-              fontSize: 13,
-              boxShadow: "none",
-            }}
-          >
+          <Button component={NextLink} href='/admin/products/new' variant='contained' size='small' startIcon={<AddIcon />}>
             Add Product
           </Button>
           <Button
@@ -124,16 +108,6 @@ export default function AdminDashboard() {
             variant='outlined'
             size='small'
             endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
-            sx={{
-              borderRadius: "10px",
-              px: 2,
-              py: 0.9,
-              fontWeight: 600,
-              fontSize: 13,
-              borderColor: "divider",
-              color: "text.primary",
-              "&:hover": { borderColor: "primary.main", color: "primary.main" },
-            }}
           >
             View Orders
           </Button>
@@ -143,16 +117,6 @@ export default function AdminDashboard() {
             variant='outlined'
             size='small'
             endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
-            sx={{
-              borderRadius: "10px",
-              px: 2,
-              py: 0.9,
-              fontWeight: 600,
-              fontSize: 13,
-              borderColor: "divider",
-              color: "text.primary",
-              "&:hover": { borderColor: "primary.main", color: "primary.main" },
-            }}
           >
             Categories
           </Button>

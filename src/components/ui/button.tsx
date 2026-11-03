@@ -43,10 +43,7 @@ export type ButtonBaseProps = MuiButtonBaseProps & {
   rel?: string;
 };
 
-export const ButtonBase = React.forwardRef<HTMLButtonElement, ButtonBaseProps>(function ButtonBase(
-  props,
-  ref
-) {
+export const ButtonBase = React.forwardRef<HTMLButtonElement, ButtonBaseProps>(function ButtonBase(props, ref) {
   return <MuiButtonBase ref={ref} {...props} />;
 });
 
@@ -65,6 +62,7 @@ export const Button: React.FC<ButtonProps> = ({
   ...rest
 }) => {
   const isDisabled = disabled || loading;
+
   const effectiveVariant = color === "error" && (variant === "contained" || variant === "primary") ? "danger" : variant;
 
   const getVariantStyles = () => {
@@ -77,16 +75,13 @@ export const Button: React.FC<ButtonProps> = ({
           color: tokens.textWhite,
           border: "1px solid transparent",
           fontWeight: 700,
-          boxShadow: tokens.shadowPrimary,
           "&:hover": {
             bgcolor: tokens.primaryHover,
             color: tokens.textWhite,
-            boxShadow: tokens.shadowPrimaryHover,
           },
           "&.Mui-disabled": {
             bgcolor: tokens.primaryDisabled,
             color: tokens.textDisabled,
-            boxShadow: "none",
           },
         };
 
@@ -97,18 +92,30 @@ export const Button: React.FC<ButtonProps> = ({
           bgcolor: tokens.bgPanel,
           color: color === "error" ? tokens.danger : tokens.textPrimary,
           border: `1px solid ${color === "error" ? tokens.dangerBorder : tokens.borderDefault}`,
-          boxShadow: tokens.shadowSm,
           fontWeight: 600,
           "&:hover": {
             bgcolor: color === "error" ? tokens.dangerSubtle : tokens.bgSubtle,
-            borderColor: color === "error" ? tokens.danger : tokens.borderHover,
+            borderColor: color === "error" ? tokens.dangerBorder : tokens.borderDefault,
             color: color === "error" ? tokens.danger : tokens.textPrimary,
+            outline: "none",
+            boxShadow: "none",
+          },
+          "&:focus": {
+            outline: "none",
+            boxShadow: "none",
+          },
+          "&:focus-visible": {
+            outline: "none",
+            boxShadow: "none",
+          },
+          "&.Mui-focusVisible": {
+            outline: "none",
+            boxShadow: "none",
           },
           "&.Mui-disabled": {
             bgcolor: tokens.bgInput,
             color: tokens.textDisabled,
             borderColor: tokens.borderDisabled,
-            boxShadow: "none",
           },
         };
 
@@ -119,7 +126,6 @@ export const Button: React.FC<ButtonProps> = ({
           color: color === "error" ? tokens.danger : tokens.textSecondary,
           border: "1px solid transparent",
           fontWeight: 600,
-          boxShadow: "none",
           "&:hover": {
             bgcolor: color === "error" ? tokens.dangerSubtle : tokens.bgSubtle,
             color: color === "error" ? tokens.danger : tokens.textPrimary,
@@ -150,7 +156,6 @@ export const Button: React.FC<ButtonProps> = ({
           color: tokens.textWhite,
           border: `1px solid ${tokens.danger}`,
           fontWeight: 600,
-          boxShadow: tokens.shadowSm,
           "&:hover": {
             bgcolor: tokens.dangerHover,
             borderColor: tokens.dangerHover,
@@ -160,7 +165,6 @@ export const Button: React.FC<ButtonProps> = ({
             bgcolor: tokens.bgInput,
             borderColor: tokens.borderDisabled,
             color: tokens.textDisabled,
-            boxShadow: "none",
           },
         };
     }
@@ -171,6 +175,7 @@ export const Button: React.FC<ButtonProps> = ({
   const isIcon = size === "icon";
 
   const spinnerSize = isSmall ? 14 : isLarge ? 20 : 16;
+
   const muiSize: "small" | "medium" | "large" = isSmall ? "small" : isLarge ? "large" : "medium";
 
   return (
@@ -200,4 +205,5 @@ export const Button: React.FC<ButtonProps> = ({
 };
 
 export const buttonVariants = () => "";
+
 export default Button;

@@ -174,8 +174,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='en' suppressHydrationWarning>
-      <body className={`${inter.className} ${inter.variable} antialiased`}>
+    <html lang='en' className={`${inter.variable} ${inter.className}`} suppressHydrationWarning>
+      <body className={`${inter.className} antialiased`}>
         <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(rootJsonLd) }} />
         <AppRouterCacheProvider>
           <AppProvider>{children}</AppProvider>

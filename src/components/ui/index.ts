@@ -5,6 +5,8 @@ export * from "./button";
 export * from "./calendar";
 export * from "./card";
 export * from "./checkbox";
+export * from "./dashboard-header";
+export * from "./data-table";
 export * from "./dialog";
 export * from "./divider";
 export * from "./drawer";

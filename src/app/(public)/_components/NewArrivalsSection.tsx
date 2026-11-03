@@ -69,7 +69,6 @@ export function NewArrivalsSection({ products, isLoading }: NewArrivalsSectionPr
           />
           <Typography
             component='h2'
-            className='bricolage'
             sx={{
               fontSize: { xs: "1.5rem", md: "1.875rem" },
               fontWeight: 600,

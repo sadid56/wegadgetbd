@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { product, auditLog, type ProductStatus, type ProductLabel, type AuditAction } from "@/db/schema";
+import { product, auditLog, type ProductStatus, type AuditAction } from "@/db/schema";
 import { normalizeVideoInput } from "@/lib/video-links";
 import type { Context } from "@/server/context";
 import type { UpdateProductInput } from "@/server/schemas/products.schema";
@@ -11,7 +11,6 @@ const FIELD_TRANSFORMS: Record<string, (v: any) => unknown> = {
   price: (v) => String(v),
   discountPrice: (v) => (v != null ? String(v) : null),
   status: (v) => v as ProductStatus,
-  label: (v) => v as ProductLabel,
   videoLinks: (v) => (Array.isArray(v) ? v.map((l: string) => normalizeVideoInput(l)).filter(Boolean) : v),
 };
 

@@ -15,25 +15,92 @@ import {
 import { tokens } from "../../theme/theme";
 
 export type TextFieldProps = MuiTextFieldProps;
-export type InputBaseProps = MuiInputBaseProps;
+export interface InputBaseProps extends Omit<MuiInputBaseProps, "size"> {
+  size?: "small" | "medium";
+  variant?: "outlined" | "plain" | "filled";
+  startIcon?: React.ReactNode;
+  endIcon?: React.ReactNode;
+}
 export type InputAdornmentProps = MuiInputAdornmentProps;
 
 export const InputAdornment = MuiInputAdornment;
 
 export const InputBase = React.forwardRef<HTMLDivElement, InputBaseProps>(function InputBase(
-  { sx, ...props },
+  {
+    sx,
+    size = "medium",
+    variant = "outlined",
+    startIcon,
+    endIcon,
+    startAdornment,
+    endAdornment,
+    ...props
+  },
   ref
 ) {
+  const isPlain = variant === "plain";
+  const isSmall = size === "small";
+
+  const resolvedStartAdornment = startIcon ? (
+    <MuiInputAdornment position='start' sx={{ color: "text.secondary", mr: 1 }}>
+      {startIcon}
+    </MuiInputAdornment>
+  ) : (
+    startAdornment
+  );
+
+  const resolvedEndAdornment = endIcon ? (
+    <MuiInputAdornment position='end' sx={{ color: "text.secondary", ml: 1 }}>
+      {endIcon}
+    </MuiInputAdornment>
+  ) : (
+    endAdornment
+  );
+
   return (
     <MuiInputBase
       ref={ref}
+      startAdornment={resolvedStartAdornment}
+      endAdornment={resolvedEndAdornment}
       sx={[
         {
+          width: "100%",
+          minHeight: isSmall ? 36 : 40,
+          px: isPlain ? 0 : 1.5,
+          py: 0.5,
+          borderRadius: isPlain ? 0 : `${tokens.radiusMd}px`,
+          border: isPlain ? "none" : "1px solid",
+          borderColor: isPlain ? "transparent" : tokens.borderDefault,
+          bgcolor: isPlain ? "transparent" : tokens.bgInput,
           color: tokens.textPrimary,
           fontSize: "0.875rem",
-          "& input::placeholder, & textarea::placeholder": {
-            color: tokens.textMuted,
-            opacity: 1,
+          transition: "all 0.15s ease",
+          "&:hover": {
+            borderColor: isPlain ? "transparent" : tokens.borderHover,
+          },
+          "&.Mui-focused": {
+            borderColor: isPlain ? "transparent" : tokens.primary,
+            boxShadow: isPlain ? "none" : `0 0 0 3px ${tokens.primarySubtle}`,
+          },
+          "&.Mui-error": {
+            borderColor: tokens.error,
+            boxShadow: `0 0 0 3px ${tokens.dangerSubtle}`,
+          },
+          "&.Mui-disabled": {
+            opacity: 0.6,
+            bgcolor: tokens.bgSubtle,
+            cursor: "not-allowed",
+          },
+          "& .MuiInputBase-input": {
+            p: 0,
+            color: tokens.textPrimary,
+            "&::placeholder": {
+              color: tokens.textMuted,
+              opacity: 1,
+            },
+          },
+          "& .MuiInputAdornment-root": {
+            color: "text.secondary",
           },
         },
         ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
@@ -44,13 +111,14 @@ export const InputBase = React.forwardRef<HTMLDivElement, InputBaseProps>(functi
 });
 
 export const TextField = React.forwardRef<HTMLDivElement, TextFieldProps>(function TextField(
-  { sx, size = "small", ...props },
+  { sx, size = "small", value, ...props },
   ref
 ) {
   return (
     <MuiTextField
       ref={ref}
       size={size}
+      value={value === null ? "" : value}
       sx={[
         {
           "& .MuiOutlinedInput-root": {

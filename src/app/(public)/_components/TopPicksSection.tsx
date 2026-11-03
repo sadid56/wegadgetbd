@@ -3,82 +3,68 @@
 import NextLink from "next/link";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import Skeleton from "@mui/material/Skeleton";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 import { tokens } from "@/theme/theme";
 import { SectionContainer } from "@/components/common/SectionContainer";
+import { useTopPicks } from "@/query-client/products";
 import { ProductCard, type ProductCardItem } from "./ProductCard";
 
-const DEFAULT_TOP_PICKS: ProductCardItem[] = [
-  {
-    id: "top-1",
-    badge: "Best Seller",
-    badgeVariant: "default",
-    brand: "APPLE",
-    title: "MacBook Air M3 (13-inch)",
-    rating: "4.9",
-    reviewCount: "1200+",
-    price: 109999,
-    originalPrice: 129999,
-    image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=800&auto=format&fit=crop",
-    slug: "macbook-air-m3",
-  },
-  {
-    id: "top-2",
-    badge: "New",
-    badgeVariant: "new",
-    brand: "APPLE",
-    title: "iPhone 15 Pro 256GB",
-    rating: "4.8",
-    reviewCount: "950+",
-    price: 99999,
-    originalPrice: 109999,
-    image: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?q=80&w=800&auto=format&fit=crop",
-    slug: "iphone-15-pro",
-  },
-  {
-    id: "top-3",
-    badge: "Sale",
-    badgeVariant: "sale",
-    brand: "APPLE",
-    title: "Apple Watch Series 10",
-    rating: "4.7",
-    reviewCount: "850+",
-    price: 39999,
-    originalPrice: 44999,
-    image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?q=80&w=800&auto=format&fit=crop",
-    slug: "apple-watch-series-10",
-  },
-  {
-    id: "top-4",
-    brand: "APPLE",
-    title: "AirPods Pro 2 USB-C",
-    rating: "4.9",
-    reviewCount: "1500+",
-    price: 24999,
-    originalPrice: 27999,
-    image: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?q=80&w=800&auto=format&fit=crop",
-    slug: "airpods-pro-2",
-  },
-];
+function ProductCardSkeleton() {
+  return (
+    <Box
+      sx={{
+        bgcolor: tokens.bgPanel,
+        borderRadius: "20px",
+        border: `1px solid ${tokens.borderDefault}`,
+        boxShadow: "0 2px 8px rgba(15, 23, 42, 0.04)",
+        p: 1.5,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
+        height: "100%",
+      }}
+    >
+      <Skeleton
+        variant="rectangular"
+        animation="wave"
+        sx={{
+          width: "100%",
+          height: { xs: 155, sm: 185, md: 200 },
+          borderRadius: "14px",
+          bgcolor: tokens.bgCanvas,
+        }}
+      />
+      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", px: 0.5, pt: 1.75, pb: 0.25 }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.8 }}>
+          <Skeleton animation="wave" width="35%" height={14} />
+          <Skeleton animation="wave" width="25%" height={14} />
+        </Box>
+        <Skeleton animation="wave" width="90%" height={22} sx={{ mb: 1.5 }} />
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mt: "auto",
+            pt: 1.25,
+            borderTop: `1px solid ${tokens.borderSubtle}`,
+          }}
+        >
+          <Skeleton animation="wave" width="40%" height={24} />
+          <Skeleton animation="wave" variant="rounded" width={34} height={34} sx={{ borderRadius: "10px" }} />
+        </Box>
+      </Box>
+    </Box>
+  );
+}
 
-export function TopPicksSection({ products = [] }: { products?: any[] }) {
-  const displayList: ProductCardItem[] =
-    products.length >= 4
-      ? products.slice(0, 4).map((p, i) => ({
-          id: p.id,
-          badge: i === 0 ? "Best Seller" : i === 1 ? "New" : i === 2 ? "Sale" : undefined,
-          badgeVariant: i === 0 ? "default" : i === 1 ? "new" : i === 2 ? "sale" : undefined,
-          brand: p.category?.name || "APPLE",
-          title: p.title || p.name,
-          rating: (4.6 + i * 0.1).toFixed(1),
-          reviewCount: `${800 + i * 200}+`,
-          price: Number(p.salePrice || p.price),
-          originalPrice: p.salePrice ? Number(p.price) : undefined,
-          image: p.thumbnail || p.images?.[0] || DEFAULT_TOP_PICKS[i % DEFAULT_TOP_PICKS.length].image,
-          slug: p.slug || `product-${p.id}`,
-        }))
-      : DEFAULT_TOP_PICKS;
+export function TopPicksSection({ products: passedProducts }: { products?: ProductCardItem[] }) {
+  // Fetch Top Picks from the backend (only minimal card fields returned)
+  const { data: serverProducts, isLoading } = useTopPicks(4);
+
+  const displayList = passedProducts && passedProducts.length > 0 ? passedProducts : serverProducts ?? [];
 
   return (
     <SectionContainer
@@ -154,9 +140,26 @@ export function TopPicksSection({ products = [] }: { products?: any[] }) {
           gap: { xs: 1.5, sm: 2, md: 2.5 },
         }}
       >
-        {displayList.map((item) => (
-          <ProductCard key={item.id} product={item} />
-        ))}
+        {isLoading && (!displayList || displayList.length === 0) ? (
+          Array.from({ length: 4 }).map((_, idx) => <ProductCardSkeleton key={`top-pick-skeleton-${idx}`} />)
+        ) : displayList.length > 0 ? (
+          displayList.map((item) => <ProductCard key={item.id} product={item} />)
+        ) : (
+          <Box
+            sx={{
+              gridColumn: "1 / -1",
+              py: 6,
+              textAlign: "center",
+              bgcolor: tokens.bgPanel,
+              borderRadius: "16px",
+              border: `1px dashed ${tokens.borderDefault}`,
+            }}
+          >
+            <Typography sx={{ color: tokens.textMuted, fontSize: 14 }}>
+              No featured top picks available at this moment.
+            </Typography>
+          </Box>
+        )}
       </Box>
     </SectionContainer>
   );

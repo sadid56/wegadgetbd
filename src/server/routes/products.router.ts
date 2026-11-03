@@ -5,12 +5,15 @@ import {
   productSchema,
   listProductsInputSchema,
   listProductsOutputSchema,
+  topPickProductSchema,
   customerReviewSchema,
   createProductInputSchema,
   updateProductInputSchema,
 } from "@/server/schemas/products.schema";
 
 import { ListProductsUseCase } from "@/server/use-case/products/list-products";
+import { GetTopPicksUseCase } from "@/server/use-case/products/get-top-picks";
+import { GetLatestArrivalsUseCase } from "@/server/use-case/products/get-latest-arrivals";
 import { GetProductBySlugUseCase } from "@/server/use-case/products/get-product-by-slug";
 import { ListProductReviewsUseCase } from "@/server/use-case/products/list-product-reviews";
 import { AdminListProductsUseCase } from "@/server/use-case/products/admin-list-products";
@@ -20,6 +23,32 @@ import { UpdateProductUseCase } from "@/server/use-case/products/update-product"
 import { DeleteProductUseCase } from "@/server/use-case/products/delete-product";
 
 export const productsRouter = {
+  topPicks: publicProcedure
+    .route({
+      method: "GET",
+      path: "/products/top-picks",
+      summary: "Get lightweight top pick products for home card section",
+      tags: ["Products"],
+    })
+    .input(z.object({ limit: z.number().int().positive().default(4).optional() }).optional())
+    .output(z.array(topPickProductSchema))
+    .handler(async ({ input, context }) =>
+      new GetTopPicksUseCase(context.db).execute(input?.limit ?? 4),
+    ),
+
+  latestArrivals: publicProcedure
+    .route({
+      method: "GET",
+      path: "/products/latest",
+      summary: "Get lightweight latest arrival products for home section",
+      tags: ["Products"],
+    })
+    .input(z.object({ limit: z.number().int().positive().default(4).optional() }).optional())
+    .output(z.array(topPickProductSchema))
+    .handler(async ({ input, context }) =>
+      new GetLatestArrivalsUseCase(context.db).execute(input?.limit ?? 4),
+    ),
+
   list: publicProcedure
     .route({
       method: "GET",
@@ -27,9 +56,9 @@ export const productsRouter = {
       summary: "List products with filtering and pagination",
       tags: ["Products"],
     })
-    .input(listProductsInputSchema)
+    .input(listProductsInputSchema.optional())
     .output(listProductsOutputSchema)
-    .handler(async ({ input, context }) => new ListProductsUseCase(context.db).execute(input)),
+    .handler(async ({ input, context }) => new ListProductsUseCase(context.db).execute(input ?? {})),
 
   bySlug: publicProcedure
     .route({

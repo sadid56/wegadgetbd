@@ -7,8 +7,6 @@ import Typography from "@mui/material/Typography";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { tokens } from "@/theme/theme";
 
-const FONT = "var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-
 const CATEGORIES = [
   {
     name: "Laptops",
@@ -105,7 +103,6 @@ export function CategoryExploreSection() {
                 color: tokens.textMuted,
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
-                fontFamily: FONT,
               }}
             >
               Shop by Category
@@ -118,7 +115,6 @@ export function CategoryExploreSection() {
                   fontSize: { xs: 16, sm: 18 },
                   fontWeight: 800,
                   color: tokens.textPrimary,
-                  fontFamily: FONT,
                   transition: "color 200ms",
                 }}
               >
@@ -212,7 +208,6 @@ export function CategoryExploreSection() {
                     fontSize: 12,
                     fontWeight: 700,
                     color: tokens.textSecondary,
-                    fontFamily: FONT,
                     textAlign: "center",
                     transition: "color 200ms",
                     whiteSpace: "nowrap",

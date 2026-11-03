@@ -10,13 +10,14 @@ import StarIcon from "@mui/icons-material/Star";
 import { tokens } from "@/theme/theme";
 import { IconButton } from "@/components/ui/icon-button";
 import { useCart } from "@/hooks/useCart";
+import { getAssetUrl } from "@/lib/storage";
 
 export interface ProductCardItem {
   id: string | number;
-  badge?: string;
-  tag?: string;
-  badgeVariant?: string;
-  tagVariant?: string;
+  badge?: string | null;
+  tag?: string | null;
+  badgeVariant?: string | null;
+  tagVariant?: string | null;
   brand?: string | null;
   title?: string;
   name?: string;
@@ -24,9 +25,9 @@ export interface ProductCardItem {
   reviewCount?: string | number;
   readTime?: string;
   price?: number | string;
-  originalPrice?: number | string;
+  originalPrice?: number | string | null;
   salePrice?: number | string | null;
-  image?: string;
+  image?: string | null;
   thumbnail?: string | null;
   images?: string[];
   slug?: string;
@@ -51,7 +52,8 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
   const brand = product.brand || product.category?.name || product.tag || "GADGET";
   const badge = product.badge || product.tag;
   const dotColor = DOT_COLORS[product.badgeVariant || product.tagVariant || "default"] || tokens.primary;
-  const image = product.image || product.thumbnail || product.images?.[0] || "/images/default.png";
+  const rawImage = product.image || product.thumbnail || product.images?.[0] || "";
+  const image = (rawImage ? getAssetUrl(rawImage) : null) || "/images/default.png";
   const href = product.link || `/products/${product.slug || product.id}`;
   const price = Number(product.salePrice || product.price || 0);
   const originalPrice = product.originalPrice ? Number(product.originalPrice) : undefined;
@@ -90,6 +92,9 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
             className="product-thumb"
             src={image}
             alt={title}
+            onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+              e.currentTarget.src = "/images/default.png";
+            }}
             sx={{
               width: "100%",
               height: "100%",

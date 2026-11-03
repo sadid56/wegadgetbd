@@ -1,9 +1,3 @@
-:root {
-  --font-roboto: "Roboto", sans-serif;
-  --font-monserat: "Montserrat", sans-serif;
-  --font-bricolage: "Bricolage Grotesque", sans-serif;
-}
-
 * {
   box-sizing: border-box;
   margin: 0;
@@ -52,16 +46,6 @@ a {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 191, 166, 0.75);
-}
-
-.montserrat {
-  font-family: var(--font-monserat);
-}
-.bricolage {
-  font-family: "Bricolage Grotesque", sans-serif;
-}
-.roboto {
-  font-family: var(--font-roboto);
 }
 
 /* Prevent Chrome/Safari/Edge autofill from creating a central blue/gray background box */
