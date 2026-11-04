@@ -2,10 +2,16 @@
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { Dialog, DialogTitle, DialogContent } from "@/components/ui/dialog";
-import { Chip } from "@/components/ui/badge";
-import { Select, MenuItem, FormControl } from "@/components/ui/select";
-import { Divider } from "@/components/ui/divider";
+import {
+  Modal,
+  ModalTitle,
+  ModalContent,
+  Badge,
+  Select,
+  MenuItem,
+  FormControl,
+  Divider,
+} from "@/components/ui";
 
 import PersonOutlineIcon from "@mui/icons-material/PersonOutlined";
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
@@ -29,9 +35,6 @@ interface OrderDetailsModalProps {
   onStatusChange: (id: string, status: OrderStatus) => Promise<void>;
 }
 
-const ORANGE = tokens.badgeSale;
-const ORANGE_DARK = tokens.warningHover;
-
 const infoRowSx = {
   display: "flex",
   alignItems: "center",
@@ -41,7 +44,7 @@ const infoRowSx = {
 } as const;
 
 const sectionTitleSx = {
-  fontSize: 13,
+  fontSize: 12,
   fontWeight: 700,
   textTransform: "uppercase" as const,
   letterSpacing: "0.05em",
@@ -57,7 +60,7 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
   const deviceLabel = `${device.os || ""} ${device.browser || ""} (${device.device})`.trim() || "Unknown Device";
 
   return (
-    <Dialog
+    <Modal
       open={open}
       onClose={() => onOpenChange(false)}
       maxWidth='md'
@@ -67,13 +70,12 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
           sx: {
             maxWidth: 768,
             maxHeight: "90vh",
-            borderRadius: "12px",
           },
         },
       }}
     >
       {/* Header */}
-      <DialogTitle sx={{ pb: 1.5 }}>
+      <ModalTitle sx={{ pb: 1.5 }}>
         <Box
           sx={{
             display: "flex",
@@ -85,10 +87,9 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
           <Typography
             component='h2'
             sx={{
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: 700,
               color: "text.primary",
-              lineHeight: 1.3,
             }}
           >
             Order Details
@@ -97,32 +98,18 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
             <Select
               value={order.status}
               onChange={(e) => onStatusChange(order.id, e.target.value as OrderStatus)}
-              sx={{
-                fontSize: 13,
-                borderRadius: "8px",
-                bgcolor: "background.paper",
-                "& .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "divider",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "text.disabled",
-                },
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "primary.main",
-                },
-              }}
             >
               {orderStatusEnum.enumValues.map((s) => (
-                <MenuItem key={s} value={s} sx={{ fontSize: 13 }}>
+                <MenuItem key={s} value={s}>
                   {s}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
         </Box>
-      </DialogTitle>
+      </ModalTitle>
 
-      <DialogContent dividers>
+      <ModalContent dividers>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3, pt: 1 }}>
           {/* Customer info + Order stats */}
           <Box
@@ -137,17 +124,17 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
               <Typography sx={sectionTitleSx}>Customer info</Typography>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                 <Box sx={infoRowSx}>
-                  <PersonOutlineIcon sx={{ fontSize: 16, color: ORANGE }} />
+                  <PersonOutlineIcon sx={{ fontSize: 16, color: tokens.primary }} />
                   <Box component='span' sx={{ fontWeight: 600 }}>
                     {order.customerName}
                   </Box>
                 </Box>
                 <Box sx={infoRowSx}>
-                  <PhoneOutlinedIcon sx={{ fontSize: 16, color: ORANGE }} />
+                  <PhoneOutlinedIcon sx={{ fontSize: 16, color: tokens.primary }} />
                   <Box component='span'>{order.phoneNumber}</Box>
                 </Box>
                 <Box sx={{ ...infoRowSx, alignItems: "flex-start" }}>
-                  <PlaceOutlinedIcon sx={{ fontSize: 16, color: ORANGE, mt: "2px" }} />
+                  <PlaceOutlinedIcon sx={{ fontSize: 16, color: tokens.primary, mt: "2px" }} />
                   <Box component='span'>
                     {order.address}
                     {order.city && <>, {order.city}</>}
@@ -162,31 +149,20 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
               <Typography sx={sectionTitleSx}>Order stats</Typography>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
                 <Box sx={infoRowSx}>
-                  <ScheduleIcon sx={{ fontSize: 16, color: ORANGE }} />
+                  <ScheduleIcon sx={{ fontSize: 16, color: tokens.primary }} />
                   <Box component='span'>{format(new Date(order.createdAt), "PPP p")}</Box>
                 </Box>
                 <Box sx={{ ...infoRowSx, flexWrap: "wrap" }}>
-                  <LocalOfferOutlinedIcon sx={{ fontSize: 16, color: ORANGE }} />
-                  <Box component='span' sx={{ fontWeight: 700, color: ORANGE_DARK }}>
+                  <LocalOfferOutlinedIcon sx={{ fontSize: 16, color: tokens.primary }} />
+                  <Box component='span' sx={{ fontWeight: 700, color: tokens.textPrimary }}>
                     ৳{Number(order.totalAmount).toLocaleString()}
                   </Box>
-                  <Chip
-                    label={order.paymentMethod.replace(/_/g, " ")}
-                    size='small'
-                    variant='outlined'
-                    sx={{
-                      ml: 1,
-                      height: 20,
-                      fontSize: 10,
-                      fontWeight: 600,
-                      borderColor: "divider",
-                      color: "text.secondary",
-                      "& .MuiChip-label": { px: 1 },
-                    }}
-                  />
+                  <Badge variant='outline' sx={{ ml: 1 }}>
+                    {order.paymentMethod.replace(/_/g, " ")}
+                  </Badge>
                 </Box>
                 <Box sx={infoRowSx}>
-                  <MonitorOutlinedIcon sx={{ fontSize: 20, color: ORANGE }} />
+                  <MonitorOutlinedIcon sx={{ fontSize: 20, color: tokens.primary }} />
                   <Box
                     component='span'
                     title={order.userAgent}
@@ -206,7 +182,7 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
             </Box>
           </Box>
 
-          <Divider sx={{ borderColor: "grey.100" }} />
+          <Divider />
 
           {/* Products table */}
           <Box>
@@ -216,10 +192,9 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
                 alignItems: "center",
                 gap: 1,
                 mb: 1.5,
-                fontStyle: "italic",
               }}
             >
-              <LocalMallOutlinedIcon sx={{ fontSize: 16, color: ORANGE }} />
+              <LocalMallOutlinedIcon sx={{ fontSize: 16, color: tokens.primary }} />
               <Typography component='h3' sx={{ ...sectionTitleSx, mb: 0 }}>
                 Order items
               </Typography>
@@ -227,9 +202,9 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
 
             <Box
               sx={{
-                borderRadius: "12px",
+                borderRadius: `${tokens.radiusMd}px`,
                 border: "1px solid",
-                borderColor: "grey.100",
+                borderColor: tokens.borderDefault,
                 overflow: "hidden",
               }}
             >
@@ -245,9 +220,9 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
                 <Box
                   component='thead'
                   sx={{
-                    bgcolor: "grey.50",
+                    bgcolor: tokens.bgSubtle,
                     borderBottom: "1px solid",
-                    borderColor: "grey.100",
+                    borderColor: tokens.borderDefault,
                   }}
                 >
                   <Box component='tr'>
@@ -283,7 +258,7 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
                       sx={{
                         bgcolor: tokens.bgPanel,
                         borderBottom: idx < items.length - 1 ? "1px solid" : "none",
-                        borderColor: "grey.100",
+                        borderColor: tokens.borderDefault,
                         transition: "background-color 150ms",
                         "&:hover": { bgcolor: tokens.bgSubtle },
                       }}
@@ -299,9 +274,9 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
                                 height: 32,
                                 width: 32,
                                 objectFit: "contain",
-                                borderRadius: "4px",
+                                borderRadius: `${tokens.radiusSm}px`,
                                 border: "1px solid",
-                                borderColor: "grey.100",
+                                borderColor: tokens.borderDefault,
                                 flexShrink: 0,
                               }}
                             />
@@ -333,7 +308,7 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
                   ))}
                 </Box>
 
-                <Box component='tfoot' sx={{ bgcolor: "rgba(249,250,251,0.5)", fontWeight: 700 }}>
+                <Box component='tfoot' sx={{ bgcolor: tokens.bgSubtle, fontWeight: 700 }}>
                   <Box component='tr'>
                     <Box
                       component='td'
@@ -354,7 +329,7 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
                         px: 2,
                         py: 1,
                         textAlign: "right",
-                        color: ORANGE_DARK,
+                        color: tokens.textPrimary,
                         fontWeight: 700,
                       }}
                     >
@@ -391,7 +366,7 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
                 </Typography>
                 <Box
                   sx={{
-                    borderRadius: "8px",
+                    borderRadius: `${tokens.radiusSm}px`,
                     bgcolor: tokens.warningSubtle,
                     p: 1.5,
                     fontSize: 12,
@@ -427,7 +402,7 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
                 </Box>
                 <Box
                   sx={{
-                    borderRadius: "8px",
+                    borderRadius: `${tokens.radiusSm}px`,
                     bgcolor: tokens.accentLight,
                     p: 1.5,
                     fontSize: 10,
@@ -445,7 +420,7 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
             )}
           </Box>
         </Box>
-      </DialogContent>
-    </Dialog>
+      </ModalContent>
+    </Modal>
   );
 }

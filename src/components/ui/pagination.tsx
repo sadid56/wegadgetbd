@@ -9,7 +9,7 @@ import MuiPaginationItem, { type PaginationItemProps as MuiPaginationItemProps }
 import Typography from "@mui/material/Typography";
 import { tokens } from "@/theme/theme";
 
-export type PaginationProps = MuiPaginationProps & BoxProps<"nav">;
+export type PaginationProps = MuiPaginationProps & Omit<BoxProps<"nav">, "onChange">;
 
 function Pagination({ count, page, onChange, sx, children, ...props }: PaginationProps) {
   if (count !== undefined) {

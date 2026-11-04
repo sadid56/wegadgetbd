@@ -5,18 +5,15 @@ export * from "./button";
 export * from "./calendar";
 export * from "./card";
 export * from "./checkbox";
-export * from "./dashboard-header";
 export * from "./data-table";
-export * from "./dialog";
 export * from "./divider";
 export * from "./drawer";
-export * from "./dropdown-menu";
 export * from "./dropdown";
+export * from "./empty-state";
 export * from "./form";
 export * from "./icon-button";
 export * from "./input";
 export * from "./label";
-export { Menu, type MenuProps } from "./menu";
 export * from "./modal";
 export * from "./pagination";
 export {
@@ -33,6 +30,6 @@ export {
 export * from "./skeleton";
 export * from "./spinner";
 export * from "./switch";
-export * from "./table";
+export * from "./slider";
 export * from "./textarea";
 export * from "./tooltip";

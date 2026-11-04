@@ -3,7 +3,7 @@
 import NextLink from "next/link";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import Skeleton from "@mui/material/Skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 import { tokens } from "@/theme/theme";

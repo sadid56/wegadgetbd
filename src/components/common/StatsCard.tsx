@@ -29,13 +29,8 @@ export function StatsCard({
 
   return (
     <Card
-      elevation={0}
       sx={{
         p: { xs: 2.25, sm: 2.5 },
-        borderRadius: `${tokens.radiusLg}px`,
-        border: `1px solid ${tokens.borderDefault}`,
-        bgcolor: tokens.bgPanel,
-        boxShadow: tokens.shadowSm,
         ...sx,
       }}
     >

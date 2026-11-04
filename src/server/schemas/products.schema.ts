@@ -42,7 +42,13 @@ export const listProductsInputSchema = paginationInputSchema.extend({
   search: z.string().optional(),
   category: z.string().optional(),
   featured: z.boolean().optional(),
-  sort: z.enum(["newest", "price-asc", "price-desc", "best-selling"]).optional(),
+  inStock: z.boolean().optional(),
+  onSale: z.boolean().optional(),
+  minPrice: z.number().optional(),
+  maxPrice: z.number().optional(),
+  rating: z.number().optional(),
+  brand: z.string().optional(),
+  sort: z.enum(["newest", "price-asc", "price-desc", "best-selling", "rating", "discount"]).optional(),
 });
 
 export const listProductsOutputSchema = z.object({

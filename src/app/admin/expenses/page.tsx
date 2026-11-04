@@ -1,139 +1,96 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { useToast } from "@/context/toast-context";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { Button } from "@/components/ui/button";
-import { TextField } from "@/components/ui/input";
-import { CircularProgress } from "@/components/ui/spinner";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@/components/ui/table";
 
-import { ExpenseEndpoints } from "@/query-client/expenses";
-import { tokens } from "@/theme/theme";
-
-const inputSx = {
-  "& .MuiOutlinedInput-root": {
-    borderRadius: "8px",
-    fontSize: 14,
-    bgcolor: "background.paper",
-    "& fieldset": { borderColor: "divider" },
-    "&:hover fieldset": { borderColor: "text.disabled" },
-    "&.Mui-focused fieldset": { borderColor: "primary.main" },
-  },
-} as const;
-
-const cardSx = {
-  borderRadius: "12px",
-  border: "1px solid",
-  borderColor: "divider",
-  bgcolor: "background.paper",
-  p: 2,
-} as const;
-
-const tableHeadSx = {
-  fontSize: 12,
-  fontWeight: 600,
-  color: "text.secondary",
-  textTransform: "uppercase",
-  letterSpacing: "0.05em",
-  bgcolor: "action.hover",
-  borderBottom: "1px solid",
-  borderColor: "divider",
-  py: 1.25,
-} as const;
-
-const primaryButtonSx = {
-  textTransform: "none",
-  fontWeight: 600,
-  fontSize: 14,
-  borderRadius: "8px",
-  height: 40,
-  bgcolor: "primary.main",
-  color: "primary.contrastText",
-  "&:hover": { bgcolor: "primary.dark" },
-} as const;
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardContent,
+  TextField,
+  CircularProgress,
+  DataTable,
+  type DataTableColumn,
+} from "@/components/ui";
+import { DashboardHeader } from "@/components/admin/dashboard-header";
+import { useExpenseSummary, useCreateExpense } from "@/query-client/expenses";
+import { createExpenseInputSchema, type CreateExpenseInput } from "@/server/schemas";
 
 export default function ExpenseSummaryPage() {
-  const toast = useToast();
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [summary, setSummary] = useState<any>(null);
+  const { data: summary, isLoading } = useExpenseSummary();
+  const { mutateAsync: createExpense, isPending: saving } = useCreateExpense();
 
-  const [amount, setAmount] = useState("");
-  const [note, setNote] = useState("");
-  const [date, setDate] = useState("");
+  const form = useForm<CreateExpenseInput>({
+    resolver: zodResolver(createExpenseInputSchema) as any,
+    defaultValues: {
+      category: "General",
+      amount: undefined,
+      note: "",
+      date: format(new Date(), "yyyy-MM-dd"),
+    },
+  });
 
-  const loadSummary = async () => {
-    try {
-      const result = await ExpenseEndpoints.getSummary();
-      if (result) {
-        setSummary(result);
-      }
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to load expenses");
-    } finally {
-      setLoading(false);
-    }
+  const onSubmit = async (values: CreateExpenseInput) => {
+    await createExpense({
+      category: values.category || "General",
+      amount: Number(values.amount),
+      note: values.note || undefined,
+      date: values.date ? new Date(values.date) : new Date(),
+    });
+    form.reset({
+      category: "General",
+      amount: undefined,
+      note: "",
+      date: format(new Date(), "yyyy-MM-dd"),
+    });
   };
 
-  useEffect(() => {
-    loadSummary();
-  }, []);
-
-  const handleAddExpense = async () => {
-    if (!amount) {
-      toast.error("Amount is required");
-      return;
-    }
-
-    setSaving(true);
-    try {
-      const res = await ExpenseEndpoints.createExpense({
-        category: "General",
-        amount: Number(amount),
-        note,
-        date: date ? new Date(date) : new Date(),
-      });
-      setSaving(false);
-
-      if (!res?.success) {
-        toast.error((res as any)?.message || "Failed to add expense");
-        return;
-      }
-
-      toast.success("Expense added");
-      setAmount("");
-      setNote("");
-      setDate("");
-      await loadSummary();
-    } catch (err: any) {
-      setSaving(false);
-      toast.error(err?.message || "Failed to add expense");
-    }
-  };
-
-  if (loading && !summary) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 300 }}>
-        <CircularProgress size={32} />
-      </Box>
-    );
-  }
+  const columns: DataTableColumn<any>[] = useMemo(
+    () => [
+      {
+        id: "date",
+        header: "Date",
+        cell: (row) => (
+          <Typography variant="body2" sx={{ fontSize: "0.8125rem", color: "text.secondary" }}>
+            {row.date ? format(new Date(row.date), "dd MMM yyyy") : "—"}
+          </Typography>
+        ),
+      },
+      {
+        id: "amount",
+        header: "Amount",
+        cell: (row) => (
+          <Typography variant="body2" sx={{ fontWeight: 600, color: "text.primary" }}>
+            ৳{Number(row.amount).toLocaleString()}
+          </Typography>
+        ),
+      },
+      {
+        id: "note",
+        header: "Note",
+        cell: (row) => (
+          <Typography variant="body2" sx={{ color: "text.primary" }}>
+            {row.note || "—"}
+          </Typography>
+        ),
+      },
+    ],
+    [],
+  );
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      {/* Header */}
-      <Box>
-        <Typography component='h1' sx={{ fontSize: 24, fontWeight: 900, color: "text.primary", letterSpacing: "-0.02em" }}>
-          Daily Expense Summary
-        </Typography>
-        <Typography sx={{ fontSize: 14, color: "text.secondary", mt: 0.5 }}>
-          Track expense totals for last 7 days, 30 days, and last 1 year.
-        </Typography>
-      </Box>
+      {/* Dashboard Header */}
+      <DashboardHeader
+        title="Expenses"
+        description="Track expense totals for last 7 days, 30 days, and last 1 year."
+      />
 
       {/* Summary cards */}
       <Box
@@ -148,136 +105,102 @@ export default function ExpenseSummaryPage() {
           { label: "Last 30 Days Expense", value: summary?.last30DaysExpense || 0 },
           { label: "Last 1 Year Expense", value: summary?.lastYearExpense || 0 },
         ].map((card) => (
-          <Box key={card.label} sx={cardSx}>
-            <Box
-              component='p'
+          <Card key={card.label}>
+            <Typography
               sx={{
-                fontSize: 12,
+                fontSize: "0.75rem",
                 textTransform: "uppercase",
                 color: "text.secondary",
-                m: 0,
                 letterSpacing: "0.05em",
-                fontWeight: 500,
+                fontWeight: 600,
               }}
             >
               {card.label}
-            </Box>
-            <Box
-              component='p'
+            </Typography>
+            <Typography
               sx={{
-                fontSize: 24,
-                fontWeight: 900,
+                fontSize: "1.625rem",
+                fontWeight: 800,
                 color: "text.primary",
-                m: 0,
                 mt: 1,
                 lineHeight: 1.2,
               }}
             >
-              ৳{card.value}
-            </Box>
-          </Box>
+              ৳{card.value.toLocaleString()}
+            </Typography>
+          </Card>
         ))}
       </Box>
 
       {/* Add expense */}
-      <Box sx={{ ...cardSx, display: "flex", flexDirection: "column", gap: 1.5 }}>
-        <Typography component='h2' sx={{ fontSize: 16, fontWeight: 900, color: "text.primary" }}>
-          Add Expense
-        </Typography>
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr", md: "repeat(4, minmax(0, 1fr))" },
-            gap: 1.5,
-          }}
-        >
-          <TextField
-            type='number'
-            placeholder='Amount'
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            size='small'
-            fullWidth
-            sx={inputSx}
-            slotProps={{ htmlInput: { min: 0, step: "0.01" } }}
-          />
-          <TextField
-            type='text'
-            placeholder='Note (optional)'
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            size='small'
-            fullWidth
-            sx={inputSx}
-          />
-          <TextField
-            type='date'
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            size='small'
-            fullWidth
-            sx={inputSx}
-          />
-          <Button
-            onClick={handleAddExpense}
-            disabled={saving}
-            disableElevation
-            startIcon={saving ? <CircularProgress size={14} sx={{ color: "inherit" }} /> : undefined}
-            sx={{ ...primaryButtonSx, height: "100%", minHeight: 40 }}
+      <Card>
+        <CardHeader
+          title="Add New Expense"
+          titleTypographyProps={{ sx: { fontSize: "0.95rem", fontWeight: 700 } }}
+        />
+        <CardContent sx={{ pt: 0 }}>
+          <Box
+            component="form"
+            onSubmit={form.handleSubmit(onSubmit)}
+            sx={{
+              display: "grid",
+              gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(4, minmax(0, 1fr))" },
+              gap: 1.5,
+              alignItems: "flex-start",
+            }}
           >
-            {saving ? "Saving..." : "Save"}
-          </Button>
-        </Box>
-      </Box>
+            <TextField
+              type="number"
+              placeholder="Amount *"
+              {...form.register("amount", { valueAsNumber: true })}
+              error={Boolean(form.formState.errors.amount)}
+              helperText={form.formState.errors.amount?.message}
+              slotProps={{ htmlInput: { min: 0, step: "0.01" } }}
+              fullWidth
+            />
+            <TextField
+              type="text"
+              placeholder="Note (optional)"
+              {...form.register("note")}
+              error={Boolean(form.formState.errors.note)}
+              helperText={form.formState.errors.note?.message}
+              fullWidth
+            />
+            <TextField
+              type="date"
+              {...form.register("date")}
+              error={Boolean(form.formState.errors.date)}
+              helperText={form.formState.errors.date?.message}
+              fullWidth
+            />
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={saving}
+              startIcon={saving ? <CircularProgress size={14} sx={{ color: "inherit" }} /> : undefined}
+              sx={{ height: 40 }}
+            >
+              {saving ? "Saving..." : "Save Expense"}
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
 
-      {/* Table */}
-      <TableContainer
-        sx={{
-          borderRadius: "12px",
-          border: "1px solid",
-          borderColor: "divider",
-          overflow: "auto",
-        }}
-      >
-        <Table>
-          <TableHead>
-            <TableRow>
-              {["Date", "Amount", "Note"].map((head) => (
-                <TableCell key={head} sx={tableHeadSx}>
-                  {head}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {summary?.recent?.length ? (
-              summary.recent.map((row: any) => (
-                <TableRow
-                  key={row.id}
-                  sx={{
-                    "&:hover": { bgcolor: "action.hover" },
-                    "& td": {
-                      borderBottom: "1px solid",
-                      borderColor: "divider",
-                      py: 1.5,
-                    },
-                  }}
-                >
-                  <TableCell sx={{ fontSize: 14, color: "text.primary" }}>{format(new Date(row.date), "dd MMM yyyy")}</TableCell>
-                  <TableCell sx={{ fontSize: 14, fontWeight: 600, color: "text.primary" }}>৳{row.amount}</TableCell>
-                  <TableCell sx={{ fontSize: 14, color: "text.primary" }}>{row.note || "-"}</TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={3} sx={{ height: 96, textAlign: "center", color: "text.secondary", fontSize: 14 }}>
-                  No expenses yet.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {/* Recent Expenses */}
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Typography component="h3" sx={{ fontSize: "1.05rem", fontWeight: 700, color: "text.primary" }}>
+          Recent Expenses
+        </Typography>
+
+        <DataTable
+          columns={columns}
+          data={summary?.recent ?? []}
+          keyExtractor={(row) => row.id}
+          isLoading={isLoading}
+          emptyMessage="No expenses recorded yet."
+        />
+      </Box>
     </Box>
   );
 }
+

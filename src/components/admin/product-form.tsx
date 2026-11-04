@@ -11,11 +11,12 @@ import Typography from "@mui/material/Typography";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { TextField, InputAdornment } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { FormControl, Select, MenuItem } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Chip } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { CircularProgress } from "@/components/ui/spinner";
-import { Paper } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import CloseIcon from "@mui/icons-material/Close";
@@ -37,25 +38,6 @@ export type ProductFormValues = CreateProductInput;
 interface ProductFormProps {
   initialData?: any;
 }
-
-const inputSx = {
-  "& .MuiOutlinedInput-root": {
-    borderRadius: "8px",
-    fontSize: 14,
-    bgcolor: "background.paper",
-    "& fieldset": { borderColor: "divider" },
-    "&:hover fieldset": { borderColor: "text.disabled" },
-    "&.Mui-focused fieldset": { borderColor: "primary.main" },
-  },
-} as const;
-
-const labelSx = {
-  display: "block",
-  fontSize: 13,
-  fontWeight: 600,
-  color: "text.primary",
-  mb: 0.75,
-} as const;
 
 export function ProductForm({ initialData }: ProductFormProps) {
   const router = useRouter();
@@ -191,9 +173,9 @@ export function ProductForm({ initialData }: ProductFormProps) {
       {/* Title & Slug */}
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 3 }}>
         <Box>
-          <Box component='label' htmlFor='title' sx={labelSx}>
+          <Label htmlFor='title' sx={{ mb: 0.75, display: "block" }}>
             Name of the product *
-          </Box>
+          </Label>
           <Controller
             name='title'
             control={form.control}
@@ -204,7 +186,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
                 placeholder='Product title'
                 fullWidth
                 size='small'
-                sx={inputSx}
                 error={!!form.formState.errors.title}
                 helperText={form.formState.errors.title?.message}
                 onChange={(e) => {
@@ -219,9 +200,9 @@ export function ProductForm({ initialData }: ProductFormProps) {
         </Box>
 
         <Box>
-          <Box component='label' htmlFor='slug' sx={labelSx}>
+          <Label htmlFor='slug' sx={{ mb: 0.75, display: "block" }}>
             Slug (Optional)
-          </Box>
+          </Label>
           <Controller
             name='slug'
             control={form.control}
@@ -232,7 +213,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
                 placeholder='unique-url-identifier'
                 fullWidth
                 size='small'
-                sx={inputSx}
                 error={!!form.formState.errors.slug}
                 helperText={form.formState.errors.slug?.message}
               />
@@ -245,15 +225,15 @@ export function ProductForm({ initialData }: ProductFormProps) {
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "repeat(4, 1fr)" }, gap: 2.5 }}>
         {/* Category */}
         <Box>
-          <Box component='label' sx={labelSx}>
+          <Label sx={{ mb: 0.75, display: "block" }}>
             Category *
-          </Box>
+          </Label>
           <Controller
             name='categoryId'
             control={form.control}
             render={({ field }) => (
               <FormControl fullWidth size='small' error={!!form.formState.errors.categoryId}>
-                <Select {...field} sx={inputSx}>
+                <Select {...field}>
                   <MenuItem value='' disabled>
                     Select category
                   </MenuItem>
@@ -275,15 +255,15 @@ export function ProductForm({ initialData }: ProductFormProps) {
 
         {/* Status */}
         <Box>
-          <Box component='label' sx={labelSx}>
+          <Label sx={{ mb: 0.75, display: "block" }}>
             Status *
-          </Box>
+          </Label>
           <Controller
             name='status'
             control={form.control}
             render={({ field }) => (
               <FormControl fullWidth size='small'>
-                <Select {...field} sx={inputSx}>
+                <Select {...field}>
                   <MenuItem value='PENDING' sx={{ fontSize: 14 }}>
                     Pending
                   </MenuItem>
@@ -301,9 +281,9 @@ export function ProductForm({ initialData }: ProductFormProps) {
 
         {/* Price */}
         <Box>
-          <Box component='label' htmlFor='price' sx={labelSx}>
+          <Label htmlFor='price' sx={{ mb: 0.75, display: "block" }}>
             Main Price *
-          </Box>
+          </Label>
           <Controller
             name='price'
             control={form.control}
@@ -315,7 +295,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
                 placeholder='0.00'
                 fullWidth
                 size='small'
-                sx={inputSx}
                 slotProps={{ htmlInput: { step: "0.01" } }}
                 error={!!form.formState.errors.price}
                 helperText={form.formState.errors.price?.message}
@@ -326,9 +305,9 @@ export function ProductForm({ initialData }: ProductFormProps) {
 
         {/* Discount Price */}
         <Box>
-          <Box component='label' htmlFor='discountPrice' sx={labelSx}>
+          <Label htmlFor='discountPrice' sx={{ mb: 0.75, display: "block" }}>
             Discount Price
-          </Box>
+          </Label>
           <Controller
             name='discountPrice'
             control={form.control}
@@ -340,7 +319,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
                 placeholder='0.00'
                 fullWidth
                 size='small'
-                sx={inputSx}
                 slotProps={{ htmlInput: { step: "0.01" } }}
                 error={!!form.formState.errors.discountPrice}
                 helperText={form.formState.errors.discountPrice?.message}
@@ -353,31 +331,31 @@ export function ProductForm({ initialData }: ProductFormProps) {
       {/* Brand, Model, Rating, Sold count */}
       <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "repeat(4, 1fr)" }, gap: 2.5 }}>
         <Box>
-          <Box component='label' sx={labelSx}>
+          <Label sx={{ mb: 0.75, display: "block" }}>
             Brand
-          </Box>
+          </Label>
           <Controller
             name='brand'
             control={form.control}
-            render={({ field }) => <TextField {...field} placeholder='Brand name' fullWidth size='small' sx={inputSx} />}
+            render={({ field }) => <TextField {...field} placeholder='Brand name' fullWidth size='small' />}
           />
         </Box>
 
         <Box>
-          <Box component='label' sx={labelSx}>
+          <Label sx={{ mb: 0.75, display: "block" }}>
             Model
-          </Box>
+          </Label>
           <Controller
             name='model'
             control={form.control}
-            render={({ field }) => <TextField {...field} placeholder='Model name/number' fullWidth size='small' sx={inputSx} />}
+            render={({ field }) => <TextField {...field} placeholder='Model name/number' fullWidth size='small' />}
           />
         </Box>
 
         <Box>
-          <Box component='label' sx={labelSx}>
+          <Label sx={{ mb: 0.75, display: "block" }}>
             Rating (0 - 5)
-          </Box>
+          </Label>
           <Controller
             name='rating'
             control={form.control}
@@ -388,7 +366,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
                 placeholder='5.0'
                 fullWidth
                 size='small'
-                sx={inputSx}
                 slotProps={{ htmlInput: { step: "0.1", min: "0", max: "5" } }}
                 error={!!form.formState.errors.rating}
                 helperText={form.formState.errors.rating?.message}
@@ -398,9 +375,9 @@ export function ProductForm({ initialData }: ProductFormProps) {
         </Box>
 
         <Box>
-          <Box component='label' sx={labelSx}>
+          <Label sx={{ mb: 0.75, display: "block" }}>
             Sold Count
-          </Box>
+          </Label>
           <Controller
             name='soldCount'
             control={form.control}
@@ -411,7 +388,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
                 placeholder='360'
                 fullWidth
                 size='small'
-                sx={inputSx}
                 slotProps={{ htmlInput: { min: "0" } }}
                 error={!!form.formState.errors.soldCount}
                 helperText={form.formState.errors.soldCount?.message || "Used in product CTA button"}
@@ -422,7 +398,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
       </Box>
 
       {/* Stock Availability */}
-      <Paper variant='outlined' sx={{ p: 2, borderRadius: "10px", borderColor: "divider" }}>
+      <Card sx={{ p: 2 }}>
         <Controller
           name='inStock'
           control={form.control}
@@ -440,13 +416,13 @@ export function ProductForm({ initialData }: ProductFormProps) {
             </Box>
           )}
         />
-      </Paper>
+      </Card>
 
       {/* Video Links */}
       <Box>
-        <Box component='label' sx={labelSx}>
+        <Label sx={{ mb: 0.75, display: "block" }}>
           Product Videos (Up to 2 YouTube/Facebook links)
-        </Box>
+        </Label>
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 2 }}>
           {[0, 1].map((index) => (
             <Controller
@@ -459,7 +435,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
                   placeholder={`Video link ${index + 1}`}
                   fullWidth
                   size='small'
-                  sx={inputSx}
                   slotProps={{
                     input: {
                       startAdornment: (
@@ -478,9 +453,9 @@ export function ProductForm({ initialData }: ProductFormProps) {
 
       {/* Why Buy Text */}
       <Box>
-        <Box component='label' sx={labelSx}>
+        <Label sx={{ mb: 0.75, display: "block" }}>
           Why Buy Text (Product Page)
-        </Box>
+        </Label>
         <Controller
           name='whyBuyText'
           control={form.control}
@@ -492,7 +467,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
               placeholder='Explain why this product is worth buying...'
               fullWidth
               size='small'
-              sx={inputSx}
               helperText="This appears in the 'Why Buy [Product Name]?' section."
             />
           )}
@@ -501,9 +475,9 @@ export function ProductForm({ initialData }: ProductFormProps) {
 
       {/* Description */}
       <Box>
-        <Box component='label' sx={labelSx}>
+        <Label sx={{ mb: 0.75, display: "block" }}>
           Short Description *
-        </Box>
+        </Label>
         <Controller
           name='description'
           control={form.control}
@@ -515,7 +489,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
               placeholder='Product description'
               fullWidth
               size='small'
-              sx={inputSx}
               error={!!form.formState.errors.description}
               helperText={form.formState.errors.description?.message}
             />
@@ -525,9 +498,9 @@ export function ProductForm({ initialData }: ProductFormProps) {
 
       {/* Tags */}
       <Box>
-        <Box component='label' sx={labelSx}>
+        <Label sx={{ mb: 0.75, display: "block" }}>
           Tags (Keywords for search)
-        </Box>
+        </Label>
         <Controller
           name='tags'
           control={form.control}
@@ -535,17 +508,13 @@ export function ProductForm({ initialData }: ProductFormProps) {
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
                 {(field.value || []).map((tag, idx) => (
-                  <Chip
+                  <Badge
                     key={idx}
-                    label={tag}
-                    size='small'
+                    variant='secondary'
                     onDelete={() => handleRemoveTag(idx)}
-                    sx={{
-                      borderRadius: "6px",
-                      bgcolor: "action.hover",
-                      fontWeight: 500,
-                    }}
-                  />
+                  >
+                    {tag}
+                  </Badge>
                 ))}
               </Box>
               <TextField
@@ -555,7 +524,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
                 placeholder='Add tag and press Enter or comma'
                 fullWidth
                 size='small'
-                sx={inputSx}
                 helperText='Press Enter or comma to add each tag'
               />
             </Box>
@@ -565,9 +533,9 @@ export function ProductForm({ initialData }: ProductFormProps) {
 
       {/* Images */}
       <Box>
-        <Box component='label' sx={labelSx}>
+        <Label sx={{ mb: 0.75, display: "block" }}>
           Images (Thumbnail and Gallery) *
-        </Box>
+        </Label>
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5, mb: 1.5 }}>
           {form.watch("images")?.map((url, idx) => (
             <Box
@@ -660,9 +628,9 @@ export function ProductForm({ initialData }: ProductFormProps) {
 
       {/* Markdown Description */}
       <Box>
-        <Box component='label' sx={labelSx}>
+        <Label sx={{ mb: 0.75, display: "block" }}>
           Markdown Description (Optional)
-        </Box>
+        </Label>
         <Typography variant='caption' sx={{ color: "text.secondary", display: "block", mb: 1 }}>
           Rich text description using markdown format
         </Typography>
@@ -679,34 +647,19 @@ export function ProductForm({ initialData }: ProductFormProps) {
       <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, pt: 2 }}>
         <Button
           type='button'
-          variant='outlined'
+          variant='outline'
           onClick={() => router.back()}
           disabled={isPending}
-          sx={{
-            textTransform: "none",
-            borderRadius: "8px",
-            borderColor: "divider",
-            color: "text.primary",
-            px: 3,
-            "&:hover": { borderColor: "text.disabled", bgcolor: "action.hover" },
-          }}
+          sx={{ px: 3 }}
         >
           Cancel
         </Button>
         <Button
           type='submit'
-          variant='contained'
-          disableElevation
+          variant='primary'
           disabled={isPending}
           startIcon={isPending ? <CircularProgress size={16} sx={{ color: "inherit" }} /> : undefined}
-          sx={{
-            textTransform: "none",
-            borderRadius: "8px",
-            fontWeight: 600,
-            px: 3,
-            bgcolor: "primary.main",
-            "&:hover": { bgcolor: "primary.dark" },
-          }}
+          sx={{ px: 3 }}
         >
           {initialData ? "Update Product" : "Create Product"}
         </Button>

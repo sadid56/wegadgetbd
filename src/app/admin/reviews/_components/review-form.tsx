@@ -3,12 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { FormControl, Select, MenuItem } from "@/components/ui/select";
 import { IconButton } from "@/components/ui/icon-button";
 import { CircularProgress } from "@/components/ui/spinner";
@@ -29,36 +28,6 @@ interface ReviewFormProps {
   initialData?: any;
   onSuccess: () => void;
 }
-
-const inputSx = {
-  "& .MuiOutlinedInput-root": {
-    borderRadius: "8px",
-    fontSize: 14,
-    bgcolor: "background.paper",
-    "& fieldset": { borderColor: "divider" },
-    "&:hover fieldset": { borderColor: "text.disabled" },
-    "&.Mui-focused fieldset": { borderColor: "primary.main" },
-  },
-} as const;
-
-const selectSx = {
-  borderRadius: "8px",
-  fontSize: 14,
-  bgcolor: "background.paper",
-  "& .MuiOutlinedInput-notchedOutline": { borderColor: "divider" },
-  "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "text.disabled" },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "primary.main" },
-} as const;
-
-const labelSx = {
-  display: "block",
-  fontSize: 14,
-  fontWeight: 500,
-  color: "text.primary",
-  mb: 1,
-} as const;
-
-const helperTextSx = { fontSize: 12, mx: 0 } as const;
 
 export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
   const { mutate: createReview, isPending: isCreating } = useCreateReview();
@@ -188,9 +157,7 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
     >
       {/* Product */}
       <Box>
-        <Box component='label' htmlFor='review-product' sx={labelSx}>
-          Product (Optional)
-        </Box>
+        <Label htmlFor='review-product'>Product (Optional)</Label>
         <Controller
           name='productId'
           control={form.control}
@@ -198,28 +165,12 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
             <FormControl fullWidth size='small'>
               <Select
                 id='review-product'
-                value={field.value || ""}
+                value={field.value || "none"}
                 onChange={field.onChange}
-                displayEmpty
-                sx={selectSx}
-                renderValue={(selected) => {
-                  if (!selected) {
-                    return (
-                      <Box component='span' sx={{ color: "text.secondary" }}>
-                        Select a product
-                      </Box>
-                    );
-                  }
-                  if (selected === "none") return "No specific product";
-                  const p = products.find((x) => x.id === selected);
-                  return p?.title ?? "Select a product";
-                }}
               >
-                <MenuItem value='none' sx={{ fontSize: 14 }}>
-                  No specific product
-                </MenuItem>
+                <MenuItem value='none'>No specific product</MenuItem>
                 {products.map((p) => (
-                  <MenuItem key={p.id} value={p.id} sx={{ fontSize: 14 }}>
+                  <MenuItem key={p.id} value={p.id}>
                     {p.title}
                   </MenuItem>
                 ))}
@@ -231,9 +182,7 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
 
       {/* Customer Name */}
       <Box>
-        <Box component='label' htmlFor='review-customer-name' sx={labelSx}>
-          Customer Name
-        </Box>
+        <Label htmlFor='review-customer-name'>Customer Name</Label>
         <TextField
           id='review-customer-name'
           placeholder='John Doe'
@@ -241,7 +190,6 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
           size='small'
           inputRef={nameRef}
           {...nameProps}
-          sx={inputSx}
           error={!!form.formState.errors.customerName}
           helperText={form.formState.errors.customerName?.message}
         />
@@ -249,9 +197,7 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
 
       {/* Profile Photo */}
       <Box>
-        <Box component='label' sx={labelSx}>
-          Profile Photo (Optional)
-        </Box>
+        <Label>Profile Photo (Optional)</Label>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
           <Box
             onClick={() => picRef.current?.click()}
@@ -348,8 +294,6 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
                   setPicPreview(e.target.value);
                 }}
                 onBlur={field.onBlur}
-                sx={inputSx}
-                slotProps={{ input: { sx: { fontSize: 12 } } }}
               />
             )}
           />
@@ -358,9 +302,7 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
 
       {/* Review Media */}
       <Box>
-        <Box component='label' sx={labelSx}>
-          Review Photo / Video (Optional)
-        </Box>
+        <Label>Review Photo / Video (Optional)</Label>
         <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
           <Box
             onClick={() => mediaRef.current?.click()}
@@ -467,9 +409,7 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
 
       {/* Rating */}
       <Box>
-        <Box component='label' htmlFor='review-rating' sx={labelSx}>
-          Rating (1-5)
-        </Box>
+        <Label htmlFor='review-rating'>Rating (1-5)</Label>
         <TextField
           id='review-rating'
           type='number'
@@ -477,7 +417,6 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
           size='small'
           inputRef={ratingRef}
           {...ratingProps}
-          sx={inputSx}
           slotProps={{ htmlInput: { min: 1, max: 5 } }}
           error={!!form.formState.errors.rating}
           helperText={form.formState.errors.rating?.message}
@@ -486,9 +425,7 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
 
       {/* Status */}
       <Box>
-        <Box component='label' htmlFor='review-status' sx={labelSx}>
-          Status
-        </Box>
+        <Label htmlFor='review-status'>Status</Label>
         <Controller
           name='status'
           control={form.control}
@@ -496,35 +433,12 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
             <FormControl fullWidth size='small'>
               <Select
                 id='review-status'
-                value={field.value || ""}
+                value={field.value || "APPROVED"}
                 onChange={field.onChange}
-                displayEmpty
-                sx={selectSx}
-                renderValue={(selected) => {
-                  if (!selected) {
-                    return (
-                      <Box component='span' sx={{ color: "text.secondary" }}>
-                        Select status
-                      </Box>
-                    );
-                  }
-                  const labels: Record<string, string> = {
-                    PENDING: "Pending",
-                    APPROVED: "Approved",
-                    REJECTED: "Rejected",
-                  };
-                  return labels[selected] ?? selected;
-                }}
               >
-                <MenuItem value='PENDING' sx={{ fontSize: 14 }}>
-                  Pending
-                </MenuItem>
-                <MenuItem value='APPROVED' sx={{ fontSize: 14 }}>
-                  Approved
-                </MenuItem>
-                <MenuItem value='REJECTED' sx={{ fontSize: 14 }}>
-                  Rejected
-                </MenuItem>
+                <MenuItem value='PENDING'>Pending</MenuItem>
+                <MenuItem value='APPROVED'>Approved</MenuItem>
+                <MenuItem value='REJECTED'>Rejected</MenuItem>
               </Select>
             </FormControl>
           )}
@@ -533,9 +447,7 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
 
       {/* Review Text */}
       <Box>
-        <Box component='label' htmlFor='review-text' sx={labelSx}>
-          Review
-        </Box>
+        <Label htmlFor='review-text'>Review</Label>
         <TextField
           id='review-text'
           placeholder='Great product...'
@@ -544,14 +456,6 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
           minRows={4}
           inputRef={reviewRef}
           {...reviewProps}
-          sx={{
-            ...inputSx,
-            "& .MuiOutlinedInput-root": {
-              ...inputSx["& .MuiOutlinedInput-root"],
-              py: 1,
-            },
-            "& .MuiOutlinedInput-input": { paddingTop: "8px !important" },
-          }}
           error={!!form.formState.errors.review}
           helperText={form.formState.errors.review?.message}
         />
@@ -560,21 +464,9 @@ export function ReviewForm({ initialData, onSuccess }: ReviewFormProps) {
       <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
         <Button
           type='submit'
-          variant='contained'
-          disableElevation
+          variant='primary'
           disabled={isPending}
           startIcon={isPending ? <CircularProgress size={14} sx={{ color: "inherit" }} /> : undefined}
-          sx={{
-            textTransform: "none",
-            fontWeight: 600,
-            fontSize: 14,
-            borderRadius: "8px",
-            height: 40,
-            px: 2.5,
-            bgcolor: "primary.main",
-            color: "primary.contrastText",
-            "&:hover": { bgcolor: "primary.dark" },
-          }}
         >
           {initialData ? "Update" : "Create"}
         </Button>

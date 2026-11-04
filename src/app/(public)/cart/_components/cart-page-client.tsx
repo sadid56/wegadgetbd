@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import Box from "@mui/material/Box";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
+import { EmptyState } from "@/components/ui/empty-state";
 import Typography from "@mui/material/Typography";
 import { InputBase } from "@/components/ui/input";
 import { keyframes } from "@emotion/react";
@@ -29,24 +30,9 @@ import { useCart } from "@/hooks/useCart";
 import { getAssetUrl } from "@/lib/storage";
 import { tokens } from "@/theme/theme";
 
-const fadeUp = keyframes`
-  from { opacity: 0; transform: translateY(24px); }
-  to   { opacity: 1; transform: translateY(0); }
-`;
-
 const itemFadeIn = keyframes`
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
-`;
-
-const spin = keyframes`
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-`;
-
-const pulse = keyframes`
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.5; }
 `;
 
 const TRUST = [
@@ -60,122 +46,33 @@ function EmptyCart() {
   return (
     <Box
       sx={{
-        minHeight: "80vh",
+        minHeight: "70vh",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         bgcolor: tokens.bgCanvas,
         px: 2,
+        py: 6,
       }}
     >
-      <Box
-        sx={{
-          width: "100%",
-          maxWidth: 448,
-          textAlign: "center",
-          animation: `${fadeUp} 500ms cubic-bezier(0.16, 1, 0.3, 1) both`,
-        }}
-      >
-        <Box sx={{ position: "relative", mx: "auto", width: 128, height: 128, mb: 4 }}>
-          <Box
-            sx={{
-              position: "absolute",
-              inset: 0,
-              borderRadius: "50%",
-              bgcolor: tokens.bgSubtle,
-              animation: `${pulse} 2s ease-in-out infinite`,
-            }}
-          />
-          <Box
-            sx={{
-              position: "relative",
-              width: "100%",
-              height: "100%",
-              borderRadius: "50%",
-              bgcolor: tokens.bgPanel,
-              border: `1px solid ${tokens.borderDefault}`,
-              boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
+      <EmptyState
+        icon={<ShoppingBagOutlinedIcon sx={{ fontSize: 32, color: tokens.textSecondary }} />}
+        title="Your cart is empty"
+        description="Looks like you haven't added anything yet. Explore our collection and find something you'll love."
+        action={
+          <Button
+            component={NextLink}
+            href="/products"
+            variant="primary"
+            startIcon={<Inventory2OutlinedIcon sx={{ fontSize: 16 }} />}
+            sx={{ height: 44, px: 3.5 }}
           >
-            <ShoppingBagOutlinedIcon sx={{ fontSize: 56, color: tokens.borderElevated }} />
-          </Box>
-          <Box sx={{ position: "absolute", inset: 0, animation: `${spin} 4s linear infinite` }}>
-            <Box
-              sx={{
-                position: "absolute",
-                top: 0,
-                left: "50%",
-                transform: "translate(-50%, -4px)",
-                width: 12,
-                height: 12,
-                borderRadius: "50%",
-                bgcolor: tokens.primary,
-                boxShadow: `0 4px 6px -1px ${tokens.primaryBorder}`,
-              }}
-            />
-          </Box>
-        </Box>
-
-        <Typography
-          component='h1'
-          sx={{
-            fontSize: 24,
-            fontWeight: 900,
-            color: tokens.textPrimary,
-            letterSpacing: "-0.02em",
-            mb: 1,
-          }}
-        >
-          Your cart is empty
-        </Typography>
-        <Typography
-          sx={{
-            color: tokens.textDisabled,
-            fontSize: 14,
-            lineHeight: 1.65,
-            mb: 4,
-            maxWidth: 320,
-            mx: "auto",
-          }}
-        >
-          Looks like you haven&apos;t added anything yet. Explore our collection and find something you&apos;ll love.
-        </Typography>
-
-        <Button
-          component={NextLink}
-          href='/products'
-          startIcon={<Inventory2OutlinedIcon sx={{ fontSize: 16 }} />}
-          disableElevation
-          sx={{
-            height: 48,
-            px: 4,
-            borderRadius: "16px",
-            bgcolor: tokens.textPrimary,
-            color: tokens.textWhite,
-            fontWeight: 700,
-            fontSize: 14,
-            textTransform: "none",
-            boxShadow: "0 20px 25px -5px rgba(15,23,42,0.2)",
-            transition: "all 200ms",
-            "&:hover": { bgcolor: tokens.textSecondary, transform: "scale(1.03)" },
-            "&:active": { transform: "scale(0.97)" },
-          }}
-        >
-          Explore Collection
-        </Button>
-
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 2, mt: 4, flexWrap: "wrap" }}>
-          {["Free delivery", "Easy returns", "100% genuine"].map((t) => (
-            <Box key={t} sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-              <Box sx={{ width: 4, height: 4, borderRadius: "50%", bgcolor: tokens.borderElevated }} />
-              <Typography sx={{ fontSize: 11, color: tokens.textDisabled, fontWeight: 500 }}>{t}</Typography>
-            </Box>
-          ))}
-        </Box>
-      </Box>
+            Explore Collection
+          </Button>
+        }
+        card={false}
+        sx={{ maxWidth: 420 }}
+      />
     </Box>
   );
 }

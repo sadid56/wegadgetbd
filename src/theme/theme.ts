@@ -5,11 +5,11 @@ export const APP_FONT_FAMILY = "var(--font-inter), 'Inter', -apple-system, Blink
 export const tokens = {
   fontFamily: APP_FONT_FAMILY,
   // Surfaces & Backgrounds - Clean, crisp e-commerce canvas with deep dark obsidian surfaces
-  bgCanvas: "#F5F5F0", // Brand Off-white canvas (#F5F5F0)
+  bgCanvas: "#F7F8FA", // Balanced modern cool off-white canvas
   bgPanel: "#ffffff", // Pure crisp white panels & cards
   bgInput: "#ffffff", // Pure white form controls
   bgElevated: "#ffffff", // Elevated menus, popovers, modals
-  bgSubtle: "#ebebe3", // Soft muted hover states & tags
+  bgSubtle: "#eef1f4", // Soft muted hover states & tags
   bgOverlay: "rgba(16, 24, 32, 0.75)",
   bgBackdrop: "rgba(16, 24, 32, 0.5)",
   bgBlack: "#0b1016",
@@ -21,12 +21,12 @@ export const tokens = {
   bgDarkSubtle: "rgba(255, 255, 255, 0.05)",
 
   // Borders - Crisp modern lines
-  borderDefault: "#e2e2dc", // Soft slate-offwhite border
-  borderSubtle: "#ecece6", // Subtle border
-  borderElevated: "#d5d5ce", // Elevated border
-  borderHover: "#a3b2b8", // Border hover
+  borderDefault: "#e5e8eb", // Balanced clean border
+  borderSubtle: "#f0f2f5", // Subtle border
+  borderElevated: "#d3d8de", // Elevated border
+  borderHover: "#9ca3af", // Border hover
   borderActive: "#00BFA6", // Brand Teal (#00BFA6)
-  borderDisabled: "#ecece6",
+  borderDisabled: "#f0f2f5",
   borderDark: "rgba(255, 255, 255, 0.08)",
   borderDarkSubtle: "rgba(0, 191, 166, 0.22)",
 

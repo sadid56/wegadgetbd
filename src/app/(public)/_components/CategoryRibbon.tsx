@@ -3,7 +3,7 @@
 import * as React from "react";
 import NextLink from "next/link";
 import Box from "@mui/material/Box";
-import Skeleton from "@mui/material/Skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 

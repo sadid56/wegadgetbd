@@ -12,6 +12,7 @@ import {
 } from "@/server/schemas/products.schema";
 
 import { ListProductsUseCase } from "@/server/use-case/products/list-products";
+import { ListBrandsUseCase } from "@/server/use-case/products/list-brands";
 import { GetTopPicksUseCase } from "@/server/use-case/products/get-top-picks";
 import { GetLatestArrivalsUseCase } from "@/server/use-case/products/get-latest-arrivals";
 import { GetProductBySlugUseCase } from "@/server/use-case/products/get-product-by-slug";
@@ -59,6 +60,16 @@ export const productsRouter = {
     .input(listProductsInputSchema.optional())
     .output(listProductsOutputSchema)
     .handler(async ({ input, context }) => new ListProductsUseCase(context.db).execute(input ?? {})),
+
+  brands: publicProcedure
+    .route({
+      method: "GET",
+      path: "/products/brands",
+      summary: "Get list of available brands with product counts",
+      tags: ["Products"],
+    })
+    .output(z.array(z.object({ name: z.string(), count: z.number() })))
+    .handler(async ({ context }) => new ListBrandsUseCase(context.db).execute()),
 
   bySlug: publicProcedure
     .route({

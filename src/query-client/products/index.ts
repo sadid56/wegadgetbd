@@ -40,6 +40,8 @@ export const useLatestArrivals = (limit: number = 4) =>
 
 export const useProducts = (params?: ListParams) => useQuery(orpc.products.list.queryOptions({ input: params ?? {} }));
 
+export const useBrands = () => useQuery(orpc.products.brands.queryOptions({ input: {} as any }));
+
 export const useProduct = (slug: string) =>
   useQuery({
     ...orpc.products.bySlug.queryOptions({ input: { slug } }),

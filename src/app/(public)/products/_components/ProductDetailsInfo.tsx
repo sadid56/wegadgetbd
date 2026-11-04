@@ -5,6 +5,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { keyframes } from "@emotion/react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { tokens } from "@/theme/theme";
 
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
@@ -31,21 +32,6 @@ const fadeInRight = keyframes`
   to   { opacity: 1; transform: translateX(0); }
 `;
 
-const pillSx = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 0.5,
-  px: 1.5,
-  py: 0.5,
-  borderRadius: 999,
-  border: "1px solid",
-  fontSize: { xs: 9, md: 10 },
-  fontWeight: 900,
-  letterSpacing: "0.2em",
-  textTransform: "uppercase",
-  lineHeight: 1.4,
-} as const;
-
 export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart, onBuyNow }: ProductDetailsInfoProps) {
   const basePrice = Number(product.price || 0);
   const discountedPrice = Number(product.discountPrice || product.price || 0);
@@ -59,42 +45,18 @@ export function ProductDetailsInfo({ product, qty, setQty, isInCart, onAddToCart
       {/* Badges row */}
       <Box sx={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 1, mb: 3 }}>
         {product.category?.name && (
-          <Box
-            component='span'
-            sx={{
-              ...pillSx,
-              bgcolor: tokens.bgSubtle,
-              borderColor: tokens.borderDefault,
-              color: tokens.primary,
-            }}
-          >
+          <Badge variant="outline" size="small">
             {product.category.name}
-          </Box>
+          </Badge>
         )}
         {product.brand && (
-          <Box
-            component='span'
-            sx={{
-              ...pillSx,
-              bgcolor: tokens.badgeGamingSubtle,
-              borderColor: tokens.badgeGamingSubtle,
-              color: tokens.badgeGaming,
-            }}
-          >
+          <Badge variant="gaming" size="small">
             {product.brand}
-          </Box>
+          </Badge>
         )}
-        <Box
-          component='span'
-          sx={{
-            ...pillSx,
-            bgcolor: product.inStock ? tokens.successSubtle : tokens.dangerSubtle,
-            borderColor: product.inStock ? tokens.successBorder : tokens.dangerBorder,
-            color: product.inStock ? tokens.successText : tokens.dangerHover,
-          }}
-        >
+        <Badge variant={product.inStock ? "success" : "danger"} size="small">
           {product.inStock ? "স্টকে আছে" : "স্টক শেষ"}
-        </Box>
+        </Badge>
 
         <Box sx={{ height: 1, width: { xs: 24, md: 32 }, bgcolor: tokens.borderDefault }} />
 

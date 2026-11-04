@@ -1,180 +1,171 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { format } from "date-fns";
+import { useQueryState, parseAsInteger } from "nuqs";
 import { useToast } from "@/context/toast-context";
 
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import { IconButton } from "@/components/ui/icon-button";
-import { CircularProgress } from "@/components/ui/spinner";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@/components/ui/table";
+import { DashboardHeader } from "@/components/admin/dashboard-header";
+import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
+import { Dropdown } from "@/components/ui/dropdown";
+import { AlertDialog } from "@/components/ui/alert-dialog";
 
 import SmartphoneIcon from "@mui/icons-material/Smartphone";
 import MonitorIcon from "@mui/icons-material/Monitor";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 import { useSessions, useRevokeSession } from "@/query-client/admin";
-import { tokens } from "@/theme/theme";
-
-const tableHeadSx = {
-  fontSize: 12,
-  fontWeight: 600,
-  color: "text.secondary",
-  textTransform: "uppercase",
-  letterSpacing: "0.05em",
-  bgcolor: "action.hover",
-  borderBottom: "1px solid",
-  borderColor: "divider",
-  py: 1.25,
-  whiteSpace: "nowrap",
-} as const;
 
 export default function SessionsPage() {
   const toast = useToast();
-  const { data: sessions, isLoading } = useSessions();
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [rowsPerPage, setRowsPerPage] = useQueryState("limit", parseAsInteger.withDefault(10));
+  const [sessionToRevoke, setSessionToRevoke] = useState<string | null>(null);
+
+  const { data, isLoading } = useSessions({
+    page,
+    limit: rowsPerPage,
+  });
+
   const { mutate: revokeSession } = useRevokeSession();
 
-  const handleRevoke = (id: string) => {
-    revokeSession(id, {
-      onSuccess: () => toast.success("Session revoked successfully"),
-    });
+  const confirmRevoke = () => {
+    if (sessionToRevoke) {
+      revokeSession(sessionToRevoke, {
+        onSuccess: () => {
+          toast.success("Session revoked successfully");
+          setSessionToRevoke(null);
+        },
+      });
+    }
   };
+
+  const columns: DataTableColumn<any>[] = useMemo(
+    () => [
+      {
+        id: "user",
+        header: "User",
+        cell: (session) => (
+          <Box sx={{ display: "flex", flexDirection: "column" }}>
+            <Box component='span' sx={{ fontWeight: 500, color: "text.primary" }}>
+              {session.user?.name || "Unknown"}
+            </Box>
+            <Box component='span' sx={{ fontSize: 12, color: "text.secondary", mt: 0.25 }}>
+              {session.user?.email || "—"}
+            </Box>
+          </Box>
+        ),
+      },
+      {
+        id: "device",
+        header: "Device / User Agent",
+        cell: (session) => {
+          const isMobile = session.userAgent?.toLowerCase().includes("mobile");
+          const DeviceIcon = isMobile ? SmartphoneIcon : MonitorIcon;
+          return (
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                minWidth: 0,
+              }}
+              title={session.userAgent}
+            >
+              <DeviceIcon sx={{ fontSize: 16, color: "text.secondary", flexShrink: 0 }} />
+              <Box
+                component='span'
+                sx={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  maxWidth: 300,
+                  fontSize: 14,
+                  color: "text.primary",
+                }}
+              >
+                {session.userAgent || "Unknown"}
+              </Box>
+            </Box>
+          );
+        },
+      },
+      {
+        id: "ip",
+        header: "IP Address",
+        cell: (session) => (
+          <Box component='span' sx={{ fontSize: 13, color: "text.primary" }}>
+            {session.ip || "Unknown"}
+          </Box>
+        ),
+      },
+      {
+        id: "expires",
+        header: "Expires",
+        cell: (session) => (
+          <Box component='span' sx={{ fontSize: 13, color: "text.secondary" }}>
+            {session.expiresAt ? format(new Date(session.expiresAt), "PP p") : "—"}
+          </Box>
+        ),
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        align: "right",
+        cell: (session) => (
+          <Dropdown
+            title='Actions'
+            items={[
+              {
+                label: "Revoke Session",
+                icon: <DeleteOutlineIcon sx={{ fontSize: 18 }} />,
+                danger: true,
+                action: () => setSessionToRevoke(session.id),
+              },
+            ]}
+          />
+        ),
+      },
+    ],
+    [],
+  );
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      <Box>
-        <Typography
-          component='h1'
-          sx={{
-            fontSize: 24,
-            fontWeight: 700,
-            letterSpacing: "-0.02em",
-            color: "text.primary",
-          }}
-        >
-          Active Sessions
-        </Typography>
-        <Typography sx={{ fontSize: 14, color: "text.secondary", mt: 0.5 }}>
-          Monitor and manage all active user sessions across the platform.
-        </Typography>
-      </Box>
+      {/* Dashboard Header */}
+      <DashboardHeader
+        title='Active Sessions'
+        description='Monitor and manage all active user sessions across the platform.'
+      />
 
-      <TableContainer
-        sx={{
-          borderRadius: "8px",
-          border: "1px solid",
-          borderColor: "divider",
-          bgcolor: "background.paper",
-          overflow: "auto",
+      {/* Reusable DataTable with Backend Pagination */}
+      <DataTable
+        columns={columns}
+        data={data?.sessions ?? []}
+        keyExtractor={(session) => session.id}
+        isLoading={isLoading}
+        emptyMessage='No active sessions found.'
+        page={page - 1}
+        rowsPerPage={rowsPerPage}
+        totalCount={data?.total ?? 0}
+        onPageChange={(_, newPage) => setPage(newPage + 1)}
+        onRowsPerPageChange={(e) => {
+          setRowsPerPage(parseInt(e.target.value, 10));
+          setPage(1);
         }}
-      >
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={tableHeadSx}>User</TableCell>
-              <TableCell sx={tableHeadSx}>Device / User Agent</TableCell>
-              <TableCell sx={tableHeadSx}>IP Address</TableCell>
-              <TableCell sx={tableHeadSx}>Expires</TableCell>
-              <TableCell sx={{ ...tableHeadSx, textAlign: "right" }}>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={5} sx={{ height: 96, textAlign: "center" }}>
-                  <CircularProgress size={24} sx={{ color: "primary.main" }} />
-                </TableCell>
-              </TableRow>
-            ) : sessions?.sessions?.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} sx={{ height: 96, textAlign: "center", color: "text.secondary" }}>
-                  No active sessions found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              sessions?.sessions?.map((session: any) => {
-                const isMobile = session.userAgent?.toLowerCase().includes("mobile");
-                const DeviceIcon = isMobile ? SmartphoneIcon : MonitorIcon;
+      />
 
-                return (
-                  <TableRow
-                    key={session.id}
-                    sx={{
-                      "&:hover": { bgcolor: "action.hover" },
-                      "& td": {
-                        borderBottom: "1px solid",
-                        borderColor: "divider",
-                        py: 1.5,
-                      },
-                    }}
-                  >
-                    <TableCell>
-                      <Box sx={{ display: "flex", flexDirection: "column" }}>
-                        <Box component='span' sx={{ fontWeight: 500, color: "text.primary" }}>
-                          {session.user.name}
-                        </Box>
-                        <Box component='span' sx={{ fontSize: 12, color: "text.secondary", mt: 0.25 }}>
-                          {session.user.email}
-                        </Box>
-                      </Box>
-                    </TableCell>
-
-                    <TableCell>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 1,
-                          minWidth: 0,
-                        }}
-                        title={session.userAgent}
-                      >
-                        <DeviceIcon sx={{ fontSize: 16, color: "text.secondary", flexShrink: 0 }} />
-                        <Box
-                          component='span'
-                          sx={{
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "nowrap",
-                            maxWidth: 300,
-                            fontSize: 14,
-                            color: "text.primary",
-                          }}
-                        >
-                          {session.userAgent}
-                        </Box>
-                      </Box>
-                    </TableCell>
-
-                    <TableCell sx={{ fontSize: 14, color: "text.primary" }}>{session.ip || "Unknown"}</TableCell>
-
-                    <TableCell sx={{ fontSize: 14, color: "text.primary" }}>{format(new Date(session.expiresAt), "PP p")}</TableCell>
-
-                    <TableCell sx={{ textAlign: "right" }}>
-                      <IconButton
-                        size='small'
-                        onClick={() => handleRevoke(session.id)}
-                        aria-label='Revoke session'
-                        sx={{
-                          width: 32,
-                          height: 32,
-                          color: tokens.danger,
-                          "&:hover": {
-                            color: tokens.dangerHover,
-                            bgcolor: tokens.dangerSubtle,
-                          },
-                        }}
-                      >
-                        <DeleteOutlineIcon sx={{ fontSize: 16 }} />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {/* Revoke Confirmation Alert Dialog */}
+      <AlertDialog
+        open={!!sessionToRevoke}
+        onClose={() => setSessionToRevoke(null)}
+        onConfirm={confirmRevoke}
+        title='Revoke Session?'
+        description='This will immediately log out the user on this device. They will need to log in again.'
+        confirmText='Revoke'
+        confirmVariant='destructive'
+      />
     </Box>
   );
 }

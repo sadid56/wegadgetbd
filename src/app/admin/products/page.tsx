@@ -2,33 +2,21 @@
 
 import { useMemo, useState } from "react";
 import NextLink from "next/link";
+import { useQueryState, parseAsInteger } from "nuqs";
 import Box from "@mui/material/Box";
+
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { InputBase } from "@/components/ui/input";
-import { Chip } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import { Avatar } from "@/components/ui/avatar";
 import { DashboardHeader } from "@/components/admin/dashboard-header";
 import { DataTable, type DataTableColumn } from "@/components/ui/data-table";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { AlertDialog } from "@/components/ui/alert-dialog";
+import { Dropdown } from "@/components/ui/dropdown";
 
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
@@ -40,62 +28,22 @@ import { tokens } from "@/theme/theme";
 
 function StatusChip({ status }: { status: string }) {
   if (status === "ACTIVE") {
-    return (
-      <Chip
-        label={status}
-        size='small'
-        sx={{
-          height: 22,
-          fontSize: 11,
-          fontWeight: 700,
-          bgcolor: "primary.main",
-          color: "primary.contrastText",
-          "& .MuiChip-label": { px: 1.25 },
-        }}
-      />
-    );
+    return <Badge variant='success'>{status}</Badge>;
   }
   if (status === "PENDING") {
-    return (
-      <Chip
-        label={status}
-        size='small'
-        sx={{
-          height: 22,
-          fontSize: 11,
-          fontWeight: 700,
-          bgcolor: "action.hover",
-          color: "text.primary",
-          "& .MuiChip-label": { px: 1.25 },
-        }}
-      />
-    );
+    return <Badge variant='secondary'>{status}</Badge>;
   }
-  return (
-    <Chip
-      label={status}
-      size='small'
-      variant='outlined'
-      sx={{
-        height: 22,
-        fontSize: 11,
-        fontWeight: 700,
-        borderColor: "divider",
-        color: "text.primary",
-        "& .MuiChip-label": { px: 1.25 },
-      }}
-    />
-  );
+  return <Badge variant='outline'>{status}</Badge>;
 }
 
 export default function AdminProductsPage() {
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [search, setSearch] = useQueryState("search", { defaultValue: "", shallow: false });
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [rowsPerPage, setRowsPerPage] = useQueryState("limit", parseAsInteger.withDefault(10));
 
   const { data, isLoading } = useAdminProducts({
     search: search.trim() || undefined,
-    page: page + 1,
+    page,
     limit: rowsPerPage,
   });
 
@@ -123,26 +71,19 @@ export default function AdminProductsPage() {
         width: 80,
         cell: (product) =>
           product.images?.[0] ? (
-            <Box
-              component='img'
+            <Avatar
               src={getAssetUrl(product.images[0])}
               alt={product.title}
-              sx={{
-                height: 40,
-                width: 40,
-                borderRadius: "6px",
-                objectFit: "cover",
-              }}
+              variant="rounded"
+              sx={{ width: 40, height: 40, borderRadius: "6px" }}
             />
           ) : (
-            <Box
-              sx={{
-                height: 40,
-                width: 40,
-                borderRadius: "6px",
-                bgcolor: "action.hover",
-              }}
-            />
+            <Avatar
+              variant="rounded"
+              sx={{ width: 40, height: 40, borderRadius: "6px", bgcolor: "action.hover" }}
+            >
+              {" "}
+            </Avatar>
           ),
       },
       {
@@ -171,18 +112,7 @@ export default function AdminProductsPage() {
         header: "Brand",
         cell: (product) =>
           product.brand ? (
-            <Chip
-              label={product.brand}
-              size='small'
-              sx={{
-                height: 22,
-                fontSize: 11,
-                fontWeight: 600,
-                bgcolor: "action.hover",
-                color: "text.primary",
-                "& .MuiChip-label": { px: 1.25 },
-              }}
-            />
+            <Badge variant='secondary'>{product.brand}</Badge>
           ) : (
             <Box component='span' sx={{ fontSize: 12, color: "text.secondary" }}>
               Not set
@@ -277,44 +207,33 @@ export default function AdminProductsPage() {
         header: "Actions",
         align: "right",
         cell: (product) => (
-          <DropdownMenu
-            trigger={
-              <IconButton
-                size='small'
-                aria-label='Open menu'
-                sx={{
-                  width: 32,
-                  height: 32,
-                  color: "text.secondary",
-                  "&:hover": { bgcolor: "action.hover", color: "text.primary" },
-                }}
-              >
-                <MoreHorizIcon sx={{ fontSize: 16 }} />
-              </IconButton>
-            }
-            align='right'
-          >
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem component={NextLink} href={`/admin/products/${product.id}/edit`}>
-              <EditOutlinedIcon />
-              Edit
-            </DropdownMenuItem>
-            <DropdownMenuItem component={NextLink} href={`/products/${product.slug}`} target='_blank'>
-              <VisibilityOutlinedIcon />
-              View Public
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              variant='destructive'
-              onClick={() => setProductToDelete(product.id)}
-            >
-              <DeleteOutlineIcon />
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenu>
+          <Dropdown
+            title='Actions'
+            items={[
+              {
+                label: "Edit",
+                icon: <EditOutlinedIcon sx={{ fontSize: 18 }} />,
+                href: `/admin/products/${product.id}/edit`,
+              },
+              {
+                label: "View Public",
+                icon: <VisibilityOutlinedIcon sx={{ fontSize: 18 }} />,
+                href: `/products/${product.slug}`,
+                target: "_blank",
+              },
+              "divider",
+              {
+                label: "Delete",
+                icon: <DeleteOutlineIcon sx={{ fontSize: 18 }} />,
+                danger: true,
+                action: () => setProductToDelete(product.id),
+              },
+            ]}
+          />
         ),
       },
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [dateTimeFormatter],
   );
 
@@ -336,52 +255,38 @@ export default function AdminProductsPage() {
           placeholder='Search products...'
           value={search}
           onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(0);
+            setSearch(e.target.value || null);
+            setPage(1);
           }}
           startIcon={<SearchIcon sx={{ fontSize: 18 }} />}
         />
       </Box>
 
-      {/* Reusable DataTable with native MUI Table & TablePagination */}
       <DataTable
         columns={columns}
         data={data?.products ?? []}
         keyExtractor={(p) => p.id}
         isLoading={isLoading}
         emptyMessage='No products found.'
-        page={page}
+        page={page - 1}
         rowsPerPage={rowsPerPage}
         totalCount={data?.total ?? 0}
-        onPageChange={(_, newPage) => setPage(newPage)}
+        onPageChange={(_, newPage) => setPage(newPage + 1)}
         onRowsPerPageChange={(e) => {
           setRowsPerPage(parseInt(e.target.value, 10));
-          setPage(0);
+          setPage(1);
         }}
       />
 
-      {/* Reusable Alert Dialog for Confirmation */}
       <AlertDialog
         open={!!productToDelete}
-        onOpenChange={(open) => {
-          if (!open) setProductToDelete(null);
-        }}
-      >
-        <AlertDialogContent size='sm'>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the product from the database.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setProductToDelete(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction variant='destructive' onClick={confirmDelete}>
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        onClose={() => setProductToDelete(null)}
+        onConfirm={confirmDelete}
+        title='Are you absolutely sure?'
+        description='This action cannot be undone. This will permanently delete the product from the database.'
+        confirmText='Delete'
+        confirmVariant='destructive'
+      />
     </Box>
   );
 }

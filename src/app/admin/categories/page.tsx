@@ -1,19 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { useToast } from "@/context/toast-context";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { Button } from "@/components/ui/button";
-import { IconButton } from "@/components/ui/icon-button";
-import { TextField } from "@/components/ui/input";
-import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@/components/ui/dialog";
-import { CircularProgress } from "@/components/ui/spinner";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@/components/ui/table";
+
+import {
+  Button,
+  TextField,
+  Label,
+  Avatar,
+  Modal,
+  ModalTitle,
+  ModalContent,
+  ModalContentText,
+  ModalActions,
+  CircularProgress,
+  DataTable,
+  type DataTableColumn,
+  Dropdown,
+  AlertDialog,
+} from "@/components/ui";
+import { DashboardHeader } from "@/components/admin/dashboard-header";
 
 import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
@@ -23,21 +34,9 @@ import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined";
 import { useAdminCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from "@/query-client/categories";
 import { uploadFileToStorage, getAssetUrl, stripAssetDomain } from "@/lib/storage";
 import { slugify } from "@/lib/utils";
-import { tokens } from "@/theme/theme";
 import { createCategoryInputSchema, type CreateCategoryInput } from "@/server/schemas/categories.schema";
 
 type CategoryFormValues = CreateCategoryInput;
-
-const inputSx = {
-  "& .MuiOutlinedInput-root": {
-    borderRadius: "8px",
-    fontSize: 14,
-    bgcolor: "background.paper",
-    "& fieldset": { borderColor: "divider" },
-    "&:hover fieldset": { borderColor: "text.disabled" },
-    "&.Mui-focused fieldset": { borderColor: "primary.main" },
-  },
-} as const;
 
 export default function CategoriesPage() {
   const toast = useToast();
@@ -156,90 +155,139 @@ export default function CategoriesPage() {
   const watchedIcon = form.watch("icon");
   const isSubmitting = isCreating || isUpdating || uploading;
 
+  const columns: DataTableColumn<any>[] = useMemo(
+    () => [
+      {
+        id: "image",
+        header: "Image",
+        width: 80,
+        cell: (cat) =>
+          cat.icon ? (
+            <Avatar
+              src={getAssetUrl(cat.icon)}
+              alt={cat.name}
+              variant="rounded"
+              sx={{ width: 36, height: 36, borderRadius: "6px" }}
+            />
+          ) : (
+            <Avatar
+              variant="rounded"
+              sx={{ width: 36, height: 36, borderRadius: "6px", bgcolor: "action.hover" }}
+            >
+              {" "}
+            </Avatar>
+          ),
+      },
+      {
+        id: "name",
+        header: "Name",
+        cell: (cat) => (
+          <Typography variant="body2" sx={{ fontWeight: 500, color: "text.primary" }}>
+            {cat.name}
+          </Typography>
+        ),
+      },
+      {
+        id: "slug",
+        header: "Slug",
+        cell: (cat) => (
+          <Typography variant="body2" sx={{ color: "text.secondary", fontSize: "0.8125rem" }}>
+            {cat.slug}
+          </Typography>
+        ),
+      },
+      {
+        id: "products",
+        header: "Products",
+        cell: (cat) => (
+          <Typography variant="body2" sx={{ color: "text.primary", fontWeight: 500 }}>
+            {cat._count?.products || 0}
+          </Typography>
+        ),
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        align: "right",
+        cell: (cat) => (
+          <Dropdown
+            title="Actions"
+            items={[
+              {
+                label: "Edit",
+                icon: <EditOutlinedIcon sx={{ fontSize: 18 }} />,
+                action: () => handleEdit(cat),
+              },
+              "divider",
+              {
+                label: "Delete",
+                icon: <DeleteOutlineIcon sx={{ fontSize: 18 }} />,
+                danger: true,
+                action: () => handleDelete(cat.id),
+              },
+            ]}
+          />
+        ),
+      },
+    ],
+    [],
+  );
+
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      {/* Header */}
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 2,
-        }}
-      >
-        <Typography
-          component='h1'
-          sx={{
-            fontSize: 24,
-            fontWeight: 700,
-            letterSpacing: "-0.02em",
-            color: "text.primary",
-          }}
-        >
-          Categories
-        </Typography>
-        <Button
-          variant='contained'
-          disableElevation
-          onClick={handleOpenAdd}
-          startIcon={<AddIcon sx={{ fontSize: 16 }} />}
-          sx={{
-            textTransform: "none",
-            fontWeight: 600,
-            fontSize: 14,
-            borderRadius: "8px",
-            height: 40,
-            bgcolor: "primary.main",
-            color: "primary.contrastText",
-            "&:hover": { bgcolor: "primary.dark" },
-          }}
-        >
-          Add Category
-        </Button>
-      </Box>
+      {/* Dashboard Header */}
+      <DashboardHeader
+        title="Categories"
+        action={
+          <Button
+            variant="primary"
+            onClick={handleOpenAdd}
+            startIcon={<AddIcon sx={{ fontSize: 16 }} />}
+          >
+            Add Category
+          </Button>
+        }
+      />
 
-      {/* Create / Edit dialog */}
-      <Dialog
+      {/* Reusable DataTable */}
+      <DataTable
+        columns={columns}
+        data={categories ?? []}
+        keyExtractor={(cat) => cat.id}
+        isLoading={isLoading}
+        emptyMessage="No categories found."
+      />
+
+      {/* Create / Edit Modal */}
+      <Modal
         open={isOpen}
         onClose={(_, reason) => {
           if (!isSubmitting && (reason === "backdropClick" || reason === "escapeKeyDown")) {
             handleOpenChange(false);
           }
         }}
-        maxWidth='sm'
+        maxWidth="sm"
         fullWidth
-        slotProps={{
-          paper: { sx: { borderRadius: "12px" } },
-        }}
       >
-        <Box component='form' onSubmit={form.handleSubmit(onSubmit)} sx={{ display: "flex", flexDirection: "column" }}>
-          <DialogTitle sx={{ fontSize: 18, fontWeight: 700, pb: 1 }}>{editingId ? "Edit Category" : "Create Category"}</DialogTitle>
-          <DialogContent dividers>
-            <DialogContentText sx={{ fontSize: 14, color: "text.secondary", mb: 2.5 }}>
+        <Box component="form" onSubmit={form.handleSubmit(onSubmit)} sx={{ display: "flex", flexDirection: "column" }}>
+          <ModalTitle sx={{ fontSize: 18, fontWeight: 700, pb: 1 }}>
+            {editingId ? "Edit Category" : "Create Category"}
+          </ModalTitle>
+          <ModalContent dividers>
+            <ModalContentText sx={{ fontSize: 14, color: "text.secondary", mb: 2.5 }}>
               Manage your product categories here.
-            </DialogContentText>
+            </ModalContentText>
 
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
               {/* Name */}
               <Box>
-                <Box
-                  component='label'
-                  htmlFor='category-name'
-                  sx={{
-                    display: "block",
-                    fontSize: 14,
-                    fontWeight: 500,
-                    color: "text.primary",
-                    mb: 1,
-                  }}
-                >
+                <Label htmlFor="category-name" sx={{ mb: 1, display: "block" }}>
                   Name
-                </Box>
+                </Label>
                 <TextField
-                  id='category-name'
+                  id="category-name"
                   fullWidth
-                  size='small'
-                  sx={inputSx}
+                  size="small"
                   {...form.register("name", {
                     onChange: (e) => {
                       if (!editingId && !isSlugManuallyEdited) {
@@ -254,24 +302,13 @@ export default function CategoriesPage() {
 
               {/* Slug */}
               <Box>
-                <Box
-                  component='label'
-                  htmlFor='category-slug'
-                  sx={{
-                    display: "block",
-                    fontSize: 14,
-                    fontWeight: 500,
-                    color: "text.primary",
-                    mb: 1,
-                  }}
-                >
+                <Label htmlFor="category-slug" sx={{ mb: 1, display: "block" }}>
                   Slug
-                </Box>
+                </Label>
                 <TextField
-                  id='category-slug'
+                  id="category-slug"
                   fullWidth
-                  size='small'
-                  sx={inputSx}
+                  size="small"
                   {...form.register("slug", {
                     onChange: () => {
                       setIsSlugManuallyEdited(true);
@@ -284,26 +321,19 @@ export default function CategoriesPage() {
 
               {/* Image */}
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                <Box
-                  component='label'
-                  sx={{
-                    fontSize: 14,
-                    fontWeight: 500,
-                    color: "text.primary",
-                  }}
-                >
+                <Label sx={{ display: "block" }}>
                   Image
-                </Box>
+                </Label>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                   {watchedIcon && (
                     <Box
-                      component='img'
+                      component="img"
                       src={getAssetUrl(watchedIcon)}
-                      alt='Preview'
+                      alt="Preview"
                       sx={{
                         width: 64,
                         height: 64,
-                        borderRadius: "4px",
+                        borderRadius: "6px",
                         objectFit: "cover",
                         border: "1px solid",
                         borderColor: "divider",
@@ -313,9 +343,9 @@ export default function CategoriesPage() {
                   )}
                   <Box sx={{ position: "relative" }}>
                     <Button
-                      type='button'
-                      variant='outlined'
-                      size='small'
+                      type="button"
+                      variant="outline"
+                      size="sm"
                       disabled={uploading}
                       startIcon={
                         uploading ? (
@@ -324,26 +354,13 @@ export default function CategoriesPage() {
                           <UploadFileOutlinedIcon sx={{ fontSize: 16 }} />
                         )
                       }
-                      sx={{
-                        height: 36,
-                        textTransform: "none",
-                        fontSize: 13,
-                        fontWeight: 600,
-                        borderRadius: "8px",
-                        borderColor: "divider",
-                        color: "text.primary",
-                        "&:hover": {
-                          borderColor: "text.disabled",
-                          bgcolor: "action.hover",
-                        },
-                      }}
                     >
                       Upload
                     </Button>
                     <Box
-                      component='input'
-                      type='file'
-                      accept='image/*'
+                      component="input"
+                      type="file"
+                      accept="image/*"
                       onChange={handleImageUpload}
                       disabled={uploading}
                       sx={{
@@ -357,256 +374,44 @@ export default function CategoriesPage() {
                 </Box>
               </Box>
             </Box>
-          </DialogContent>
+          </ModalContent>
 
-          <DialogActions sx={{ p: 2, gap: 1 }}>
+          <ModalActions sx={{ p: 2, gap: 1 }}>
             <Button
-              type='button'
-              variant='outlined'
-              disableElevation
+              type="button"
+              variant="outline"
               onClick={() => handleOpenChange(false)}
               disabled={isSubmitting}
-              sx={{
-                textTransform: "none",
-                fontWeight: 600,
-                fontSize: 14,
-                borderRadius: "8px",
-                borderColor: "divider",
-                color: "text.primary",
-                "&:hover": { borderColor: "text.disabled", bgcolor: "action.hover" },
-              }}
             >
               Cancel
             </Button>
             <Button
-              type='submit'
-              variant='contained'
-              disableElevation
+              type="submit"
+              variant="primary"
               disabled={isSubmitting}
               startIcon={isSubmitting ? <CircularProgress size={14} sx={{ color: "inherit" }} /> : undefined}
-              sx={{
-                textTransform: "none",
-                fontWeight: 600,
-                fontSize: 14,
-                borderRadius: "8px",
-                bgcolor: "primary.main",
-                color: "primary.contrastText",
-                "&:hover": { bgcolor: "primary.dark" },
-              }}
             >
               {isSubmitting ? "Saving..." : "Save"}
             </Button>
-          </DialogActions>
+          </ModalActions>
         </Box>
-      </Dialog>
+      </Modal>
 
-      {/* Table */}
-      <TableContainer
-        sx={{
-          border: "1px solid",
-          borderColor: "divider",
-          borderRadius: "8px",
-          overflow: "auto",
-        }}
-      >
-        <Table>
-          <TableHead>
-            <TableRow>
-              {["Image", "Name", "Slug", "Products"].map((head) => (
-                <TableCell
-                  key={head}
-                  sx={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: "text.secondary",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    bgcolor: "action.hover",
-                    borderBottom: "1px solid",
-                    borderColor: "divider",
-                    py: 1.25,
-                  }}
-                >
-                  {head}
-                </TableCell>
-              ))}
-              <TableCell
-                align='right'
-                sx={{
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: "text.secondary",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.05em",
-                  bgcolor: "action.hover",
-                  borderBottom: "1px solid",
-                  borderColor: "divider",
-                  py: 1.25,
-                }}
-              >
-                Actions
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={5} sx={{ height: 96, textAlign: "center" }}>
-                  <CircularProgress size={24} sx={{ color: "primary.main" }} />
-                </TableCell>
-              </TableRow>
-            ) : categories?.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} sx={{ height: 96, textAlign: "center", color: "text.secondary" }}>
-                  No categories found
-                </TableCell>
-              </TableRow>
-            ) : (
-              categories?.map((cat) => (
-                <TableRow
-                  key={cat.id}
-                  sx={{
-                    "&:hover": { bgcolor: "action.hover" },
-                    "& td": {
-                      borderBottom: "1px solid",
-                      borderColor: "divider",
-                      py: 1.5,
-                    },
-                  }}
-                >
-                  <TableCell>
-                    {cat.icon ? (
-                      <Box
-                        component='img'
-                        src={getAssetUrl(cat.icon)}
-                        alt={cat.name}
-                        sx={{
-                          width: 32,
-                          height: 32,
-                          borderRadius: "4px",
-                          objectFit: "cover",
-                        }}
-                      />
-                    ) : (
-                      <Box
-                        sx={{
-                          width: 32,
-                          height: 32,
-                          bgcolor: "action.hover",
-                          borderRadius: "4px",
-                        }}
-                      />
-                    )}
-                  </TableCell>
-                  <TableCell sx={{ fontWeight: 500, color: "text.primary" }}>{cat.name}</TableCell>
-                  <TableCell sx={{ color: "text.secondary" }}>{cat.slug}</TableCell>
-                  <TableCell sx={{ color: "text.primary" }}>{cat._count?.products || 0}</TableCell>
-                  <TableCell align='right'>
-                    <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 0.5 }}>
-                      <IconButton
-                        size='small'
-                        onClick={() => handleEdit(cat)}
-                        aria-label={`Edit ${cat.name}`}
-                        sx={{
-                          width: 32,
-                          height: 32,
-                          color: "text.secondary",
-                          "&:hover": { bgcolor: "action.hover", color: "text.primary" },
-                        }}
-                      >
-                        <EditOutlinedIcon sx={{ fontSize: 16 }} />
-                      </IconButton>
-                      <IconButton
-                        size='small'
-                        onClick={() => handleDelete(cat.id)}
-                        aria-label={`Delete ${cat.name}`}
-                        sx={{
-                          width: 32,
-                          height: 32,
-                          color: tokens.danger,
-                          "&:hover": { bgcolor: tokens.dangerSubtle, color: tokens.dangerHover },
-                        }}
-                      >
-                        <DeleteOutlineIcon sx={{ fontSize: 16 }} />
-                      </IconButton>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      {/* Delete confirmation dialog */}
-      <Dialog
+      {/* Delete Confirmation Alert Dialog */}
+      <AlertDialog
         open={!!categoryToDelete}
         onClose={() => !isDeleting && setCategoryToDelete(null)}
-        maxWidth='xs'
-        fullWidth
-        slotProps={{ paper: { sx: { borderRadius: "12px" } } }}
-      >
-        <DialogTitle sx={{ fontSize: 18, fontWeight: 700 }}>
-          {hasProducts ? "Cannot Delete Category" : "Are you absolutely sure?"}
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText sx={{ fontSize: 14, color: "text.secondary" }}>
-            {hasProducts ? (
-              <Box component='span' sx={{ display: "block", color: "text.primary" }}>
-                This category <strong>&ldquo;{selectedCategoryToDelete?.name}&rdquo;</strong> currently has{" "}
-                <Box component='span' sx={{ color: "error.main", fontWeight: 700 }}>
-                  {selectedCategoryToDelete?._count?.products}
-                </Box>{" "}
-                associated product(s).
-                <br />
-                <br />
-                To delete this category, please delete or reassign its products first.
-              </Box>
-            ) : (
-              `This action cannot be undone. This will permanently delete the category "${selectedCategoryToDelete?.name}".`
-            )}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions sx={{ p: 2, gap: 1 }}>
-          <Button
-            onClick={() => setCategoryToDelete(null)}
-            variant='outlined'
-            disableElevation
-            disabled={isDeleting}
-            sx={{
-              textTransform: "none",
-              fontWeight: 600,
-              fontSize: 14,
-              borderRadius: "8px",
-              borderColor: "divider",
-              color: "text.primary",
-              "&:hover": { borderColor: "text.disabled", bgcolor: "action.hover" },
-            }}
-          >
-            {hasProducts ? "Close" : "Cancel"}
-          </Button>
-          {!hasProducts && (
-            <Button
-              onClick={confirmDelete}
-              variant='contained'
-              disableElevation
-              disabled={isDeleting}
-              startIcon={isDeleting ? <CircularProgress size={14} sx={{ color: "inherit" }} /> : undefined}
-              sx={{
-                textTransform: "none",
-                fontWeight: 600,
-                fontSize: 14,
-                borderRadius: "8px",
-                bgcolor: tokens.danger,
-                color: tokens.textWhite,
-                "&:hover": { bgcolor: tokens.dangerHover },
-              }}
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </Button>
-          )}
-        </DialogActions>
-      </Dialog>
+        onConfirm={hasProducts ? () => setCategoryToDelete(null) : confirmDelete}
+        title={hasProducts ? "Cannot Delete Category" : "Are you absolutely sure?"}
+        description={
+          hasProducts
+            ? `This category "${selectedCategoryToDelete?.name}" currently has ${selectedCategoryToDelete?._count?.products} associated product(s). To delete this category, please delete or reassign its products first.`
+            : `This action cannot be undone. This will permanently delete the category "${selectedCategoryToDelete?.name}".`
+        }
+        confirmText={hasProducts ? "Understood" : "Delete"}
+        confirmVariant={hasProducts ? "primary" : "destructive"}
+        cancelText={hasProducts ? undefined : "Cancel"}
+      />
     </Box>
   );
 }

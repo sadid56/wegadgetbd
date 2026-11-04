@@ -20,13 +20,8 @@ export function SalesChart({ data }: SalesChartProps) {
 
   return (
     <Card
-      elevation={0}
       sx={{
         gridColumn: { md: "span 4" },
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: "12px",
-        boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
       }}
     >
       <CardHeader

@@ -1,215 +1,203 @@
-import React from "react";
-import { Box, Stack, Typography, Select, MenuItem, type SelectChangeEvent, type SxProps, type Theme } from "@mui/material";
-import { tokens } from "../../theme/theme";
+"use client";
 
-export interface DropdownOption<T = string | number> {
-  value: T;
+import React, { useState } from "react";
+import NextLink from "next/link";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import ListSubheader from "@mui/material/ListSubheader";
+import Divider from "@mui/material/Divider";
+import IconButton from "@mui/material/IconButton";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
+import { type SxProps, type Theme } from "@mui/material/styles";
+import { tokens } from "@/theme/theme";
+
+export interface DropdownItem {
   label: React.ReactNode;
-  subtitle?: string;
+  action?: () => void;
+  onClick?: () => void;
+  href?: string;
+  target?: string;
   icon?: React.ReactNode;
+  variant?: "default" | "danger" | "destructive";
+  danger?: boolean;
   disabled?: boolean;
+  divider?: boolean;
 }
 
-export interface DropdownProps<T = string | number> {
-  value: T;
-  onChange: (value: T) => void;
-  options: DropdownOption<T>[];
-  label?: string;
-  icon?: React.ReactNode;
-  placeholder?: string;
-  truncate?: boolean;
-  fullWidth?: boolean;
-  size?: "small" | "medium";
+export interface DropdownProps {
+  items: (DropdownItem | "divider")[];
+  title?: React.ReactNode;
+  trigger?: React.ReactNode;
+  align?: "left" | "right" | "center";
   disabled?: boolean;
-  headerRight?: React.ReactNode;
-  renderValue?: (value: T) => React.ReactNode;
-  menuWidth?: number | string | Record<string, number | string>;
-  sx?: SxProps<Theme>;
+  menuSx?: SxProps<Theme>;
 }
 
-export function Dropdown<T extends string | number = string>({
-  value,
-  onChange,
-  options,
-  label,
-  icon,
-  placeholder,
-  truncate = true,
-  fullWidth = true,
-  size = "small",
+export function Dropdown({
+  items,
+  title,
+  trigger,
+  align = "right",
   disabled = false,
-  headerRight,
-  renderValue,
-  menuWidth = { xs: "calc(100vw - 48px)", sm: 352 },
-  sx,
-}: DropdownProps<T>) {
-  const handleChange = (e: SelectChangeEvent<any>) => {
-    onChange(e.target.value as T);
+  menuSx,
+}: DropdownProps) {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
+
+  const handleOpen = (e: React.MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+    setAnchorEl(e.currentTarget);
   };
 
-  const defaultRenderValue = (selectedVal: any) => {
-    const selectedOption = options.find((opt) => opt.value === selectedVal);
-    if (!selectedOption) {
-      return (
-        <Typography variant='body2' sx={{ color: tokens.textMuted }}>
-          {placeholder || "Select..."}
-        </Typography>
-      );
-    }
-
-    if (truncate) {
-      return (
-        <Typography
-          noWrap
-          sx={{
-            fontSize: "0.86rem",
-            fontWeight: 500,
-            color: tokens.textPrimary,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            display: "block",
-          }}
-        >
-          {selectedOption.label}
-        </Typography>
-      );
-    }
-
-    return selectedOption.label;
+  const handleClose = () => {
+    setAnchorEl(null);
   };
+
+  const isRight = align === "right";
+  const isCenter = align === "center";
+  const horizontal = isRight ? "right" : isCenter ? "center" : "left";
 
   return (
-    <Box sx={{ width: fullWidth ? "100%" : "auto" }}>
-      {(label || headerRight) && (
-        <Stack
-          direction='row'
-          spacing={1}
+    <>
+      {trigger ? (
+        React.isValidElement(trigger) ? (
+          React.cloneElement(trigger as React.ReactElement<any>, {
+            onClick: (e: React.MouseEvent<HTMLElement>) => {
+              (trigger.props as any)?.onClick?.(e);
+              handleOpen(e);
+            },
+            disabled: disabled || (trigger.props as any)?.disabled,
+          })
+        ) : (
+          <span onClick={handleOpen}>{trigger}</span>
+        )
+      ) : (
+        <IconButton
+          size='small'
+          onClick={handleOpen}
+          disabled={disabled}
+          aria-label='Open menu'
           sx={{
-            alignItems: "center",
-            justifyContent: "space-between",
-            mb: 0.8,
+            width: 32,
+            height: 32,
+            color: "text.secondary",
+            "&:hover": { bgcolor: "action.hover", color: "text.primary" },
           }}
         >
-          {label && (
-            <Stack direction='row' spacing={1} sx={{ alignItems: "center" }}>
-              {icon}
-              <Typography variant='body2' sx={{ fontWeight: 700, color: tokens.textPrimary }}>
-                {label}
-              </Typography>
-            </Stack>
-          )}
-          {headerRight}
-        </Stack>
+          <MoreHorizIcon sx={{ fontSize: 16 }} />
+        </IconButton>
       )}
 
-      <Select
-        fullWidth={fullWidth}
-        size={size}
-        value={value}
-        onChange={handleChange}
-        disabled={disabled}
-        renderValue={renderValue || defaultRenderValue}
-        MenuProps={{
-          anchorOrigin: { vertical: "bottom", horizontal: "left" },
-          transformOrigin: { vertical: "top", horizontal: "left" },
-          slotProps: {
-            paper: {
-              sx: {
-                width: menuWidth,
-                boxSizing: "border-box",
-                bgcolor: `${tokens.bgElevated} !important`,
-                backgroundImage: "none !important",
-                border: `1px solid ${tokens.borderElevated} !important`,
-                boxShadow: `${tokens.shadowPopover}, 0 0 0 1px ${tokens.borderDefault} !important`,
-                borderRadius: `${tokens.radiusLg}px !important`,
-                mt: 0.6,
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        disableScrollLock
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal,
+        }}
+        transformOrigin={{
+          vertical: "top",
+          horizontal,
+        }}
+        slotProps={{
+          paper: {
+            sx: [
+              {
+                minWidth: 160,
+                borderRadius: `${tokens.radiusMd}px`,
+                border: `1px solid ${tokens.borderDefault}`,
+                bgcolor: tokens.bgElevated,
+                boxShadow: tokens.shadowPopover,
                 p: 0.5,
               },
-            },
+              ...(Array.isArray(menuSx) ? menuSx : menuSx ? [menuSx] : []),
+            ],
           },
-        }}
-        sx={{
-          bgcolor: tokens.bgInput,
-          color: tokens.textPrimary,
-          borderRadius: `${tokens.radiusMd}px`,
-          fontSize: "0.88rem",
-          border: `1px solid ${tokens.borderDefault}`,
-          "& .MuiOutlinedInput-notchedOutline": { border: "none" },
-          "&:hover": { borderColor: tokens.borderHover },
-          "&.Mui-focused": { borderColor: tokens.primary },
-          "& .MuiSelect-select": {
-            py: 1,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          },
-          ...sx,
         }}
       >
-        {options.map((option) => (
-          <MenuItem
-            key={String(option.value)}
-            value={option.value as any}
-            disabled={option.disabled}
+        {title && (
+          <ListSubheader
             sx={{
-              fontSize: "0.85rem",
-              py: option.subtitle ? 1 : 0.8,
-              borderRadius: `${tokens.radiusSm}px`,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              display: "block",
-              "&:hover": {
-                bgcolor: tokens.bgSubtle,
-              },
-              "&.Mui-selected": {
-                bgcolor: `${tokens.primarySubtle} !important`,
-                color: `${tokens.primaryLight} !important`,
-                "&:hover": {
-                  bgcolor: `${tokens.primarySubtle} !important`,
-                },
-              },
+              fontSize: 11,
+              fontWeight: 700,
+              color: "text.secondary",
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+              lineHeight: "28px",
+              px: 1.5,
+              bgcolor: "transparent",
             }}
           >
-            <Stack direction='row' spacing={1} sx={{ alignItems: "center", width: "100%" }}>
-              {option.icon}
-              <Box sx={{ width: "100%", overflow: "hidden" }}>
-                <Typography
-                  noWrap={truncate}
-                  sx={{
-                    fontSize: "0.85rem",
-                    fontWeight: 500,
-                    color: tokens.textPrimary,
-                    overflow: truncate ? "hidden" : "visible",
-                    textOverflow: truncate ? "ellipsis" : "clip",
-                    whiteSpace: truncate ? "nowrap" : "normal",
-                    display: "block",
-                  }}
-                >
-                  {option.label}
-                </Typography>
-                {option.subtitle && (
-                  <Typography
-                    variant='caption'
-                    noWrap={truncate}
+            {title}
+          </ListSubheader>
+        )}
+
+        {items.map((item, index) => {
+          if (item === "divider") {
+            return <Divider key={`divider-${index}`} sx={{ my: 0.5, borderColor: tokens.borderDefault }} />;
+          }
+
+          const isDanger = item.danger || item.variant === "danger" || item.variant === "destructive";
+          const handleClick = (e: React.MouseEvent) => {
+            e.stopPropagation();
+            handleClose();
+            if (item.action) item.action();
+            else if (item.onClick) item.onClick();
+          };
+
+          return (
+            <React.Fragment key={index}>
+              {item.divider && <Divider sx={{ my: 0.5, borderColor: tokens.borderDefault }} />}
+              <MenuItem
+                {...(item.href ? ({ component: NextLink, href: item.href, target: item.target } as any) : {})}
+                onClick={handleClick}
+                disabled={item.disabled}
+                sx={{
+                  fontSize: 13,
+                  fontWeight: 500,
+                  borderRadius: `${tokens.radiusSm}px`,
+                  py: 0.8,
+                  px: 1.5,
+                  gap: 1.25,
+                  color: isDanger ? tokens.danger : tokens.textPrimary,
+                  "&:hover": {
+                    bgcolor: isDanger ? tokens.dangerSubtle : tokens.bgSubtle,
+                  },
+                }}
+              >
+                {item.icon && (
+                  <ListItemIcon
                     sx={{
-                      color: tokens.textMuted,
-                      display: "block",
-                      fontSize: "0.72rem",
-                      overflow: truncate ? "hidden" : "visible",
-                      textOverflow: truncate ? "ellipsis" : "clip",
-                      whiteSpace: truncate ? "nowrap" : "normal",
+                      minWidth: "auto",
+                      color: isDanger ? tokens.danger : "text.secondary",
+                      "& .MuiSvgIcon-root": { fontSize: 18 },
                     }}
                   >
-                    {option.subtitle}
-                  </Typography>
+                    {item.icon}
+                  </ListItemIcon>
                 )}
-              </Box>
-            </Stack>
-          </MenuItem>
-        ))}
-      </Select>
-    </Box>
+                <ListItemText
+                  primary={item.label}
+                  sx={{
+                    m: 0,
+                    "& .MuiTypography-root": {
+                      fontSize: 13,
+                      fontWeight: 500,
+                      color: isDanger ? tokens.danger : tokens.textPrimary,
+                    },
+                  }}
+                />
+              </MenuItem>
+            </React.Fragment>
+          );
+        })}
+      </Menu>
+    </>
   );
 }
+
+export default Dropdown;

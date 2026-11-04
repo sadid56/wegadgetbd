@@ -9,11 +9,13 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
-import { Chip } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
+import { Avatar } from "@/components/ui/avatar";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { FormControl, Select, MenuItem } from "@/components/ui/select";
 import { CircularProgress } from "@/components/ui/spinner";
-import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@/components/ui/dialog";
+import { AlertDialog } from "@/components/ui/alert-dialog";
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import BlockIcon from "@mui/icons-material/Block";
@@ -28,25 +30,6 @@ import { useUser, useUpdateUser } from "@/query-client/users";
 import { useRevokeSession } from "@/query-client/admin";
 import { parseDevice } from "@/lib/parse-device";
 import { tokens } from "@/theme/theme";
-
-const cardSx = {
-  border: "1px solid",
-  borderColor: "divider",
-  borderRadius: "12px",
-  bgcolor: "background.paper",
-  boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-} as const;
-
-const cardHeaderSx = { pb: 1 } as const;
-
-const selectSx = {
-  borderRadius: "8px",
-  fontSize: 14,
-  bgcolor: "background.paper",
-  "& .MuiOutlinedInput-notchedOutline": { borderColor: "divider" },
-  "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "text.disabled" },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "primary.main" },
-} as const;
 
 export default function UserDetailsPage() {
   const toast = useToast();
@@ -100,17 +83,11 @@ export default function UserDetailsPage() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       {/* Header */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
         <IconButton
           onClick={() => router.back()}
           aria-label='Go back'
-          sx={{
-            width: 36,
-            height: 36,
-            borderRadius: "8px",
-            color: "text.primary",
-            "&:hover": { bgcolor: "action.hover" },
-          }}
+          size='small'
         >
           <ArrowBackIcon sx={{ fontSize: 18 }} />
         </IconButton>
@@ -134,56 +111,32 @@ export default function UserDetailsPage() {
           gridTemplateColumns: { xs: "1fr", md: "repeat(2, minmax(0, 1fr))" },
         }}
       >
-        {/* ─── Profile info card ─────────────────────────── */}
-        <Card elevation={0} sx={cardSx}>
+        {/* Profile info card */}
+        <Card>
           <CardHeader
-            title={
-              <Typography component='h3' sx={{ fontSize: 18, fontWeight: 700, color: "text.primary", lineHeight: 1.3 }}>
-                Profile Information
-              </Typography>
-            }
-            subheader={<Typography sx={{ fontSize: 14, color: "text.secondary", mt: 0.5 }}>Basic details about the user.</Typography>}
-            sx={cardHeaderSx}
+            title='Profile Information'
+            subheader='Basic details about the user.'
           />
-          <CardContent sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <CardContent sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
             {/* Avatar row */}
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              {user.image ? (
-                <Box
-                  component='img'
-                  src={user.image}
-                  alt={user.name}
-                  sx={{
-                    width: 64,
-                    height: 64,
-                    borderRadius: "50%",
-                    border: "1px solid",
-                    borderColor: "divider",
-                    objectFit: "cover",
-                    flexShrink: 0,
-                  }}
-                />
-              ) : (
-                <Box
-                  sx={{
-                    width: 64,
-                    height: 64,
-                    borderRadius: "50%",
-                    bgcolor: "action.hover",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 20,
-                    fontWeight: 700,
-                    color: "text.primary",
-                    flexShrink: 0,
-                  }}
-                >
-                  {user.name.charAt(0)}
-                </Box>
-              )}
+              <Avatar
+                src={user.image || undefined}
+                alt={user.name || "User"}
+                sx={{
+                  width: 64,
+                  height: 64,
+                  fontSize: 22,
+                  fontWeight: 700,
+                  flexShrink: 0,
+                }}
+              >
+                {user.name?.charAt(0) || "?"}
+              </Avatar>
               <Box sx={{ minWidth: 0 }}>
-                <Typography sx={{ fontSize: 18, fontWeight: 700, color: "text.primary", lineHeight: 1.3 }}>{user.name}</Typography>
+                <Typography sx={{ fontSize: 18, fontWeight: 700, color: "text.primary", lineHeight: 1.3 }}>
+                  {user.name}
+                </Typography>
                 <Typography
                   sx={{
                     fontSize: 14,
@@ -215,7 +168,9 @@ export default function UserDetailsPage() {
                 <Box component='span' sx={{ fontSize: 14, color: "text.secondary" }}>
                   Joined
                 </Box>
-                <Typography sx={{ fontWeight: 500, color: "text.primary", mt: 0.25 }}>{format(new Date(user.createdAt), "PPP")}</Typography>
+                <Typography sx={{ fontWeight: 500, color: "text.primary", mt: 0.25 }}>
+                  {format(new Date(user.createdAt), "PPP")}
+                </Typography>
               </Box>
               <Box>
                 <Box component='span' sx={{ fontSize: 14, color: "text.secondary" }}>
@@ -223,33 +178,9 @@ export default function UserDetailsPage() {
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
                   {user.banned ? (
-                    <Chip
-                      label='Banned'
-                      size='small'
-                      sx={{
-                        height: 22,
-                        fontSize: 11,
-                        fontWeight: 700,
-                        bgcolor: "error.main",
-                        color: "error.contrastText",
-                        "& .MuiChip-label": { px: 1.25 },
-                      }}
-                    />
+                    <Badge variant='danger'>Banned</Badge>
                   ) : (
-                    <Chip
-                      label='Active'
-                      size='small'
-                      variant='outlined'
-                      sx={{
-                        height: 22,
-                        fontSize: 11,
-                        fontWeight: 700,
-                        bgcolor: tokens.accentLight,
-                        color: tokens.successText,
-                        borderColor: tokens.successBorder,
-                        "& .MuiChip-label": { px: 1.25 },
-                      }}
-                    />
+                    <Badge variant='success'>Active</Badge>
                   )}
                 </Box>
               </Box>
@@ -267,50 +198,27 @@ export default function UserDetailsPage() {
               }}
             >
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                <Box component='label' htmlFor='user-role' sx={{ fontSize: 14, fontWeight: 500, color: "text.primary" }}>
+                <Label htmlFor='user-role' sx={{ mb: 1, display: "block" }}>
                   Role
-                </Box>
+                </Label>
                 <FormControl fullWidth size='small' disabled={isUpdating}>
-                  <Select id='user-role' value={user.role} onChange={(e) => handleRoleChange(e.target.value as string)} sx={selectSx}>
-                    <MenuItem value='USER' sx={{ fontSize: 14 }}>
-                      User
-                    </MenuItem>
-                    <MenuItem value='ADMIN' sx={{ fontSize: 14 }}>
-                      Admin
-                    </MenuItem>
+                  <Select
+                    id='user-role'
+                    value={user.role}
+                    onChange={(e) => handleRoleChange(e.target.value as string)}
+                  >
+                    <MenuItem value='USER'>User</MenuItem>
+                    <MenuItem value='ADMIN'>Admin</MenuItem>
                   </Select>
                 </FormControl>
               </Box>
 
               <Button
                 fullWidth
-                variant={user.banned ? "outlined" : "contained"}
-                color={user.banned ? "inherit" : "error"}
-                disableElevation
+                variant={user.banned ? "outline" : "destructive"}
                 onClick={handleBanToggle}
                 disabled={isUpdating}
                 startIcon={user.banned ? <CheckCircleIcon sx={{ fontSize: 16 }} /> : <BlockIcon sx={{ fontSize: 16 }} />}
-                sx={{
-                  height: 40,
-                  borderRadius: "8px",
-                  textTransform: "none",
-                  fontWeight: 600,
-                  fontSize: 14,
-                  ...(user.banned
-                    ? {
-                        borderColor: "divider",
-                        color: "text.primary",
-                        "&:hover": {
-                          borderColor: "text.disabled",
-                          bgcolor: "action.hover",
-                        },
-                      }
-                    : {
-                        bgcolor: "error.main",
-                        color: "error.contrastText",
-                        "&:hover": { bgcolor: "error.dark" },
-                      }),
-                }}
               >
                 {user.banned ? "Unban User" : "Ban User"}
               </Button>
@@ -318,18 +226,11 @@ export default function UserDetailsPage() {
           </CardContent>
         </Card>
 
-        {/* ─── Right column ──────────────────────────────── */}
+        {/* Right column */}
         <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
           {/* Permissions card */}
-          <Card elevation={0} sx={cardSx}>
-            <CardHeader
-              title={
-                <Typography component='h3' sx={{ fontSize: 18, fontWeight: 700, color: "text.primary", lineHeight: 1.3 }}>
-                  Permissions
-                </Typography>
-              }
-              sx={cardHeaderSx}
-            />
+          <Card>
+            <CardHeader title='Permissions' />
             <CardContent sx={{ pt: 1 }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
                 {user.role === "ADMIN" ? (
@@ -343,22 +244,15 @@ export default function UserDetailsPage() {
               </Box>
               <Typography sx={{ fontSize: 14, color: "text.secondary", lineHeight: 1.6 }}>
                 {user.role === "ADMIN"
-                  ? "This user has full access to the admin dashboard, including product managment, user controls, and system settings."
+                  ? "This user has full access to the admin dashboard, including product management, user controls, and system settings."
                   : "This user has standard access to the storefront and their own order history."}
               </Typography>
             </CardContent>
           </Card>
 
           {/* Sessions card */}
-          <Card elevation={0} sx={cardSx}>
-            <CardHeader
-              title={
-                <Typography component='h3' sx={{ fontSize: 18, fontWeight: 700, color: "text.primary", lineHeight: 1.3 }}>
-                  Active Sessions
-                </Typography>
-              }
-              sx={cardHeaderSx}
-            />
+          <Card>
+            <CardHeader title='Active Sessions' />
             <CardContent sx={{ pt: 1 }}>
               {user.sessions && user.sessions.length > 0 ? (
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -398,10 +292,8 @@ export default function UserDetailsPage() {
                         <IconButton
                           onClick={() => setSessionToRevoke(session.id)}
                           aria-label='Revoke session'
+                          size='small'
                           sx={{
-                            width: 32,
-                            height: 32,
-                            flexShrink: 0,
                             color: tokens.danger,
                             "&:hover": {
                               color: tokens.dangerHover,
@@ -423,55 +315,16 @@ export default function UserDetailsPage() {
         </Box>
       </Box>
 
-      {/* ─── Revoke session confirmation ──────────────────── */}
-      <Dialog
+      {/* Revoke Session Confirmation Alert Dialog */}
+      <AlertDialog
         open={!!sessionToRevoke}
         onClose={() => setSessionToRevoke(null)}
-        maxWidth='xs'
-        fullWidth
-        slotProps={{ paper: { sx: { borderRadius: "12px" } } }}
-      >
-        <DialogTitle sx={{ fontSize: 18, fontWeight: 700 }}>Revoke Session?</DialogTitle>
-        <DialogContent>
-          <DialogContentText sx={{ fontSize: 14, color: "text.secondary" }}>
-            Are you sure you want to revoke this session? The user will be signed out from this device.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions sx={{ p: 2, gap: 1 }}>
-          <Button
-            onClick={() => setSessionToRevoke(null)}
-            variant='outlined'
-            disableElevation
-            sx={{
-              textTransform: "none",
-              fontWeight: 600,
-              fontSize: 14,
-              borderRadius: "8px",
-              borderColor: "divider",
-              color: "text.primary",
-              "&:hover": { borderColor: "text.disabled", bgcolor: "action.hover" },
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={confirmRevoke}
-            variant='contained'
-            disableElevation
-            sx={{
-              textTransform: "none",
-              fontWeight: 600,
-              fontSize: 14,
-              borderRadius: "8px",
-              bgcolor: tokens.danger,
-              color: tokens.textWhite,
-              "&:hover": { bgcolor: tokens.dangerHover },
-            }}
-          >
-            Revoke
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onConfirm={confirmRevoke}
+        title='Revoke Session?'
+        description='Are you sure you want to revoke this session? The user will be signed out from this device.'
+        confirmText='Revoke'
+        confirmVariant='destructive'
+      />
     </Box>
   );
 }

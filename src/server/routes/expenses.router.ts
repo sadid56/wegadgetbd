@@ -2,6 +2,7 @@ import { z } from "zod";
 import { adminProcedure } from "@/server/init";
 import { CreateExpenseUseCase } from "@/server/use-case/admin/expenses/create-expense";
 import { GetExpenseSummaryUseCase } from "@/server/use-case/admin/expenses/get-expense-summary";
+import { createExpenseInputSchema } from "@/server/schemas";
 
 export const expensesRouter = {
   summary: adminProcedure
@@ -24,14 +25,7 @@ export const expensesRouter = {
       summary: "Create an expense record",
       tags: ["Admin Expenses"],
     })
-    .input(
-      z.object({
-        category: z.string(),
-        amount: z.number(),
-        note: z.string().optional(),
-        date: z.string().or(z.date()).optional(),
-      })
-    )
+    .input(createExpenseInputSchema)
     .handler(async ({ input, context }) => {
       const useCase = new CreateExpenseUseCase(context.db);
       return useCase.execute({

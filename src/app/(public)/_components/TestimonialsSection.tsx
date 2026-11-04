@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import Skeleton from "@mui/material/Skeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import StarRoundedIcon from "@mui/icons-material/StarRounded";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";

@@ -150,10 +150,10 @@ export function Navbar() {
           bgcolor: navState === "top" && isHome ? "transparent" : tokens.bgDark,
           borderBottom:
             navState === "top" && isHome ? "1px solid transparent" : "1px solid rgba(0, 191, 166, 0.22)",
-          boxShadow: navState === "top" && isHome ? "none" : "0 8px 24px rgba(0, 0, 0, 0.45)",
+          boxShadow: "none",
           transform: navState === "hidden" ? "translateY(-100%)" : "translateY(0)",
           transition:
-            "transform 0.32s cubic-bezier(0.2, 0.9, 0.3, 1), background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease",
+            "transform 0.32s cubic-bezier(0.2, 0.9, 0.3, 1), background-color 0.25s ease, border-color 0.25s ease",
         }}
       >
         <SectionContainer

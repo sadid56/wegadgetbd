@@ -1,4 +1,4 @@
-import { eq, and, or, ilike, desc, asc, count, sql } from "drizzle-orm";
+import { eq, and, or, ilike, desc, asc, count, sql, isNotNull } from "drizzle-orm";
 import { product, category } from "@/db/schema";
 import type { Context } from "@/server/context";
 import type { ListProductsInput } from "@/server/schemas/products.schema";
@@ -11,6 +11,8 @@ const ORDER_BY_MAP: Record<string, (p: typeof product) => OrderByClause> = {
   "price-desc": () => [desc(product.price)],
   newest: () => [desc(product.createdAt)],
   "best-selling": () => [desc(product.soldCount), desc(product.rating)],
+  rating: () => [desc(product.rating), desc(product.soldCount)],
+  discount: () => [desc(sql`COALESCE(NULLIF(${product.discountPrice}, 0), 0)`), desc(product.createdAt)],
 };
 
 export class ListProductsUseCase {
@@ -38,12 +40,36 @@ export class ListProductsUseCase {
     };
   }
 
-  private buildWhereClause({ search, featured }: Partial<Pick<ListProductsInput, "search" | "featured">> = {}) {
+  private buildWhereClause(input: Partial<ListProductsInput> = {}) {
+    const { search, featured, inStock, onSale, minPrice, maxPrice, rating, brand } = input;
     const conditions = [eq(product.status, "ACTIVE")];
 
     if (featured) {
       conditions.push(eq(product.isFeatured, true));
-      conditions.push(eq(product.inStock, true));
+    }
+
+    if (inStock !== undefined) {
+      conditions.push(eq(product.inStock, inStock));
+    }
+
+    if (onSale) {
+      conditions.push(and(isNotNull(product.discountPrice), sql`${product.discountPrice} > 0 AND ${product.discountPrice} < ${product.price}`)!);
+    }
+
+    if (minPrice !== undefined && minPrice > 0) {
+      conditions.push(sql`${product.price} >= ${minPrice}`);
+    }
+
+    if (maxPrice !== undefined && maxPrice > 0) {
+      conditions.push(sql`${product.price} <= ${maxPrice}`);
+    }
+
+    if (rating !== undefined && rating > 0) {
+      conditions.push(sql`${product.rating} >= ${rating}`);
+    }
+
+    if (brand) {
+      conditions.push(ilike(product.brand, `%${brand}%`));
     }
 
     if (search) {

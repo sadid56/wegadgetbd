@@ -15,19 +15,7 @@ export default function CreateProductPage() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-        <Button
-          variant='text'
-          disableElevation
-          onClick={() => router.back()}
-          aria-label='Go back'
-          sx={{
-            minWidth: 0,
-            p: 1,
-            borderRadius: "8px",
-            color: "text.primary",
-            "&:hover": { bgcolor: "action.hover" },
-          }}
-        >
+        <Button variant='text' disableElevation onClick={() => router.back()} aria-label='Go back'>
           <ArrowBackIcon sx={{ fontSize: 18 }} />
         </Button>
         <Typography

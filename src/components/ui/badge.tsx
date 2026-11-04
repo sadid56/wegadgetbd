@@ -27,7 +27,8 @@ export type BadgeVariant =
   | "review"
   | "tips";
 
-export interface BadgeProps extends Omit<MuiChipProps, "variant" | "color"> {
+export interface BadgeProps extends Omit<MuiChipProps, "variant" | "color" | "children"> {
+  children?: React.ReactNode;
   variant?: BadgeVariant;
   color?: "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning";
   sx?: SxProps<Theme>;

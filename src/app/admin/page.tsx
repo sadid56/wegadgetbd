@@ -12,6 +12,7 @@ import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { useDashboardStats } from "@/query-client/admin/dashboard";
+import { DashboardHeader } from "@/components/admin/dashboard-header";
 import { SalesChart } from "./_components/sales-chart";
 import { RecentUsers } from "./_components/recent-users";
 import { RecentPayments } from "./_components/recent-payments";
@@ -70,58 +71,41 @@ export default function AdminDashboard() {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: { xs: 2.5, sm: 3 }, pb: { xs: 6, sm: 8, md: 10 } }}>
       {/* Dashboard Top Header */}
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: { xs: "column", sm: "row" },
-          alignItems: { xs: "flex-start", sm: "center" },
-          justifyContent: "space-between",
-          gap: 2,
-        }}
-      >
-        <Box>
-          <Typography
-            component='h1'
-            sx={{
-              fontSize: { xs: 24, sm: 28 },
-              fontWeight: 800,
-              letterSpacing: "-0.025em",
-              color: "text.primary",
-              lineHeight: 1.2,
-            }}
-          >
-            Dashboard
-          </Typography>
-          <Typography sx={{ fontSize: 13.5, color: "text.secondary", mt: 0.5 }}>
-            Welcome to We Gadget BD admin overview and real-time business metrics.
-          </Typography>
-        </Box>
-
-        {/* Quick Actions */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, flexWrap: "wrap" }}>
-          <Button component={NextLink} href='/admin/products/new' variant='contained' size='small' startIcon={<AddIcon />}>
-            Add Product
-          </Button>
-          <Button
-            component={NextLink}
-            href='/admin/orders'
-            variant='outlined'
-            size='small'
-            endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
-          >
-            View Orders
-          </Button>
-          <Button
-            component={NextLink}
-            href='/admin/categories'
-            variant='outlined'
-            size='small'
-            endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
-          >
-            Categories
-          </Button>
-        </Box>
-      </Box>
+      <DashboardHeader
+        title='Dashboard'
+        description='Welcome to We Gadget BD admin overview and real-time business metrics.'
+        action={
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, flexWrap: "wrap" }}>
+            <Button
+              component={NextLink}
+              href='/admin/products/new'
+              variant='primary'
+              size='sm'
+              startIcon={<AddIcon sx={{ fontSize: 16 }} />}
+            >
+              Add Product
+            </Button>
+            <Button
+              component={NextLink}
+              href='/admin/orders'
+              variant='outline'
+              size='sm'
+              endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
+            >
+              View Orders
+            </Button>
+            <Button
+              component={NextLink}
+              href='/admin/categories'
+              variant='outline'
+              size='sm'
+              endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
+            >
+              Categories
+            </Button>
+          </Box>
+        }
+      />
 
       {/* 4 Stats Cards */}
       <Box sx={statGridSx}>

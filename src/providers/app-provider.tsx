@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { ThemeProvider, CssBaseline } from "@mui/material";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { theme } from "@/theme/theme";
 import { ToastProvider } from "@/context/toast-context";
 import { InlineScrollbar } from "@/components/common/InlineScrollbar";
@@ -21,11 +22,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <InlineScrollbar />
-        <ToastProvider>{children}</ToastProvider>
-      </ThemeProvider>
+      <NuqsAdapter>
+        <ThemeProvider theme={theme}>
+          <CssBaseline />
+          <InlineScrollbar />
+          <ToastProvider>{children}</ToastProvider>
+        </ThemeProvider>
+      </NuqsAdapter>
     </QueryClientProvider>
   );
 }

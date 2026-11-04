@@ -7,7 +7,9 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { IconButton } from "@/components/ui/icon-button";
 import { Avatar } from "@/components/ui/avatar";
-import { Menu, MenuItem } from "@/components/ui/menu";
+import { Badge } from "@/components/ui/badge";
+import Menu from "@mui/material/Menu";
+import { MenuItem } from "@/components/ui/select";
 import { Divider } from "@/components/ui/divider";
 
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
@@ -20,16 +22,6 @@ import SupportAgentOutlinedIcon from "@mui/icons-material/SupportAgentOutlined";
 import { useSession, signOut } from "@/lib/auth-client";
 import { useCart } from "@/hooks/useCart";
 import { tokens } from "@/theme/theme";
-
-const badgeSx = {
-  px: 0.9,
-  py: 0.15,
-  borderRadius: `${tokens.radiusPill}px`,
-  bgcolor: tokens.primarySubtle,
-  color: tokens.primary,
-  fontSize: 11,
-  fontWeight: 700,
-};
 
 type DropdownItem = {
   label: string;
@@ -174,22 +166,9 @@ export function NavbarUserDropdown() {
           </Typography>
 
           {isAdmin && (
-            <Box
-              sx={{
-                px: 1.25,
-                py: 0.25,
-                borderRadius: `${tokens.radiusPill}px`,
-                bgcolor: tokens.primarySubtle,
-                color: tokens.primaryHover,
-                border: `1px solid ${tokens.primaryBorder}`,
-                fontSize: 10.5,
-                fontWeight: 700,
-                letterSpacing: "0.04em",
-                textTransform: "uppercase",
-              }}
-            >
+            <Badge variant="default" size="small">
               Administrator
-            </Box>
+            </Badge>
           )}
         </Box>
 
@@ -202,9 +181,9 @@ export function NavbarUserDropdown() {
             <Icon />
             <Box sx={{ flex: 1 }}>{label}</Box>
             {badge !== undefined && badge > 0 && (
-              <Box component="span" sx={badgeSx}>
+              <Badge variant="default" size="small">
                 {badge}
-              </Box>
+              </Badge>
             )}
           </MenuItem>
         ))}

@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
-import { Chip } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { tokens } from "@/theme/theme";
 
 interface RecentPaymentsProps {
@@ -22,47 +22,11 @@ interface RecentPaymentsProps {
   }[];
 }
 
-const statusChipSx = (status: string) => {
-  const base = {
-    height: 20,
-    fontSize: 10,
-    fontWeight: 700,
-    borderRadius: "6px",
-    "& .MuiChip-label": { px: 0.75, lineHeight: 1.2 },
-  } as const;
-
-  switch (status) {
-    case "COMPLETED":
-      return {
-        ...base,
-        bgcolor: "primary.main",
-        color: "primary.contrastText",
-      };
-    case "PENDING":
-      return {
-        ...base,
-        bgcolor: "action.hover",
-        color: "text.primary",
-      };
-    default:
-      return {
-        ...base,
-        bgcolor: "error.main",
-        color: "error.contrastText",
-      };
-  }
-};
-
 export function RecentPayments({ payments }: RecentPaymentsProps) {
   return (
     <Card
-      elevation={0}
       sx={{
         gridColumn: { md: "span 3" },
-        border: "1px solid",
-        borderColor: "divider",
-        borderRadius: "12px",
-        boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
       }}
     >
       <CardHeader
@@ -146,7 +110,9 @@ export function RecentPayments({ payments }: RecentPaymentsProps) {
                     currency: "BDT",
                   }).format(payment.amount)}
                 </Box>
-                <Chip label={payment.status} size='small' sx={statusChipSx(payment.status)} />
+                <Badge variant={payment.status === "COMPLETED" ? "success" : payment.status === "PENDING" ? "warning" : "danger"}>
+                  {payment.status}
+                </Badge>
               </Box>
             </Box>
           ))}

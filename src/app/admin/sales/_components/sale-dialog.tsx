@@ -3,33 +3,18 @@
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import { format } from "date-fns";
 import { useToast } from "@/context/toast-context";
 
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/input";
-import { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Modal, ModalTitle, ModalContent, ModalContentText, ModalActions } from "@/components/ui/modal";
 import { FormControl, Select, MenuItem } from "@/components/ui/select";
 
 import { SaleEndpoints } from "@/query-client/sales";
-import { tokens } from "@/theme/theme";
-
-const formSchema = z.object({
-  productName: z.string().min(1, "Product name is required"),
-  quantity: z.coerce.number().min(1, "Quantity must be at least 1"),
-  buyPrice: z.coerce.number().min(0, "Buy price must be positive"),
-  sellPrice: z.coerce.number().min(0, "Sell price must be positive"),
-  boostingCost: z.coerce.number().min(0, "Boosting cost must be positive"),
-  customerName: z.string().min(1, "Customer name is required"),
-  phoneNumber: z.string().optional(),
-  address: z.string().optional(),
-  sellerName: z.string().optional(),
-  status: z.string().default("COMPLETED"),
-  date: z.date().optional(),
-});
+import { createSaleInputSchema, type CreateSaleInput } from "@/server/schemas";
 
 interface SaleDialogProps {
   initialData?: {
@@ -59,36 +44,6 @@ const STATUS_OPTIONS = [
   { value: "CANCELLED", label: "Cancelled" },
 ] as const;
 
-const inputSx = {
-  "& .MuiOutlinedInput-root": {
-    borderRadius: "8px",
-    fontSize: 14,
-    bgcolor: "background.paper",
-    "& fieldset": { borderColor: "divider" },
-    "&:hover fieldset": { borderColor: "text.disabled" },
-    "&.Mui-focused fieldset": { borderColor: "primary.main" },
-  },
-} as const;
-
-const selectSx = {
-  borderRadius: "8px",
-  fontSize: 14,
-  bgcolor: "background.paper",
-  "& .MuiOutlinedInput-notchedOutline": { borderColor: "divider" },
-  "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "text.disabled" },
-  "&.Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "primary.main" },
-} as const;
-
-const labelSx = {
-  display: "block",
-  fontSize: 14,
-  fontWeight: 500,
-  color: "text.primary",
-  mb: 1,
-} as const;
-
-const helperTextSx = { fontSize: 12, mx: 0 } as const;
-
 const gridTwo = {
   display: "grid",
   gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
@@ -103,8 +58,8 @@ const gridThree = {
 
 export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleDialogProps) {
   const toast = useToast();
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema) as any,
+  const form = useForm<CreateSaleInput>({
+    resolver: zodResolver(createSaleInputSchema) as any,
     defaultValues: {
       productName: "",
       quantity: 1,
@@ -152,7 +107,7 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
     }
   }, [initialData, form, open]);
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: CreateSaleInput) {
     try {
       const payload = {
         productName: values.productName,
@@ -206,7 +161,7 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
   const { ref: boostingRef, ...boostingProps } = form.register("boostingCost");
 
   return (
-    <Dialog
+    <Modal
       open={open}
       onClose={() => onOpenChange(false)}
       maxWidth='sm'
@@ -214,19 +169,17 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
       slotProps={{ paper: { sx: { borderRadius: "12px", maxWidth: 625 } } }}
     >
       <Box component='form' onSubmit={form.handleSubmit(onSubmit)} sx={{ display: "flex", flexDirection: "column" }}>
-        <DialogTitle sx={{ fontSize: 18, fontWeight: 700, pb: 1 }}>{initialData ? "Edit Sale" : "Add Sale"}</DialogTitle>
+        <ModalTitle sx={{ fontSize: 18, fontWeight: 700, pb: 1 }}>{initialData ? "Edit Sale" : "Add Sale"}</ModalTitle>
 
-        <DialogContent dividers>
-          <DialogContentText sx={{ fontSize: 14, color: "text.secondary", mb: 2.5 }}>
+        <ModalContent dividers>
+          <ModalContentText sx={{ fontSize: 14, color: "text.secondary", mb: 2.5 }}>
             {initialData ? "Update the sale details." : "Record a new manual sale."}
-          </DialogContentText>
+          </ModalContentText>
 
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {/* Product Name */}
             <Box>
-              <Box component='label' htmlFor='sale-product' sx={labelSx}>
-                Product Name
-              </Box>
+              <Label htmlFor='sale-product'>Product Name</Label>
               <TextField
                 id='sale-product'
                 placeholder='Enter product name'
@@ -234,7 +187,6 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
                 size='small'
                 inputRef={productRef}
                 {...productProps}
-                sx={inputSx}
                 error={!!form.formState.errors.productName}
                 helperText={form.formState.errors.productName?.message}
               />
@@ -243,9 +195,7 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
             {/* Quantity */}
             <Box sx={gridTwo}>
               <Box>
-                <Box component='label' htmlFor='sale-qty' sx={labelSx}>
-                  Quantity
-                </Box>
+                <Label htmlFor='sale-qty'>Quantity</Label>
                 <TextField
                   id='sale-qty'
                   type='number'
@@ -253,7 +203,6 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
                   size='small'
                   inputRef={qtyRef}
                   {...qtyProps}
-                  sx={inputSx}
                   error={!!form.formState.errors.quantity}
                   helperText={form.formState.errors.quantity?.message}
                 />
@@ -262,9 +211,7 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
 
             {/* Customer Name */}
             <Box>
-              <Box component='label' htmlFor='sale-customer' sx={labelSx}>
-                Customer Name
-              </Box>
+              <Label htmlFor='sale-customer'>Customer Name</Label>
               <TextField
                 id='sale-customer'
                 placeholder='Enter customer name'
@@ -272,7 +219,6 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
                 size='small'
                 inputRef={customerRef}
                 {...customerProps}
-                sx={inputSx}
                 error={!!form.formState.errors.customerName}
                 helperText={form.formState.errors.customerName?.message}
               />
@@ -281,9 +227,7 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
             {/* Phone + Seller */}
             <Box sx={gridTwo}>
               <Box>
-                <Box component='label' htmlFor='sale-phone' sx={labelSx}>
-                  Phone Number
-                </Box>
+                <Label htmlFor='sale-phone'>Phone Number</Label>
                 <TextField
                   id='sale-phone'
                   placeholder='Enter phone number'
@@ -291,15 +235,12 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
                   size='small'
                   inputRef={phoneRef}
                   {...phoneProps}
-                  sx={inputSx}
                   error={!!form.formState.errors.phoneNumber}
                   helperText={form.formState.errors.phoneNumber?.message}
                 />
               </Box>
               <Box>
-                <Box component='label' htmlFor='sale-seller' sx={labelSx}>
-                  Seller Name
-                </Box>
+                <Label htmlFor='sale-seller'>Seller Name</Label>
                 <TextField
                   id='sale-seller'
                   placeholder='Enter seller name'
@@ -307,7 +248,6 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
                   size='small'
                   inputRef={sellerRef}
                   {...sellerProps}
-                  sx={inputSx}
                   error={!!form.formState.errors.sellerName}
                   helperText={form.formState.errors.sellerName?.message}
                 />
@@ -316,9 +256,7 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
 
             {/* Address */}
             <Box>
-              <Box component='label' htmlFor='sale-address' sx={labelSx}>
-                Address
-              </Box>
+              <Label htmlFor='sale-address'>Address</Label>
               <TextField
                 id='sale-address'
                 placeholder='Enter address'
@@ -326,7 +264,6 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
                 size='small'
                 inputRef={addressRef}
                 {...addressProps}
-                sx={inputSx}
                 error={!!form.formState.errors.address}
                 helperText={form.formState.errors.address?.message}
               />
@@ -335,9 +272,7 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
             {/* Prices: Buy / Sell / Boosting */}
             <Box sx={gridThree}>
               <Box>
-                <Box component='label' htmlFor='sale-buy' sx={labelSx}>
-                  Buy Price
-                </Box>
+                <Label htmlFor='sale-buy'>Buy Price</Label>
                 <TextField
                   id='sale-buy'
                   type='number'
@@ -345,16 +280,13 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
                   size='small'
                   inputRef={buyRef}
                   {...buyProps}
-                  sx={inputSx}
                   slotProps={{ htmlInput: { step: "0.01" } }}
                   error={!!form.formState.errors.buyPrice}
                   helperText={form.formState.errors.buyPrice?.message}
                 />
               </Box>
               <Box>
-                <Box component='label' htmlFor='sale-sell' sx={labelSx}>
-                  Sell Price
-                </Box>
+                <Label htmlFor='sale-sell'>Sell Price</Label>
                 <TextField
                   id='sale-sell'
                   type='number'
@@ -362,16 +294,13 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
                   size='small'
                   inputRef={sellRef}
                   {...sellProps}
-                  sx={inputSx}
                   slotProps={{ htmlInput: { step: "0.01" } }}
                   error={!!form.formState.errors.sellPrice}
                   helperText={form.formState.errors.sellPrice?.message}
                 />
               </Box>
               <Box>
-                <Box component='label' htmlFor='sale-boosting' sx={labelSx}>
-                  Boosting
-                </Box>
+                <Label htmlFor='sale-boosting'>Boosting</Label>
                 <TextField
                   id='sale-boosting'
                   type='number'
@@ -379,7 +308,6 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
                   size='small'
                   inputRef={boostingRef}
                   {...boostingProps}
-                  sx={inputSx}
                   slotProps={{ htmlInput: { step: "0.01" } }}
                   error={!!form.formState.errors.boostingCost}
                   helperText={form.formState.errors.boostingCost?.message}
@@ -390,9 +318,7 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
             {/* Status + Date */}
             <Box sx={{ display: "flex", gap: 2, width: "100%" }}>
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box component='label' htmlFor='sale-status' sx={labelSx}>
-                  Status
-                </Box>
+                <Label htmlFor='sale-status'>Status</Label>
                 <Controller
                   name='status'
                   control={form.control}
@@ -400,24 +326,11 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
                     <FormControl fullWidth size='small'>
                       <Select
                         id='sale-status'
-                        value={field.value || ""}
+                        value={field.value || "COMPLETED"}
                         onChange={field.onChange}
-                        displayEmpty
-                        sx={selectSx}
-                        renderValue={(selected) => {
-                          if (!selected) {
-                            return (
-                              <Box component='span' sx={{ color: "text.secondary" }}>
-                                Select status
-                              </Box>
-                            );
-                          }
-                          const opt = STATUS_OPTIONS.find((o) => o.value === selected);
-                          return opt?.label ?? selected;
-                        }}
                       >
                         {STATUS_OPTIONS.map((opt) => (
-                          <MenuItem key={opt.value} value={opt.value} sx={{ fontSize: 14 }}>
+                          <MenuItem key={opt.value} value={opt.value}>
                             {opt.label}
                           </MenuItem>
                         ))}
@@ -428,9 +341,7 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
               </Box>
 
               <Box sx={{ flex: 1, minWidth: 0 }}>
-                <Box component='label' htmlFor='sale-date' sx={labelSx}>
-                  Date
-                </Box>
+                <Label htmlFor='sale-date'>Date</Label>
                 <Controller
                   name='date'
                   control={form.control}
@@ -446,7 +357,6 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
                         field.onChange(v ? new Date(v) : undefined);
                       }}
                       onBlur={field.onBlur}
-                      sx={inputSx}
                       slotProps={{
                         htmlInput: {
                           max: format(new Date(), "yyyy-MM-dd"),
@@ -459,29 +369,14 @@ export function SaleDialog({ initialData, open, onOpenChange, onSuccess }: SaleD
               </Box>
             </Box>
           </Box>
-        </DialogContent>
+        </ModalContent>
 
-        <DialogActions sx={{ p: 2 }}>
-          <Button
-            type='submit'
-            variant='contained'
-            disableElevation
-            sx={{
-              textTransform: "none",
-              fontWeight: 600,
-              fontSize: 14,
-              borderRadius: "8px",
-              height: 40,
-              px: 2.5,
-              bgcolor: "primary.main",
-              color: "primary.contrastText",
-              "&:hover": { bgcolor: "primary.dark" },
-            }}
-          >
+        <ModalActions sx={{ p: 2 }}>
+          <Button type='submit' variant='contained' disableElevation>
             {initialData ? "Update Sale" : "Save Sale"}
           </Button>
-        </DialogActions>
+        </ModalActions>
       </Box>
-    </Dialog>
+    </Modal>
   );
 }

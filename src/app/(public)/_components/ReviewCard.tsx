@@ -4,6 +4,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 import StarIcon from "@mui/icons-material/Star";
+import { Avatar } from "@/components/ui/avatar";
 import { tokens } from "@/theme/theme";
 import { getAssetUrl } from "@/lib/storage";
 
@@ -64,44 +65,25 @@ export function ReviewCard({ review, className, sx }: ReviewCardProps) {
       </Box>
 
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-        {review.customerPic ? (
-          <Box
-            component='img'
-            className='review-avatar'
-            src={getAssetUrl(review.customerPic)}
-            alt={review.customerName}
-            sx={{
-              width: 48,
-              height: 48,
-              borderRadius: "50%",
-              objectFit: "cover",
-              border: "2px solid",
-              borderColor: tokens.primaryBorder,
-              transition: "border-color 300ms",
-            }}
-          />
-        ) : (
-          <Box
-            className='review-initial'
-            sx={{
-              width: 48,
-              height: 48,
-              borderRadius: "50%",
-              bgcolor: tokens.primarySubtle,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              color: tokens.primary,
-              fontWeight: 700,
-              fontSize: 18,
-              border: "2px solid",
-              borderColor: tokens.primaryBorder,
-              transition: "border-color 300ms",
-            }}
-          >
-            {review.customerName.charAt(0).toUpperCase()}
-          </Box>
-        )}
+        <Avatar
+          className='review-avatar'
+          src={review.customerPic ? getAssetUrl(review.customerPic) : undefined}
+          alt={review.customerName}
+          sx={{
+            width: 48,
+            height: 48,
+            fontSize: 18,
+            fontWeight: 700,
+            bgcolor: tokens.primarySubtle,
+            color: tokens.primary,
+            border: "2px solid",
+            borderColor: tokens.primaryBorder,
+            transition: "border-color 300ms",
+            flexShrink: 0,
+          }}
+        >
+          {review.customerName.charAt(0).toUpperCase()}
+        </Avatar>
         <Box>
           <Typography component='h4' sx={{ fontWeight: 700, fontSize: 18, lineHeight: 1.2, color: tokens.textPrimary }}>
             {review.customerName}

@@ -4,6 +4,11 @@ import { ListSalesUseCase } from "@/server/use-case/admin/sales/list-sales";
 import { CreateSaleUseCase } from "@/server/use-case/admin/sales/create-sale";
 import { UpdateSaleUseCase } from "@/server/use-case/admin/sales/update-sale";
 import { DeleteSaleUseCase, GetSaleUseCase } from "@/server/use-case/admin/sales/delete-sale";
+import {
+  listSalesInputSchema,
+  createSaleInputSchema,
+  updateSaleInputSchema,
+} from "@/server/schemas/sales.schema";
 
 export const salesRouter = {
   list: adminProcedure
@@ -13,18 +18,7 @@ export const salesRouter = {
       summary: "List sales with pagination and filters",
       tags: ["Admin Sales"],
     })
-    .input(
-      z
-        .object({
-          page: z.number().optional(),
-          limit: z.number().optional(),
-          search: z.string().optional(),
-          startDate: z.string().or(z.date()).optional(),
-          endDate: z.string().or(z.date()).optional(),
-          sellerName: z.string().optional(),
-        })
-        .optional()
-    )
+    .input(listSalesInputSchema.optional())
     .handler(async ({ input, context }) => {
       const useCase = new ListSalesUseCase(context.db);
       return useCase.execute({
@@ -57,21 +51,7 @@ export const salesRouter = {
       summary: "Create a new sale",
       tags: ["Admin Sales"],
     })
-    .input(
-      z.object({
-        productName: z.string(),
-        quantity: z.number(),
-        buyPrice: z.number(),
-        sellPrice: z.number(),
-        boostingCost: z.number(),
-        customerName: z.string(),
-        phoneNumber: z.string().optional(),
-        address: z.string().optional(),
-        sellerName: z.string().optional(),
-        date: z.string().or(z.date()).optional(),
-        status: z.string().optional(),
-      })
-    )
+    .input(createSaleInputSchema)
     .handler(async ({ input, context }) => {
       const useCase = new CreateSaleUseCase(context.db);
       return useCase.execute({
@@ -88,24 +68,7 @@ export const salesRouter = {
       summary: "Update an existing sale",
       tags: ["Admin Sales"],
     })
-    .input(
-      z.object({
-        id: z.string(),
-        data: z.object({
-          productName: z.string().optional(),
-          quantity: z.number().optional(),
-          buyPrice: z.number().optional(),
-          sellPrice: z.number().optional(),
-          boostingCost: z.number().optional(),
-          customerName: z.string().optional(),
-          phoneNumber: z.string().optional(),
-          address: z.string().optional(),
-          sellerName: z.string().optional(),
-          date: z.string().or(z.date()).optional(),
-          status: z.string().optional(),
-        }),
-      })
-    )
+    .input(updateSaleInputSchema)
     .handler(async ({ input, context }) => {
       const useCase = new UpdateSaleUseCase(context.db);
       return useCase.execute(input.id, {

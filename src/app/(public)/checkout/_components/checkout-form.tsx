@@ -20,46 +20,6 @@ const fadeInX = keyframes`
   to   { opacity: 1; transform: translateX(0); }
 `;
 
-const fieldSx = {
-  "& .MuiOutlinedInput-root": {
-    height: { xs: 40, md: 48 },
-    borderRadius: "8px",
-    bgcolor: tokens.bgInput,
-    fontSize: 14,
-    transition: "all 200ms",
-    "& fieldset": { borderColor: tokens.borderDefault },
-    "&:hover fieldset": { borderColor: tokens.borderHover },
-    "&.Mui-focused fieldset": { borderColor: tokens.primary },
-    "&.Mui-focused": { boxShadow: `0 0 0 4px ${tokens.primarySubtle}` },
-    "&.Mui-error fieldset": { borderColor: tokens.danger },
-  },
-  "& .MuiOutlinedInput-input": {
-    padding: "0 12px",
-    height: "100%",
-    boxSizing: "border-box",
-  },
-} as const;
-
-const textareaSx = {
-  "& .MuiOutlinedInput-root": {
-    height: "auto",
-    borderRadius: "12px",
-    bgcolor: tokens.bgInput,
-    fontSize: 14,
-    padding: "8px 12px",
-    transition: "all 200ms",
-    "& fieldset": { borderColor: tokens.borderDefault },
-    "&:hover fieldset": { borderColor: tokens.borderHover },
-    "&.Mui-focused fieldset": { borderColor: tokens.primary },
-    "&.Mui-focused": { boxShadow: `0 0 0 4px ${tokens.primarySubtle}` },
-    "&.Mui-error fieldset": { borderColor: tokens.danger },
-  },
-  "& .MuiOutlinedInput-input": {
-    padding: 0,
-    "&::placeholder": { color: tokens.textDisabled, opacity: 1 },
-  },
-} as const;
-
 const locationOptions = [
   { value: "inside_dhaka", label: "ঢাকার ভিতরে", charge: "৳80", desc: "হোম ডেলিভারি" },
   { value: "outside_dhaka", label: "ঢাকার বাইরে", charge: "৳130", desc: "কুরিয়ার ডেলিভারি" },
@@ -113,8 +73,7 @@ export function CheckoutForm({ register, errors, locationValue, setValue }: Chec
             {...fieldProps("name")}
             placeholder='আপনার নাম'
             fullWidth
-            sx={{ ...fieldSx, ...BN, "& .MuiOutlinedInput-root": { ...fieldSx["& .MuiOutlinedInput-root"] } }}
-            inputProps={{ style: BN }}
+            slotProps={{ htmlInput: { style: BN } }}
           />
         </Field>
 
@@ -123,9 +82,10 @@ export function CheckoutForm({ register, errors, locationValue, setValue }: Chec
             {...fieldProps("phone")}
             placeholder='017******09'
             fullWidth
-            sx={fieldSx}
-            inputProps={{
-              style: { ...BN, fontSize: 12, letterSpacing: "0.15em" },
+            slotProps={{
+              htmlInput: {
+                style: { ...BN, fontSize: 12, letterSpacing: "0.15em" },
+              },
             }}
           />
         </Field>
@@ -137,13 +97,6 @@ export function CheckoutForm({ register, errors, locationValue, setValue }: Chec
             fullWidth
             multiline
             minRows={2}
-            sx={{
-              ...textareaSx,
-              "& .MuiOutlinedInput-input": {
-                ...textareaSx["& .MuiOutlinedInput-input"],
-                minHeight: "50px !important",
-              },
-            }}
           />
         </Field>
 
@@ -239,13 +192,6 @@ export function CheckoutForm({ register, errors, locationValue, setValue }: Chec
               fullWidth
               multiline
               minRows={2}
-              sx={{
-                ...textareaSx,
-                "& .MuiOutlinedInput-input": {
-                  ...textareaSx["& .MuiOutlinedInput-input"],
-                  minHeight: "53px !important",
-                },
-              }}
             />
           </Field>
         </Box>

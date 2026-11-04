@@ -1,40 +1,45 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { format } from "date-fns";
+import { useQueryState, parseAsInteger } from "nuqs";
+
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { Button } from "@/components/ui/button";
-import { IconButton } from "@/components/ui/icon-button";
-import { InputBase } from "@/components/ui/input";
-import { Menu, MenuItem } from "@/components/ui/menu";
-import { Chip } from "@/components/ui/badge";
-import { CircularProgress } from "@/components/ui/spinner";
-import { Modal, Fade } from "@/components/ui/modal";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@/components/ui/table";
+
+import {
+  Button,
+  IconButton,
+  InputBase,
+  Badge,
+  Modal,
+  ModalTitle,
+  ModalContent,
+  ModalActions,
+  DataTable,
+  type DataTableColumn,
+  Dropdown,
+} from "@/components/ui";
+import { DashboardHeader } from "@/components/admin/dashboard-header";
 
 import SearchIcon from "@mui/icons-material/Search";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import CloseIcon from "@mui/icons-material/Close";
 
 import { useAuditLogs } from "@/query-client/audit-logs";
-import { format } from "date-fns";
 import { tokens } from "@/theme/theme";
 
-// ─── Action constants ─────────────────────────────────────────────
-const ACTION_COLORS: Record<string, { bgcolor: string; color: string; borderColor: string }> = {
-  CREATE_PRODUCT: { bgcolor: tokens.successSubtle, color: tokens.successText, borderColor: tokens.successBorder },
-  UPDATE_PRODUCT: { bgcolor: tokens.infoSubtle, color: tokens.infoHover, borderColor: tokens.infoBorder },
-  DELETE_PRODUCT: { bgcolor: tokens.dangerSubtle, color: tokens.dangerHover, borderColor: tokens.dangerBorder },
-  STATUS_CHANGE: { bgcolor: tokens.warningSubtle, color: tokens.warningHover, borderColor: tokens.warningBorder },
-  LOGIN: { bgcolor: tokens.badgeGamingSubtle, color: tokens.badgeGaming, borderColor: tokens.badgeGamingSubtle },
-  SESSION_REVOKE: { bgcolor: tokens.badgeSaleSubtle, color: tokens.badgeSale, borderColor: tokens.warningBorder },
-  BLOCK_USER: { bgcolor: tokens.dangerSubtle, color: tokens.dangerHover, borderColor: tokens.dangerBorder },
-  UNBLOCK_USER: { bgcolor: tokens.successSubtle, color: tokens.successText, borderColor: tokens.successBorder },
-  UPDATE_SETTINGS: { bgcolor: tokens.infoSubtle, color: tokens.info, borderColor: tokens.infoBorder },
+const ACTION_VARIANTS: Record<string, "success" | "info" | "danger" | "warning" | "gaming" | "sale" | "secondary"> = {
+  CREATE_PRODUCT: "success",
+  UPDATE_PRODUCT: "info",
+  DELETE_PRODUCT: "danger",
+  STATUS_CHANGE: "warning",
+  LOGIN: "gaming",
+  SESSION_REVOKE: "sale",
+  BLOCK_USER: "danger",
+  UNBLOCK_USER: "success",
+  UPDATE_SETTINGS: "info",
 };
 
 const ACTION_LABELS: Record<string, string> = {
@@ -54,460 +59,191 @@ const ACTION_OPTIONS = [
   ...Object.entries(ACTION_LABELS).map(([value, label]) => ({ value, label })),
 ];
 
-const LIMIT_OPTIONS = [10, 20, 50, 100];
-
-// ─── Simple dropdown ─────────────────────────────────────────────
-function FilterSelect({
-  value,
-  onChange,
-  options,
-  width,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  options: { value: string; label: string }[];
-  width: number;
-}) {
-  const [anchor, setAnchor] = useState<null | HTMLElement>(null);
-  const current = options.find((o) => o.value === value) ?? options[0];
-
-  return (
-    <>
-      <Box
-        component='button'
-        type='button'
-        onClick={(e) => setAnchor(e.currentTarget)}
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 1,
-          height: 40,
-          width,
-          px: 1.75,
-          borderRadius: "8px",
-          border: "1px solid",
-          borderColor: "divider",
-          bgcolor: "background.paper",
-          fontSize: 14,
-          fontWeight: 500,
-          color: "text.primary",
-          cursor: "pointer",
-          textAlign: "left",
-          "&:hover": { borderColor: "text.disabled" },
-        }}
-      >
-        <Box component='span' sx={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {current.label}
-        </Box>
-        <KeyboardArrowDownIcon
-          sx={{
-            fontSize: 18,
-            color: "text.secondary",
-            transition: "transform 200ms",
-            transform: anchor ? "rotate(180deg)" : "rotate(0deg)",
-            flexShrink: 0,
-          }}
-        />
-      </Box>
-      <Menu
-        anchorEl={anchor}
-        open={Boolean(anchor)}
-        onClose={() => setAnchor(null)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        transformOrigin={{ vertical: "top", horizontal: "left" }}
-        slotProps={{
-          paper: {
-            sx: {
-              mt: 0.5,
-              minWidth: width,
-              borderRadius: "8px",
-              border: "1px solid",
-              borderColor: "divider",
-              boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)",
-              py: 0.5,
-              maxHeight: 320,
-            },
-          },
-        }}
-      >
-        {options.map((opt) => (
-          <MenuItem
-            key={opt.value}
-            onClick={() => {
-              onChange(opt.value);
-              setAnchor(null);
-            }}
-            selected={opt.value === value}
-          >
-            {opt.label}
-          </MenuItem>
-        ))}
-      </Menu>
-    </>
-  );
-}
-
-// ─── Main page ────────────────────────────────────────────────────
 export default function AuditLogsPage() {
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(20);
-  const [actionFilter, setActionFilter] = useState("ALL");
+  const [search, setSearch] = useQueryState("search", { defaultValue: "", shallow: false });
+  const [actionFilter, setActionFilter] = useQueryState("action", { defaultValue: "ALL", shallow: false });
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+  const [rowsPerPage, setRowsPerPage] = useQueryState("limit", parseAsInteger.withDefault(20));
+
   const [selectedMetadata, setSelectedMetadata] = useState<any>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const { data, isLoading } = useAuditLogs({
-    search,
+    search: search.trim() || undefined,
     page,
-    limit,
+    limit: rowsPerPage,
     action: actionFilter === "ALL" ? undefined : actionFilter,
   });
 
-  const totalPages = data?.totalPages || 1;
-  const currentPage = data?.currentPage || 1;
+  const columns: DataTableColumn<any>[] = useMemo(
+    () => [
+      {
+        id: "action",
+        header: "Action",
+        cell: (log) => (
+          <Badge variant={ACTION_VARIANTS[log.action] ?? "secondary"}>
+            {ACTION_LABELS[log.action] || log.action}
+          </Badge>
+        ),
+      },
+      {
+        id: "actor",
+        header: "Actor",
+        cell: (log) => (
+          <Box sx={{ display: "flex", flexDirection: "column" }}>
+            <Typography variant="body2" sx={{ fontSize: "0.875rem", fontWeight: 500, color: "text.primary" }}>
+              {log.user?.name || "Unknown"}
+            </Typography>
+            <Typography variant="caption" sx={{ fontSize: "0.75rem", color: "text.secondary", mt: 0.25 }}>
+              {log.user?.email || log.actorId}
+            </Typography>
+          </Box>
+        ),
+      },
+      {
+        id: "actorType",
+        header: "Actor Type",
+        cell: (log) => (
+          <Badge variant={log.actorType === "ADMIN" ? "default" : "secondary"}>
+            {log.actorType}
+          </Badge>
+        ),
+      },
+      {
+        id: "timestamp",
+        header: "Timestamp",
+        cell: (log) => (
+          <Typography variant="body2" sx={{ fontSize: "0.8125rem", color: "text.secondary" }}>
+            {format(new Date(log.timestamp), "MMM d, yyyy h:mm a")}
+          </Typography>
+        ),
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        align: "right",
+        cell: (log) => (
+          <Dropdown
+            title="Actions"
+            items={[
+              {
+                label: "View Payload",
+                icon: <VisibilityOutlinedIcon sx={{ fontSize: 18 }} />,
+                disabled: !log.metadata,
+                action: () => {
+                  setSelectedMetadata(log.metadata);
+                  setIsDialogOpen(true);
+                },
+              },
+            ]}
+          />
+        ),
+      },
+    ],
+    [],
+  );
+
+  const currentActionLabel =
+    ACTION_OPTIONS.find((opt) => opt.value === actionFilter)?.label ?? "All Actions";
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-      {/* Header */}
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2 }}>
-        <Box>
-          <Typography component='h1' sx={{ fontSize: 24, fontWeight: 700, letterSpacing: "-0.02em", color: "text.primary" }}>
-            Audit Logs
-          </Typography>
-          <Typography sx={{ fontSize: 14, color: "text.secondary", mt: 0.25 }}>
-            Track all administrative actions and system events
-          </Typography>
-        </Box>
-        <Chip label={`Total: ${data?.total || 0} logs`} variant='outlined' sx={{ fontSize: 13, fontWeight: 500, height: 28 }} />
-      </Box>
+      {/* Dashboard Header */}
+      <DashboardHeader
+        title="Audit Logs"
+        description="Track all administrative actions and system events."
+      />
 
-      {/* Filters */}
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: { xs: "column", sm: "row" },
-          alignItems: { xs: "stretch", sm: "center" },
-          gap: 1.5,
-        }}
-      >
-        <Box sx={{ position: "relative", flex: 1, maxWidth: { sm: 384 }, width: "100%" }}>
-          <SearchIcon
-            sx={{
-              position: "absolute",
-              left: 10,
-              top: "50%",
-              transform: "translateY(-50%)",
-              fontSize: 16,
-              color: "text.secondary",
-              pointerEvents: "none",
-            }}
-          />
+      {/* Filters Bar */}
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
+        <Box sx={{ display: "flex", alignItems: "center", flex: 1, maxWidth: 384 }}>
           <InputBase
-            placeholder='Search by actor or metadata...'
+            placeholder="Search by actor or metadata..."
             value={search}
             onChange={(e) => {
-              setSearch(e.target.value);
+              setSearch(e.target.value || null);
               setPage(1);
             }}
-            sx={{
-              width: "100%",
-              height: 40,
-              pl: "32px",
-              pr: 1.5,
-              borderRadius: "8px",
-              border: "1px solid",
-              borderColor: "divider",
-              bgcolor: "background.paper",
-              fontSize: 14,
-              transition: "border-color 200ms",
-              "& input::placeholder": { color: "text.secondary", opacity: 1 },
-              "&.Mui-focused": { borderColor: "primary.main" },
-            }}
+            startIcon={<SearchIcon sx={{ fontSize: 18 }} />}
           />
         </Box>
 
-        <FilterSelect
-          value={actionFilter}
-          onChange={(v) => {
-            setActionFilter(v);
-            setPage(1);
-          }}
-          options={ACTION_OPTIONS}
-          width={200}
-        />
-
-        <FilterSelect
-          value={limit.toString()}
-          onChange={(v) => {
-            setLimit(Number(v));
-            setPage(1);
-          }}
-          options={LIMIT_OPTIONS.map((n) => ({ value: n.toString(), label: `${n} / page` }))}
-          width={120}
+        <Dropdown
+          trigger={
+            <Button
+              variant="outline"
+              endIcon={<KeyboardArrowDownIcon sx={{ fontSize: 18 }} />}
+              sx={{ minWidth: 180, justifyContent: "space-between" }}
+            >
+              {currentActionLabel}
+            </Button>
+          }
+          items={ACTION_OPTIONS.map((opt) => ({
+            label: opt.label,
+            action: () => {
+              setActionFilter(opt.value === "ALL" ? null : opt.value);
+              setPage(1);
+            },
+          }))}
         />
       </Box>
 
-      {/* Table */}
-      <TableContainer
-        sx={{
-          border: "1px solid",
-          borderColor: "divider",
-          borderRadius: "8px",
-          overflow: "auto",
+      {/* Reusable DataTable */}
+      <DataTable
+        columns={columns}
+        data={data?.logs ?? []}
+        keyExtractor={(log) => log.id}
+        isLoading={isLoading}
+        emptyMessage="No audit logs found."
+        page={page - 1}
+        rowsPerPage={rowsPerPage}
+        totalCount={data?.total ?? 0}
+        onPageChange={(_, newPage) => setPage(newPage + 1)}
+        onRowsPerPageChange={(e) => {
+          setRowsPerPage(parseInt(e.target.value, 10));
+          setPage(1);
         }}
+      />
+
+      {/* Metadata Modal */}
+      <Modal
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        maxWidth="md"
+        fullWidth
       >
-        <Table>
-          <TableHead>
-            <TableRow>
-              {["Action", "Actor", "Actor Type", "Metadata", "Timestamp"].map((head) => (
-                <TableCell
-                  key={head}
-                  sx={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: "text.secondary",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
-                    bgcolor: "action.hover",
-                    borderBottom: "1px solid",
-                    borderColor: "divider",
-                    py: 1.25,
-                  }}
-                >
-                  {head}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={5} sx={{ height: 96, textAlign: "center" }}>
-                  <CircularProgress size={24} sx={{ color: "primary.main" }} />
-                </TableCell>
-              </TableRow>
-            ) : data?.logs?.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} sx={{ height: 96, textAlign: "center" }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      gap: 1,
-                      color: "text.secondary",
-                    }}
-                  >
-                    <DescriptionOutlinedIcon sx={{ fontSize: 32 }} />
-                    <Box component='p' sx={{ m: 0, fontSize: 14 }}>
-                      No audit logs found.
-                    </Box>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            ) : (
-              data?.logs?.map((log: any) => {
-                const colorStyle = ACTION_COLORS[log.action] || {
-                  bgcolor: tokens.bgSubtle,
-                  color: tokens.textPrimary,
-                  borderColor: tokens.borderDefault,
-                };
-                return (
-                  <TableRow
-                    key={log.id}
-                    sx={{
-                      "&:hover": { bgcolor: "action.hover" },
-                      "& td": { borderBottom: "1px solid", borderColor: "divider", py: 1.5 },
-                    }}
-                  >
-                    <TableCell>
-                      <Chip
-                        label={ACTION_LABELS[log.action] || log.action}
-                        size='small'
-                        variant='outlined'
-                        sx={{
-                          ...colorStyle,
-                          fontSize: 11,
-                          fontWeight: 600,
-                          height: 22,
-                          border: `1px solid ${colorStyle.borderColor}`,
-                          "& .MuiChip-label": { px: 1 },
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Box sx={{ display: "flex", flexDirection: "column" }}>
-                        <Box component='span' sx={{ fontSize: 14, fontWeight: 500, color: "text.primary" }}>
-                          {log.user?.name || "Unknown"}
-                        </Box>
-                        <Box component='span' sx={{ fontSize: 12, color: "text.secondary", mt: 0.25 }}>
-                          {log.user?.email || log.actorId}
-                        </Box>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={log.actorType}
-                        size='small'
-                        sx={{
-                          fontSize: 11,
-                          fontWeight: 600,
-                          height: 22,
-                          bgcolor: log.actorType === "ADMIN" ? "primary.main" : "action.hover",
-                          color: log.actorType === "ADMIN" ? "primary.contrastText" : "text.primary",
-                          "& .MuiChip-label": { px: 1 },
-                        }}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {log.metadata ? (
-                        <Button
-                          size='small'
-                          variant='text'
-                          onClick={() => {
-                            setSelectedMetadata(log.metadata);
-                            setIsDialogOpen(true);
-                          }}
-                          startIcon={<VisibilityOutlinedIcon sx={{ fontSize: 14 }} />}
-                          sx={{
-                            fontSize: 12,
-                            textTransform: "none",
-                            color: "text.primary",
-                            minWidth: 0,
-                            px: 1,
-                            "&:hover": { bgcolor: "action.hover" },
-                          }}
-                        >
-                          View
-                        </Button>
-                      ) : (
-                        <Box component='span' sx={{ fontSize: 12, color: "text.secondary" }}>
-                          -
-                        </Box>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Box component='span' sx={{ fontSize: 13, color: "text.primary" }}>
-                        {format(new Date(log.timestamp), "MMM d, yyyy h:mm a")}
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2 }}>
-          <Typography sx={{ fontSize: 14, color: "text.secondary" }}>
-            Page {currentPage} of {totalPages}
-          </Typography>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Button
-              size='small'
-              variant='outlined'
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              startIcon={<ChevronLeftIcon sx={{ fontSize: 16 }} />}
-              sx={{ textTransform: "none", fontSize: 13, borderColor: "divider", color: "text.primary" }}
-            >
-              Previous
-            </Button>
-            <Button
-              size='small'
-              variant='outlined'
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              endIcon={<ChevronRightIcon sx={{ fontSize: 16 }} />}
-              sx={{ textTransform: "none", fontSize: 13, borderColor: "divider", color: "text.primary" }}
-            >
-              Next
-            </Button>
-          </Box>
-        </Box>
-      )}
-
-      {/* Metadata dialog */}
-      <Modal open={isDialogOpen} onClose={() => setIsDialogOpen(false)} closeAfterTransition>
-        <Fade in={isDialogOpen} timeout={200}>
+        <ModalTitle sx={{ fontSize: 18, fontWeight: 700, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span>Audit Log Metadata</span>
+          <IconButton onClick={() => setIsDialogOpen(false)} size="small" aria-label="Close">
+            <CloseIcon sx={{ fontSize: 18 }} />
+          </IconButton>
+        </ModalTitle>
+        <ModalContent dividers>
           <Box
+            component="pre"
             sx={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              width: "calc(100% - 32px)",
-              maxWidth: 768,
-              maxHeight: "80vh",
-              bgcolor: "background.paper",
-              borderRadius: "12px",
-              border: "1px solid",
-              borderColor: "divider",
-              boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
+              fontSize: "0.75rem",
+              fontFamily: "monospace",
+              bgcolor: tokens.bgSubtle,
+              p: 2,
+              borderRadius: `${tokens.radiusMd}px`,
               overflow: "auto",
-              outline: "none",
+              maxHeight: "60vh",
+              border: `1px solid ${tokens.borderDefault}`,
+              m: 0,
+              color: tokens.textPrimary,
+              whiteSpace: "pre-wrap",
+              wordBreak: "break-word",
             }}
           >
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "flex-start",
-                justifyContent: "space-between",
-                p: 2.5,
-                borderBottom: "1px solid",
-                borderColor: "divider",
-              }}
-            >
-              <Box>
-                <Typography component='h2' sx={{ fontSize: 18, fontWeight: 700, color: "text.primary", lineHeight: 1.3 }}>
-                  Audit Log Metadata
-                </Typography>
-                <Typography sx={{ fontSize: 14, color: "text.secondary", mt: 0.5 }}>
-                  Detailed information about this audit log entry
-                </Typography>
-              </Box>
-              <IconButton
-                onClick={() => setIsDialogOpen(false)}
-                size='small'
-                aria-label='Close'
-                sx={{
-                  borderRadius: "8px",
-                  color: "text.secondary",
-                  "&:hover": { bgcolor: "action.hover" },
-                }}
-              >
-                <CloseIcon sx={{ fontSize: 18 }} />
-              </IconButton>
-            </Box>
-
-            <Box sx={{ p: 2.5 }}>
-              <Box
-                component='pre'
-                sx={{
-                  fontSize: 12,
-                  fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-                  bgcolor: "action.hover",
-                  p: 2,
-                  borderRadius: "8px",
-                  overflow: "auto",
-                  maxHeight: "60vh",
-                  border: "1px solid",
-                  borderColor: "divider",
-                  m: 0,
-                  color: "text.primary",
-                  whiteSpace: "pre-wrap",
-                  wordBreak: "break-word",
-                }}
-              >
-                {selectedMetadata ? JSON.stringify(selectedMetadata, null, 2) : "No metadata available"}
-              </Box>
-            </Box>
+            {selectedMetadata ? JSON.stringify(selectedMetadata, null, 2) : "No metadata available"}
           </Box>
-        </Fade>
+        </ModalContent>
+        <ModalActions sx={{ p: 2 }}>
+          <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+            Close
+          </Button>
+        </ModalActions>
       </Modal>
     </Box>
   );

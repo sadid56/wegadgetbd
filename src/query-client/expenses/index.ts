@@ -1,11 +1,11 @@
 import { orpcClient } from "@/lib/orpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { useAppMutation } from "@/hooks/useAppMutation";
+import type { CreateExpenseInput } from "@/server/schemas";
 
 export const ExpenseEndpoints = {
   getSummary: () => orpcClient.expenses.summary(),
-  createExpense: (data: { category: string; amount: number; note?: string; date?: string | Date }) =>
-    orpcClient.expenses.create(data),
+  createExpense: (data: CreateExpenseInput) => orpcClient.expenses.create(data),
 };
 
 export const useExpenseSummary = () => {
