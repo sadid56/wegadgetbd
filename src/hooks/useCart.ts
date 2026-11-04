@@ -29,9 +29,13 @@ function readCart(): CartItem[] {
 
 export function useCart() {
   const toast = useToast();
-  const [cart, setCart] = useState<CartItem[]>(readCart);
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
+    setCart(readCart());
+    setIsLoaded(true);
+
     const handleStorageChange = () => setCart(readCart());
     window.addEventListener("storage", handleStorageChange);
     return () => window.removeEventListener("storage", handleStorageChange);
@@ -79,5 +83,5 @@ export function useCart() {
   const totalCount = cart.reduce((acc, item) => acc + item.qty, 0);
   const totalPrice = cart.reduce((acc, item) => acc + Number(item.discountPrice || item.price) * item.qty, 0);
 
-  return { cart, addItem, removeItem, updateQty, clearCart, totalCount, totalPrice };
+  return { cart, addItem, removeItem, updateQty, clearCart, totalCount, totalPrice, isLoaded };
 }

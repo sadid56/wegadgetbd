@@ -136,6 +136,18 @@ export const TextField = React.forwardRef<HTMLDivElement, TextFieldProps>(functi
               borderColor: tokens.primary,
             },
           },
+          "& .MuiInputBase-input, & textarea": {
+            bgcolor: "transparent !important",
+            background: "transparent !important",
+            backgroundColor: "transparent !important",
+            color: tokens.textPrimary,
+            "&:-webkit-autofill, &:autofill": {
+              WebkitBoxShadow: `0 0 0 1000px ${tokens.bgInput} inset !important`,
+              boxShadow: `0 0 0 1000px ${tokens.bgInput} inset !important`,
+              WebkitTextFillColor: `${tokens.textPrimary} !important`,
+              caretColor: `${tokens.textPrimary} !important`,
+            },
+          },
           "& .MuiInputLabel-root": {
             color: tokens.textSecondary,
             "&.Mui-focused": {

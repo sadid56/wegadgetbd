@@ -63,6 +63,11 @@ export function Navbar() {
   useEffect(() => {
     let lastY = window.scrollY || document.documentElement.scrollTop || 0;
     let ticking = false;
+    const SCROLL_THRESHOLD = 8;
+
+    if (lastY > 20) {
+      setNavState("visible");
+    }
 
     const onScroll = () => {
       if (ticking) return;
@@ -70,16 +75,29 @@ export function Navbar() {
 
       requestAnimationFrame(() => {
         const currentY = window.scrollY || document.documentElement.scrollTop || 0;
+        const clampedY = Math.max(0, currentY);
 
-        if (currentY <= 15) {
+        if (clampedY <= 20) {
           setNavState("top");
-        } else if (currentY > lastY && currentY > 80) {
-          setNavState("visible");
-        } else if (currentY < lastY) {
-          setNavState("hidden");
+          lastY = clampedY;
+          ticking = false;
+          return;
         }
 
-        lastY = currentY;
+        const diff = clampedY - lastY;
+
+        if (Math.abs(diff) >= SCROLL_THRESHOLD) {
+          if (diff > 0 && clampedY > 80) {
+            // Scrolling down -> hide navbar
+            setNavState("hidden");
+            setProductsMenuOpen(false);
+          } else if (diff < 0) {
+            // Scrolling up -> show navbar
+            setNavState("visible");
+          }
+          lastY = clampedY;
+        }
+
         ticking = false;
       });
     };
@@ -147,13 +165,16 @@ export function Navbar() {
           right: 0,
           width: "100%",
           zIndex: 1100,
-          bgcolor: navState === "top" && isHome ? "transparent" : tokens.bgDark,
+          bgcolor: navState === "top" && isHome ? "transparent" : "rgba(16, 24, 32, 0.95)",
+          backdropFilter: navState === "top" && isHome ? "none" : "blur(12px)",
+          WebkitBackdropFilter: navState === "top" && isHome ? "none" : "blur(12px)",
           borderBottom:
             navState === "top" && isHome ? "1px solid transparent" : "1px solid rgba(0, 191, 166, 0.22)",
           boxShadow: "none",
           transform: navState === "hidden" ? "translateY(-100%)" : "translateY(0)",
           transition:
-            "transform 0.32s cubic-bezier(0.2, 0.9, 0.3, 1), background-color 0.25s ease, border-color 0.25s ease",
+            "transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease",
+          willChange: "transform",
         }}
       >
         <SectionContainer

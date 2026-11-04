@@ -1,10 +1,12 @@
 "use client";
 
 import NextLink from "next/link";
+import { useRouter } from "next/navigation";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
+import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import StarIcon from "@mui/icons-material/Star";
 
 import { tokens } from "@/theme/theme";
@@ -46,7 +48,10 @@ const DOT_COLORS: Record<string, string> = {
 };
 
 export function ProductCard({ product }: { product: ProductCardItem }) {
-  const { addItem } = useCart();
+  const { addItem, cart } = useCart();
+  const router = useRouter();
+
+  const isInCart = cart.some((item) => String(item.id) === String(product.id));
 
   const title = product.title || product.name || "Product";
   const brand = product.brand || product.category?.name || product.tag || "GADGET";
@@ -219,16 +224,24 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
 
           <IconButton
             disableRipple
-            onClick={() =>
-              price &&
-              addItem({
-                id: String(product.id),
-                name: title,
-                price,
-                image,
-                stock: 10,
-              } as any)
-            }
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (isInCart) {
+                router.push("/cart");
+                return;
+              }
+              if (price) {
+                addItem({
+                  id: String(product.id),
+                  title: title || product.name || "Product",
+                  price: originalPrice && originalPrice > price ? originalPrice : price,
+                  discountPrice: originalPrice && originalPrice > price ? price : (product.salePrice ?? null),
+                  images: image ? [image] : product.images || [],
+                  slug: product.slug || String(product.id),
+                });
+              }
+            }}
             sx={{
               bgcolor: tokens.bgDark,
               color: tokens.textWhite,
@@ -237,9 +250,13 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
               borderRadius: "10px",
               "&:hover": { bgcolor: tokens.bgDark, color: tokens.textWhite },
             }}
-            aria-label="Add to cart"
+            aria-label={isInCart ? "In cart - View Cart" : "Add to cart"}
           >
-            <ShoppingBagOutlinedIcon sx={{ fontSize: 16 }} />
+            {isInCart ? (
+              <CheckRoundedIcon sx={{ fontSize: 16 }} />
+            ) : (
+              <ShoppingBagOutlinedIcon sx={{ fontSize: 16 }} />
+            )}
           </IconButton>
         </Box>
       </Box>

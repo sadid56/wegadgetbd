@@ -8,13 +8,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Box from "@mui/material/Box";
 import { Button } from "@/components/ui/button";
 import Typography from "@mui/material/Typography";
-import { Modal, Fade } from "@/components/ui/modal";
+import { AlertDialog } from "@/components/ui/alert-dialog";
 import { CircularProgress } from "@/components/ui/spinner";
-import { keyframes } from "@emotion/react";
 
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
-import CloseIcon from "@mui/icons-material/Close";
+import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
 
@@ -30,47 +28,8 @@ import { OrderSummary } from "./order-summary";
 import { useToast } from "@/context/toast-context";
 import { getAssetUrl } from "@/lib/storage";
 import { tokens } from "@/theme/theme";
-
-// ─── Keyframes ──────────────────────────────────────────────
-const fadeIn = keyframes`
-  from { opacity: 0; }
-  to   { opacity: 1; }
-`;
-
-const scaleIn = keyframes`
-  from { opacity: 0; transform: scale(0.88) translateY(20px); }
-  to   { opacity: 1; transform: scale(1) translateY(0); }
-`;
-
-const slideUp = keyframes`
-  from { opacity: 0; transform: translateY(100%); }
-  to   { opacity: 1; transform: translateY(0); }
-`;
-
-const popIn = keyframes`
-  from { transform: scale(0); }
-  to   { transform: scale(1); }
-`;
-
-const fadeInUp = keyframes`
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-`;
-
-const drawCheck = keyframes`
-  from { stroke-dashoffset: 50; }
-  to   { stroke-dashoffset: 0; }
-`;
-
-const pulseDot = keyframes`
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.5; }
-`;
-
-const shineSweep = keyframes`
-  from { transform: translateX(-100%); }
-  to   { transform: translateX(100%); }
-`;
+import { CheckoutStepperHeader } from "@/components/common/CheckoutStepperHeader";
+import CheckoutPageSkeleton from "./checkout-page-skeleton";
 
 // ─── ConfirmDialog ─────────────────────────────────────────
 interface ConfirmDialogProps {
@@ -85,235 +44,137 @@ interface ConfirmDialogProps {
 
 function ConfirmDialog({ open, onCancel, onConfirm, img, title, count, totalAmount }: ConfirmDialogProps) {
   return (
-    <Modal open={open} onClose={onCancel} closeAfterTransition>
-      <Fade in={open} timeout={200}>
-        <Box
-          sx={{
-            position: "fixed",
-            inset: 0,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            p: 2,
-            bgcolor: "rgba(0,0,0,0.45)",
-            backdropFilter: "blur(4px)",
-            outline: "none",
-          }}
-        >
+    <AlertDialog
+      open={open}
+      onClose={onCancel}
+      onConfirm={onConfirm}
+      title={
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
           <Box
             sx={{
-              ...BN,
-              bgcolor: tokens.bgPanel,
-              border: `1.5px solid ${tokens.primaryBorder}`,
-              borderRadius: "24px",
-              boxShadow: "0 24px 64px rgba(16,185,129,0.18), 0 4px 16px rgba(0,0,0,0.1)",
-              width: "100%",
-              maxWidth: 400,
-              position: "relative",
-              overflow: "hidden",
-              animation: `${scaleIn} 320ms cubic-bezier(0.34, 1.4, 0.64, 1) both`,
+              width: 36,
+              height: 36,
+              borderRadius: "50%",
+              bgcolor: tokens.primaryLight,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 18,
+              flexShrink: 0,
             }}
           >
+            🛒
+          </Box>
+          <Typography
+            component="span"
+            sx={{
+              ...BN,
+              fontWeight: 800,
+              fontSize: 17,
+              color: tokens.textPrimary,
+            }}
+          >
+            অর্ডার নিশ্চিত করুন
+          </Typography>
+        </Box>
+      }
+      description="অর্ডার সম্পন্ন করতে নিচের তথ্যগুলো আরেকবার মিলিয়ে নিন:"
+      cancelText="বাতিল"
+      confirmText="হ্যাঁ, কনফার্ম করুন"
+      confirmVariant="primary"
+    >
+      <Box sx={{ px: 3, pb: 1 }}>
+        <Box
+          sx={{
+            bgcolor: tokens.bgCanvas,
+            borderRadius: "8px",
+            p: 1.5,
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+            border: `1px solid ${tokens.borderDefault}`,
+          }}
+        >
+          {img ? (
             <Box
+              component='img'
+              src={getAssetUrl(img)}
+              alt={title}
               sx={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                height: 4,
-                background: `linear-gradient(90deg, ${tokens.accent}, ${tokens.primary}, ${tokens.primaryHover})`,
+                width: 52,
+                height: 52,
+                borderRadius: "6px",
+                objectFit: "contain",
+                bgcolor: tokens.bgPanel,
+                border: `1px solid ${tokens.borderDefault}`,
+                p: 0.5,
+                flexShrink: 0,
               }}
             />
-
-            <Box sx={{ p: "22px 20px 20px" }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
-                <Box
-                  sx={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: "50%",
-                    flexShrink: 0,
-                    background: `linear-gradient(135deg, ${tokens.primaryLight}, ${tokens.accentLight})`,
-                    border: `2px solid ${tokens.primaryBorder}`,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 22,
-                    boxShadow: "0 2px 8px rgba(16,185,129,0.2)",
-                  }}
-                >
-                  🛒
-                </Box>
-                <Box>
-                  <Typography
-                    sx={{
-                      ...BN,
-                      fontWeight: 800,
-                      fontSize: 15.5,
-                      color: tokens.textPrimary,
-                      lineHeight: 1.3,
-                    }}
-                  >
-                    অর্ডার কনফার্ম করতে...
-                  </Typography>
-                  <Typography
-                    sx={{
-                      ...BN,
-                      fontSize: 12,
-                      color: tokens.textDisabled,
-                      fontWeight: 500,
-                      mt: 0.25,
-                    }}
-                  >
-                    নিচের তথ্য একবার মিলিয়ে নিন
-                  </Typography>
-                </Box>
-              </Box>
-
-              <Box sx={{ height: 1, bgcolor: tokens.bgSubtle, mb: 1.75 }} />
-
+          ) : (
+            <Box
+              sx={{
+                width: 52,
+                height: 52,
+                borderRadius: "6px",
+                bgcolor: tokens.bgSubtle,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 22,
+                flexShrink: 0,
+              }}
+            >
+              📦
+            </Box>
+          )}
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Typography
+              sx={{
+                ...BN,
+                fontWeight: 600,
+                fontSize: 13,
+                color: tokens.textPrimary,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                mb: 0.25,
+              }}
+            >
+              {title}
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <Box
+                component='span'
                 sx={{
-                  background: `linear-gradient(135deg, ${tokens.bgCanvas}, ${tokens.bgSubtle})`,
-                  borderRadius: "14px",
-                  p: "10px 12px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1.5,
-                  mb: 2.25,
-                  border: `1px solid ${tokens.borderSubtle}`,
+                  fontWeight: 700,
+                  color: tokens.primary,
+                  fontSize: 15,
                 }}
               >
-                {img ? (
-                  <Box
-                    component='img'
-                    src={getAssetUrl(img)}
-                    alt={title}
-                    sx={{
-                      width: 56,
-                      height: 56,
-                      borderRadius: "12px",
-                      objectFit: "cover",
-                      border: `2px solid ${tokens.borderDefault}`,
-                      flexShrink: 0,
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                    }}
-                  />
-                ) : (
-                  <Box
-                    sx={{
-                      width: 56,
-                      height: 56,
-                      borderRadius: "12px",
-                      bgcolor: tokens.bgSubtle,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 26,
-                      flexShrink: 0,
-                    }}
-                  >
-                    📦
-                  </Box>
-                )}
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography
-                    sx={{
-                      ...BN,
-                      fontWeight: 700,
-                      fontSize: 13.5,
-                      color: tokens.textPrimary,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      mb: 0.5,
-                    }}
-                  >
-                    {title}
-                  </Typography>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                    <Box
-                      component='span'
-                      sx={{
-                        fontWeight: 900,
-                        color: tokens.primaryHover,
-                        fontSize: 17,
-                        letterSpacing: "-0.5px",
-                      }}
-                    >
-                      ৳{totalAmount}
-                    </Box>
-                    <Box
-                      component='span'
-                      sx={{
-                        ...BN,
-                        fontSize: 11,
-                        color: tokens.textMuted,
-                        bgcolor: tokens.bgSubtle,
-                        border: `1px solid ${tokens.borderDefault}`,
-                        px: "7px",
-                        py: "1px",
-                        borderRadius: "20px",
-                        fontWeight: 600,
-                      }}
-                    >
-                      {count}টি আইটেম
-                    </Box>
-                  </Box>
-                </Box>
+                ৳{totalAmount}
               </Box>
-
-              <Box sx={{ display: "flex", gap: 1.25 }}>
-                <Box
-                  component='button'
-                  onClick={onCancel}
-                  sx={{
-                    ...BN,
-                    flex: 1,
-                    py: 1.5,
-                    borderRadius: "13px",
-                    border: `1.5px solid ${tokens.borderDefault}`,
-                    bgcolor: tokens.bgPanel,
-                    color: tokens.textMuted,
-                    fontWeight: 700,
-                    fontSize: 14,
-                    cursor: "pointer",
-                    transition: "all 0.15s",
-                    "&:hover": {
-                      bgcolor: tokens.bgCanvas,
-                      borderColor: tokens.borderElevated,
-                    },
-                  }}
-                >
-                  ✕ &nbsp;বাতিল
-                </Box>
-                <Box
-                  component='button'
-                  onClick={onConfirm}
-                  sx={{
-                    ...BN,
-                    flex: 2,
-                    py: 1.5,
-                    borderRadius: "13px",
-                    border: "none",
-                    background: `linear-gradient(135deg, ${tokens.primary}, ${tokens.primaryHover})`,
-                    color: tokens.textWhite,
-                    fontWeight: 800,
-                    fontSize: 14,
-                    cursor: "pointer",
-                    boxShadow: "0 4px 16px rgba(16,185,129,0.4)",
-                    transition: "transform 0.15s",
-                    "&:hover": { transform: "scale(1.02)" },
-                  }}
-                >
-                  ✓ &nbsp;হ্যাঁ, কনফার্ম করুন
-                </Box>
+              <Box
+                component='span'
+                sx={{
+                  ...BN,
+                  fontSize: 11,
+                  color: tokens.textMuted,
+                  bgcolor: tokens.bgPanel,
+                  border: `1px solid ${tokens.borderDefault}`,
+                  px: 0.75,
+                  py: "1px",
+                  borderRadius: "4px",
+                  fontWeight: 600,
+                }}
+              >
+                {count}টি আইটেম
               </Box>
             </Box>
           </Box>
         </Box>
-      </Fade>
-    </Modal>
+      </Box>
+    </AlertDialog>
   );
 }
 
@@ -325,39 +186,23 @@ function CheckoutPageContent() {
   const buyNowSlug = searchParams.get("buyNow");
   const buyNowQty = parseInt(searchParams.get("qty") || "1");
 
-  const { cart, totalPrice: cartTotal } = useCart();
+  const { cart, totalPrice: cartTotal, updateQty, removeItem, clearCart, isLoaded } = useCart();
   const { data: buyNowProduct, isLoading: isLoadingProduct } = useProduct(buyNowSlug as string);
 
   const [isBuyNow] = useState(!!buyNowSlug);
   const [localQty, setLocalQty] = useState(buyNowQty);
-  const [cartItems, setCartItems] = useState<any[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [pendingData, setPendingData] = useState<CheckoutValues | null>(null);
   const [savedWhatsappUrl, setSavedWhatsappUrl] = useState("");
-  const [countdown, setCountdown] = useState(8);
   const { data: session } = authClient.useSession();
 
   useEffect(() => {
-    if (!isBuyNow) setCartItems(cart);
-  }, [cart, isBuyNow]);
-
-  useEffect(() => {
-    if (!isOrderConfirmed) return;
-    setCountdown(8);
-    const interval = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          setIsOrderConfirmed(false);
-          router.push("/");
-        }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [isOrderConfirmed, router]);
+    if (!isBuyNow && isLoaded && cart.length === 0 && !isOrderConfirmed) {
+      router.replace("/cart");
+    }
+  }, [isBuyNow, isLoaded, cart.length, isOrderConfirmed, router]);
 
   const {
     register,
@@ -373,36 +218,95 @@ function CheckoutPageContent() {
 
   const locationValue = watch("location");
 
-  const productsToOrder = isBuyNow && buyNowProduct ? [{ ...buyNowProduct, qty: localQty }] : cartItems;
+  const productsToOrder = isBuyNow && buyNowProduct ? [{ ...buyNowProduct, qty: localQty }] : cart;
 
   if (isLoadingProduct) {
+    return <CheckoutPageSkeleton />;
+  }
+
+  if (isBuyNow && !buyNowProduct && !isLoadingProduct) {
     return (
       <Box
         sx={{
           minHeight: "100vh",
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          bgcolor: tokens.bgPanel,
+          p: 2,
+          textAlign: "center",
+          bgcolor: tokens.bgCanvas,
+          ...BN,
         }}
       >
-        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-          <CircularProgress size={48} sx={{ color: tokens.primary }} />
-          <Typography
-            sx={{
-              fontSize: 18,
-              fontWeight: 700,
-              color: tokens.textMuted,
-              letterSpacing: "0.1em",
-              textTransform: "uppercase",
-            }}
-          >
-            Loading Product...
-          </Typography>
+        <Box
+          sx={{
+            width: 80,
+            height: 80,
+            bgcolor: tokens.dangerSubtle,
+            color: tokens.danger,
+            borderRadius: "50%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            mb: 2.5,
+          }}
+        >
+          <Inventory2OutlinedIcon sx={{ fontSize: 40 }} />
         </Box>
+        <Typography
+          component='h1'
+          sx={{
+            ...BN,
+            fontSize: 24,
+            fontWeight: 800,
+            color: tokens.textPrimary,
+            mb: 1,
+          }}
+        >
+          পণ্যটি পাওয়া যায়নি
+        </Typography>
+        <Typography sx={{ ...BN, color: tokens.textMuted, mb: 3, fontSize: 14 }}>
+          সম্ভবত পণ্যটি আমাদের সংগ্রহে নেই অথবা ইউআরএল ভুল।
+        </Typography>
+        <Button
+          component={NextLink}
+          href='/products'
+          disableElevation
+          sx={{
+            ...BN,
+            px: 3.5,
+            py: 1.25,
+            bgcolor: tokens.primary,
+            color: tokens.textWhite,
+            borderRadius: "8px",
+            fontWeight: 700,
+            fontSize: 14,
+            textTransform: "none",
+            "&:hover": { bgcolor: tokens.primaryHover },
+          }}
+        >
+          শপিং শুরু করুন
+        </Button>
       </Box>
     );
   }
+
+  if (!isBuyNow && !isOrderConfirmed && !isLoaded) {
+    return <CheckoutPageSkeleton />;
+  }
+
+  if (!isBuyNow && !isOrderConfirmed && cart.length === 0) {
+    return null;
+  }
+
+  const confirmedProduct = productsToOrder[0];
+  const confirmedImg = confirmedProduct?.images?.[0] ?? "";
+  const confirmedCount = productsToOrder.reduce((s, p) => s + (isBuyNow ? localQty : p.qty), 0);
+
+  const dialogImg = confirmedImg;
+  const dialogTitle =
+    productsToOrder.length > 1 ? `${productsToOrder.length}টি পণ্য · মোট ${confirmedCount}টি আইটেম` : (confirmedProduct?.title ?? "");
 
   const subtotal = isBuyNow && buyNowProduct ? Number(buyNowProduct.discountPrice || buyNowProduct.price) * localQty : cartTotal;
   const originalSubtotal = productsToOrder.reduce((sum, item) => sum + Number(item.price) * (isBuyNow ? localQty : item.qty), 0);
@@ -414,7 +318,8 @@ function CheckoutPageContent() {
     if (isBuyNow) {
       setLocalQty((prev) => prev + 1);
     } else {
-      setCartItems((prev) => prev.map((item) => (item.id === id ? { ...item, qty: item.qty + 1 } : item)));
+      const item = cart.find((i) => i.id === id);
+      if (item) updateQty(id, item.qty + 1);
     }
   };
 
@@ -422,12 +327,13 @@ function CheckoutPageContent() {
     if (isBuyNow) {
       setLocalQty((prev) => Math.max(1, prev - 1));
     } else {
-      setCartItems((prev) => prev.map((item) => (item.id === id ? { ...item, qty: Math.max(1, item.qty - 1) } : item)));
+      const item = cart.find((i) => i.id === id);
+      if (item) updateQty(id, Math.max(1, item.qty - 1));
     }
   };
 
   const handleRemoveItem = (id: string) => {
-    setCartItems((prev) => prev.filter((item) => item.id !== id));
+    removeItem(id);
   };
 
   const processOrder = async (data: CheckoutValues) => {
@@ -481,6 +387,7 @@ ${orderDetails}
         setSavedWhatsappUrl(`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`);
         setIsOrderConfirmed(true);
         reset();
+        if (!isBuyNow) clearCart();
       } else {
         toast.error("দুঃখিত, কোনো একটি সমস্যা হয়েছে। আবার চেষ্টা করুন।");
       }
@@ -494,86 +401,8 @@ ${orderDetails}
     setShowConfirm(true);
   };
 
-  if (isBuyNow && !buyNowProduct && !isLoadingProduct) {
-    return (
-      <Box
-        sx={{
-          minHeight: "100vh",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          p: 2,
-          textAlign: "center",
-          ...BN,
-        }}
-      >
-        <Box
-          sx={{
-            width: 96,
-            height: 96,
-            bgcolor: tokens.dangerSubtle,
-            color: tokens.danger,
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            mb: 3,
-          }}
-        >
-          <Inventory2OutlinedIcon sx={{ fontSize: 48 }} />
-        </Box>
-        <Typography
-          component='h1'
-          sx={{
-            ...BN,
-            fontSize: 28,
-            fontWeight: 900,
-            color: tokens.textPrimary,
-            mb: 1,
-          }}
-        >
-          পণ্যটি পাওয়া যায়নি
-        </Typography>
-        <Typography sx={{ ...BN, color: tokens.textMuted, mb: 4 }}>সম্ভবত পণ্যটি আমাদের সংগ্রহে নেই অথবা ইউআরএল ভুল।</Typography>
-        <Button
-          component={NextLink}
-          href='/products'
-          disableElevation
-          sx={{
-            ...BN,
-            px: 4,
-            py: 1.5,
-            bgcolor: tokens.primary,
-            color: tokens.textWhite,
-            borderRadius: 999,
-            fontWeight: 700,
-            textTransform: "none",
-            boxShadow: "0 10px 15px -3px rgba(16,185,129,0.3)",
-            "&:hover": { bgcolor: tokens.primaryHover },
-          }}
-        >
-          শপিং শুরু করুন
-        </Button>
-      </Box>
-    );
-  }
-
-  if (!isBuyNow && cartItems.length === 0) {
-    if (typeof window !== "undefined") router.push("/cart");
-    return null;
-  }
-
-  const confirmedProduct = productsToOrder[0];
-  const confirmedImg = confirmedProduct?.images?.[0] ?? "";
-  const confirmedCount = productsToOrder.reduce((s, p) => s + (isBuyNow ? localQty : p.qty), 0);
-
-  const dialogImg = confirmedImg;
-  const dialogTitle =
-    productsToOrder.length > 1 ? `${productsToOrder.length}টি পণ্য · মোট ${confirmedCount}টি আইটেম` : (confirmedProduct?.title ?? "");
-
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: tokens.bgCanvas, pb: 10, position: "relative" }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: tokens.bgCanvas, pb: { xs: 12, md: 10 } }}>
       <ConfirmDialog
         open={showConfirm}
         onCancel={() => setShowConfirm(false)}
@@ -584,389 +413,122 @@ ${orderDetails}
         totalAmount={totalAmount}
       />
 
-      {/* ═══ ORDER CONFIRMED MODAL ═══ */}
-      <Modal open={isOrderConfirmed} closeAfterTransition>
-        <Fade in={isOrderConfirmed} timeout={200}>
-          <Box
-            sx={{
-              position: "fixed",
-              inset: 0,
-              zIndex: 100,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              bgcolor: "rgba(0,0,0,0.5)",
-              backdropFilter: "blur(4px)",
-              p: 1.5,
-              outline: "none",
-            }}
-          >
+      {/* ═══ ORDER CONFIRMED ALERT DIALOG ═══ */}
+      <AlertDialog
+        open={isOrderConfirmed}
+        onClose={() => {
+          setIsOrderConfirmed(false);
+          router.push("/");
+        }}
+        title={
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
             <Box
               sx={{
-                position: "relative",
-                overflow: "hidden",
-                bgcolor: tokens.bgPanel,
-                width: "100%",
-                borderRadius: "32px",
-                maxWidth: { sm: 448 },
-                boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
-                ...BN,
-                animation: `${slideUp} 500ms cubic-bezier(0.34, 1.3, 0.64, 1) both`,
+                width: 36,
+                height: 36,
+                borderRadius: "50%",
+                bgcolor: tokens.primaryLight,
+                color: tokens.primary,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
               }}
             >
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 4,
-                  background: `linear-gradient(90deg, ${tokens.accent}, ${tokens.success}, ${tokens.primary})`,
-                }}
-              />
-
-              <Box
-                sx={{
-                  display: { sm: "none" },
-                  justifyContent: "center",
-                  pt: 1,
-                }}
-              >
-                <Box sx={{ width: 36, height: 4, borderRadius: 999, bgcolor: tokens.borderDefault }} />
-              </Box>
-
-              <Box
-                component='button'
-                onClick={() => {
-                  setIsOrderConfirmed(false);
-                  router.push("/");
-                }}
-                sx={{
-                  position: "absolute",
-                  top: 12,
-                  right: 12,
-                  height: 28,
-                  width: 28,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderRadius: "50%",
-                  bgcolor: tokens.bgSubtle,
-                  border: 0,
-                  cursor: "pointer",
-                  color: tokens.textDisabled,
-                  transition: "background-color 200ms",
-                  zIndex: 10,
-                  "&:hover": { bgcolor: tokens.borderDefault },
-                }}
-              >
-                <CloseIcon sx={{ fontSize: 14 }} />
-              </Box>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  px: 3,
-                  pt: 2,
-                  pb: 2,
-                  background: `linear-gradient(180deg, ${tokens.accentLight} 0%, ${tokens.bgPanel} 100%)`,
-                }}
-              >
-                <Box sx={{ position: "relative", mb: 1.5 }}>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      borderRadius: "50%",
-                      width: 60,
-                      height: 60,
-                      background: `linear-gradient(135deg, ${tokens.accent}, ${tokens.primary})`,
-                      boxShadow: "0 6px 20px rgba(34,197,94,0.35)",
-                      animation: `${popIn} 400ms 100ms cubic-bezier(0.34, 1.5, 0.64, 1) both`,
-                    }}
-                  >
-                    <Box component='svg' width={28} height={28} viewBox='0 0 38 38' fill='none'>
-                      <Box
-                        component='path'
-                        d='M8 19L16 27L30 12'
-                        stroke='white'
-                        strokeWidth={3.5}
-                        strokeLinecap='round'
-                        strokeLinejoin='round'
-                        strokeDasharray='50'
-                        sx={{
-                          strokeDashoffset: 0,
-                          animation: `${drawCheck} 600ms 200ms ease-out both`,
-                        }}
-                      />
-                    </Box>
-                  </Box>
-
-                  <Box
-                    sx={{
-                      position: "absolute",
-                      bottom: -4,
-                      right: -4,
-                      width: 24,
-                      height: 24,
-                      bgcolor: tokens.primary,
-                      borderRadius: "50%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      border: `2px solid ${tokens.bgPanel}`,
-                      boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
-                      animation: `${popIn} 400ms 500ms cubic-bezier(0.34, 1.5, 0.64, 1) both`,
-                    }}
-                  >
-                    <WhatsAppIcon sx={{ fontSize: 12, color: tokens.textWhite }} />
-                  </Box>
-                </Box>
-
-                <Typography
-                  component='h2'
-                  sx={{
-                    ...BN,
-                    fontSize: { xs: 18, sm: 20 },
-                    fontWeight: 900,
-                    color: tokens.textPrimary,
-                    mb: 0.5,
-                    animation: `${fadeInUp} 400ms 250ms ease-out both`,
-                  }}
-                >
-                  অর্ডার কনফার্ম হয়েছে! 🎉
-                </Typography>
-
-                <Typography
-                  sx={{
-                    ...BN,
-                    fontSize: 12,
-                    color: tokens.textDisabled,
-                    fontWeight: 500,
-                    animation: `${fadeInUp} 400ms 350ms ease-out both`,
-                  }}
-                >
-                  আমরা শীঘ্রই আপনার সাথে যোগাযোগ করব
-                </Typography>
-              </Box>
-
-              <Box sx={{ px: 3, pt: 1 }}>
-                <Typography
-                  sx={{
-                    color: tokens.textMuted,
-                    textAlign: "center",
-                    mb: 1,
-                    fontSize: 12,
-                  }}
-                >
-                  আপনার যে কোনো প্রয়োজন এ...
-                </Typography>
-                <Button
-                  fullWidth
-                  onClick={() => window.open(savedWhatsappUrl, "_blank")}
-                  startIcon={<WhatsAppIcon sx={{ fontSize: 16 }} />}
-                  disableElevation
-                  sx={{
-                    bgcolor: tokens.primary,
-                    color: tokens.textWhite,
-                    fontWeight: 700,
-                    py: 1.25,
-                    borderRadius: "12px",
-                    fontSize: 13,
-                    textTransform: "none",
-                    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
-                    "&:hover": { bgcolor: tokens.primaryHover },
-                    "&:active": { transform: "scale(0.95)" },
-                  }}
-                >
-                  <Box component='span' sx={BN}>
-                    WhatsApp এ যোগাযোগ করুন
-                  </Box>
-                </Button>
-              </Box>
-
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  gap: 1,
-                  px: 3,
-                  pt: 1.5,
-                  pb: 2.5,
-                  animation: `${fadeIn} 400ms 600ms ease-out both`,
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  {[0, 0.15, 0.3].map((d, i) => (
-                    <Box
-                      key={i}
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        borderRadius: "50%",
-                        width: 22,
-                        height: 22,
-                        background: `linear-gradient(135deg, ${tokens.accent}, ${tokens.primary})`,
-                        boxShadow: "0 2px 6px rgba(34,197,94,0.3)",
-                        animation: `${popIn} 400ms ${0.65 + d}s cubic-bezier(0.34, 1.5, 0.64, 1) both`,
-                      }}
-                    >
-                      <Box component='svg' width={10} height={10} viewBox='0 0 12 12' fill='none'>
-                        <path d='M2 6L5 9L10 3' stroke='white' strokeWidth={1.7} strokeLinecap='round' strokeLinejoin='round' />
-                      </Box>
-                    </Box>
-                  ))}
-                </Box>
-                <Typography
-                  sx={{
-                    ...BN,
-                    fontSize: 12,
-                    color: tokens.textDisabled,
-                    fontWeight: 500,
-                    textAlign: "center",
-                  }}
-                >
-                  <Box component='span' sx={{ fontWeight: 900, color: tokens.success, fontSize: 14 }}>
-                    {countdown}
-                  </Box>{" "}
-                  সেকেন্ড পরে হোমপেজে নিয়ে যাওয়া হবে
-                </Typography>
-              </Box>
+              <CheckCircleRoundedIcon sx={{ fontSize: 22 }} />
             </Box>
+            <Typography
+              component="span"
+              sx={{
+                ...BN,
+                fontSize: 17,
+                fontWeight: 800,
+                color: tokens.textPrimary,
+              }}
+            >
+              অভিনন্দন! অর্ডার সফল হয়েছে 🎉
+            </Typography>
           </Box>
-        </Fade>
-      </Modal>
-
-      {/* Background pattern */}
-      <Box
-        sx={{
-          position: "absolute",
-          inset: 0,
-          pointerEvents: "none",
-          opacity: 0.03,
-          filter: "grayscale(100%)",
-          backgroundImage: "url('https://www.transparenttextures.com/patterns/cubes.png')",
-        }}
-      />
-
-      {/* Header */}
-      <Box
-        sx={{
-          position: "relative",
-          bgcolor: tokens.bgPanel,
-          borderBottom: `1px solid ${tokens.borderSubtle}`,
-          boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-          position_sticky_hack: undefined,
+        }
+        description="We Gadget BD-তে অর্ডার করার জন্য আপনাকে ধন্যবাদ। আপনার ক্যাশ অন ডেলিভারি অর্ডারটি সফলভাবে গ্রহণ করা হয়েছে। আমাদের টিম খুব শীঘ্রই ফোন করে অর্ডারটি কনফার্ম করবে।"
+        cancelText="হোমপেজে যান"
+        confirmText="আরও কেনাকাটা করুন"
+        confirmVariant="primary"
+        onConfirm={() => {
+          setIsOrderConfirmed(false);
+          router.push("/products");
         }}
       >
-        <Box
-          sx={{
-            position: "sticky",
-            top: 0,
-            zIndex: 50,
-            bgcolor: tokens.bgPanel,
-          }}
-        >
+        <Box sx={{ px: 3, pb: 1, display: "flex", flexDirection: "column", gap: 1.5 }}>
           <Box
             sx={{
-              maxWidth: 1280,
-              mx: "auto",
-              px: { xs: 1, md: 2 },
-              py: { xs: 1.5, md: 3 },
+              bgcolor: tokens.bgCanvas,
+              borderRadius: "8px",
+              p: 1.5,
+              border: `1px solid ${tokens.borderDefault}`,
               display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
+              flexDirection: "column",
+              gap: 0.75,
+              fontSize: 13,
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <Box
-                component={NextLink}
-                href={isBuyNow ? `/products/${buyNowProduct?.slug}` : "/cart"}
-                sx={{
-                  p: 1,
-                  borderRadius: "50%",
-                  display: "inline-flex",
-                  transition: "background-color 200ms",
-                  "&:hover": { bgcolor: tokens.bgSubtle },
-                }}
-              >
-                <ArrowBackIcon sx={{ fontSize: 24, color: tokens.textSecondary }} />
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Box component="span" sx={{ ...BN, color: tokens.textMuted }}>
+                পেমেন্ট পদ্ধতি:
               </Box>
-              <Box>
-                <Typography
-                  component='h1'
-                  sx={{
-                    fontSize: 20,
-                    fontWeight: 900,
-                    color: tokens.textPrimary,
-                    letterSpacing: "-0.02em",
-                  }}
-                >
-                  We Gadget BD Checkout
-                </Typography>
-                <Typography
-                  sx={{
-                    fontSize: 12,
-                    color: tokens.textDisabled,
-                    fontWeight: 600,
-                    letterSpacing: "0.15em",
-                  }}
-                >
-                  We Gadget BD Premium Shopping
-                </Typography>
+              <Box component="span" sx={{ ...BN, fontWeight: 700, color: tokens.textPrimary }}>
+                ক্যাশ অন ডেলিভারি
               </Box>
             </Box>
-            <Box
-              sx={{
-                display: { xs: "none", md: "flex" },
-                alignItems: "center",
-                gap: 1,
-                bgcolor: tokens.primaryLight,
-                px: 2,
-                py: 1,
-                borderRadius: 999,
-              }}
-            >
-              <Box
-                sx={{
-                  width: 8,
-                  height: 8,
-                  bgcolor: tokens.primary,
-                  borderRadius: "50%",
-                  animation: `${pulseDot} 2s ease-in-out infinite`,
-                }}
-              />
-              <Box
-                component='span'
-                sx={{
-                  fontSize: 12,
-                  fontWeight: 700,
-                  color: tokens.primaryHover,
-                  textTransform: "uppercase",
-                  letterSpacing: "-0.02em",
-                }}
-              >
-                Order now for fast delivery
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Box component="span" sx={{ ...BN, color: tokens.textMuted }}>
+                সর্বমোট পরিশোধযোগ্য:
+              </Box>
+              <Box component="span" sx={{ fontWeight: 800, color: tokens.primary, fontSize: 16 }}>
+                ৳{totalAmount}
               </Box>
             </Box>
           </Box>
-        </Box>
-      </Box>
 
-      {/* Main */}
+          {savedWhatsappUrl && (
+            <Button
+              fullWidth
+              onClick={() => window.open(savedWhatsappUrl, "_blank")}
+              startIcon={<WhatsAppIcon sx={{ fontSize: 18 }} />}
+              disableElevation
+              sx={{
+                ...BN,
+                bgcolor: "#25D366",
+                color: "#ffffff",
+                fontWeight: 700,
+                py: 1.25,
+                borderRadius: "8px",
+                fontSize: 13,
+                textTransform: "none",
+                "&:hover": { bgcolor: "#20BD5A" },
+              }}
+            >
+              WhatsApp এ মেসেজ পাঠান
+            </Button>
+          )}
+        </Box>
+      </AlertDialog>
+
+      {/* Universal Stepper Header */}
+      <CheckoutStepperHeader
+        currentStep="checkout"
+        backHref={isBuyNow ? `/products/${buyNowProduct?.slug || ""}` : "/cart"}
+        backLabel={isBuyNow ? "Back to Product" : "Back to Cart"}
+      />
+
+      {/* Main Container */}
       <Box
         component='main'
         sx={{
-          maxWidth: 1280,
+          maxWidth: 1200,
           mx: "auto",
-          px: 2,
-          mt: { xs: 1, md: 6 },
-          position: "relative",
+          px: { xs: 2, sm: 3 },
+          pt: { xs: 3, md: 4 },
         }}
       >
         <Box
@@ -975,14 +537,15 @@ ${orderDetails}
           onSubmit={handleSubmit(onSubmit)}
           sx={{
             display: "grid",
-            gridTemplateColumns: { xs: "1fr", lg: "repeat(12, minmax(0, 1fr))" },
-            gap: { md: 2 },
+            gridTemplateColumns: { xs: "1fr", lg: "1fr 380px" },
+            gap: 3,
+            alignItems: "flex-start",
           }}
         >
-          <Box sx={{ gridColumn: { lg: "span 7" } }}>
+          <Box>
             <CheckoutForm register={register} errors={errors} locationValue={locationValue} setValue={setValue} />
           </Box>
-          <Box sx={{ gridColumn: { lg: "span 5" } }}>
+          <Box>
             <OrderSummary
               products={productsToOrder}
               originalSubtotal={originalSubtotal}
@@ -991,6 +554,7 @@ ${orderDetails}
               totalAmount={totalAmount}
               isBuyNow={isBuyNow}
               localQty={localQty}
+              isSubmitting={isSubmitting}
               onIncreaseQty={handleIncreaseQty}
               onDecreaseQty={handleDecreaseQty}
               onRemoveItem={handleRemoveItem}
@@ -999,7 +563,7 @@ ${orderDetails}
         </Box>
       </Box>
 
-      {/* Fixed bottom button (mobile) */}
+      {/* Mobile Fixed Bottom Checkout Bar */}
       <Box
         sx={{
           position: "fixed",
@@ -1008,143 +572,83 @@ ${orderDetails}
           right: 0,
           zIndex: 50,
           display: { xs: "block", md: "none" },
-          pointerEvents: "none",
+          bgcolor: tokens.bgPanel,
+          borderTop: `1px solid ${tokens.borderDefault}`,
+          p: 1.5,
+          boxShadow: tokens.shadowLg,
         }}
       >
-        <Box
-          sx={{
-            height: 32,
-            background: "linear-gradient(to top, rgba(255,255,255,0.8), transparent)",
-          }}
-        />
-        <Box
-          sx={{
-            pointerEvents: "auto",
-            bgcolor: "rgba(255,255,255,0.95)",
-            backdropFilter: "blur(20px)",
-            borderTop: `1px solid ${tokens.borderSubtle}`,
-            boxShadow: "0 -4px 24px rgba(0,0,0,0.07)",
-          }}
-        >
-          <Box sx={{ maxWidth: 672, mx: "auto", px: 2, pt: 0.5, pb: { xs: 1, md: 2 } }}>
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                mb: 1.5,
-                px: 0.5,
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
-                <Box component='span' sx={{ ...BN, fontSize: 18, color: tokens.textPrimary, fontWeight: 500 }}>
-                  সর্বমোট:
-                </Box>
-                <Box
-                  component='span'
-                  sx={{
-                    fontSize: 20,
-                    fontWeight: 900,
-                    color: tokens.primaryHover,
-                    letterSpacing: "-0.02em",
-                  }}
-                >
-                  ৳{totalAmount}
-                </Box>
+        <Box sx={{ maxWidth: 600, mx: "auto" }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: 1,
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
+              <Box component='span' sx={{ ...BN, fontSize: 13, color: tokens.textSecondary }}>
+                সর্বমোট:
               </Box>
               <Box
+                component='span'
                 sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0.5,
-                  fontSize: 10,
-                  color: tokens.successText,
-                  fontWeight: 700,
-                  bgcolor: tokens.primaryLight,
-                  border: `1px solid ${tokens.successBorder}`,
-                  px: 1.25,
-                  py: 0.5,
-                  borderRadius: 999,
+                  fontSize: 18,
+                  fontWeight: 800,
+                  color: tokens.textPrimary,
                 }}
               >
-                <SecurityOutlinedIcon sx={{ fontSize: 11 }} />
-                Cash on Delivery
+                ৳{totalAmount}
               </Box>
             </Box>
-
             <Box
               sx={{
-                position: "relative",
-                "&:hover .shine": { animation: `${shineSweep} 700ms ease` },
+                fontSize: 11,
+                color: tokens.successText,
+                fontWeight: 600,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 0.5,
               }}
             >
-              <Button
-                type='submit'
-                form='checkout-form'
-                disabled={isSubmitting}
-                disableElevation
-                fullWidth
-                sx={{
-                  position: "relative",
-                  py: 1,
-                  background: `linear-gradient(to right, ${tokens.primary}, ${tokens.primaryHover})`,
-                  color: tokens.textWhite,
-                  fontWeight: 900,
-                  fontSize: 16,
-                  borderRadius: "6px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 1.25,
-                  textTransform: "none",
-                  boxShadow: "0 10px 15px -3px rgba(16,185,129,0.3), 0 4px 6px -4px rgba(16,185,129,0.3)",
-                  overflow: "hidden",
-                  transition: "all 300ms",
-                  "&:hover": {
-                    background: `linear-gradient(to right, ${tokens.primaryHover}, ${tokens.primaryHover})`,
-                  },
-                  "&:active": { transform: "scale(0.98)" },
-                  "&.Mui-disabled": { opacity: 0.7, color: tokens.textWhite },
-                }}
-              >
-                <Box
-                  className='shine'
-                  sx={{
-                    position: "absolute",
-                    inset: 0,
-                    background: "linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent)",
-                    pointerEvents: "none",
-                  }}
-                />
-                {isSubmitting ? (
-                  <>
-                    <CircularProgress size={20} sx={{ color: tokens.textWhite }} />
-                    <span>অর্ডার প্রসেস হচ্ছে...</span>
-                  </>
-                ) : (
-                  <>
-                    <Inventory2OutlinedIcon sx={{ display: { xs: "none", md: "flex" }, fontSize: 20 }} />
-                    <span>ক্যাশ অন ডেলিভারিতে অর্ডার করুন</span>
-                  </>
-                )}
-              </Button>
+              <SecurityOutlinedIcon sx={{ fontSize: 13 }} />
+              Cash on Delivery
             </Box>
-
-            <Typography
-              sx={{
-                display: { xs: "none", md: "block" },
-                textAlign: "center",
-                fontSize: 9,
-                color: tokens.borderElevated,
-                mt: 1,
-                fontWeight: 500,
-                textTransform: "uppercase",
-                letterSpacing: "0.15em",
-              }}
-            >
-              By clicking, you agree to our terms and conditions
-            </Typography>
           </Box>
+
+          <Button
+            type='submit'
+            form='checkout-form'
+            disabled={isSubmitting}
+            fullWidth
+            disableElevation
+            sx={{
+              ...BN,
+              bgcolor: tokens.primary,
+              color: tokens.textWhite,
+              py: 1.25,
+              borderRadius: "8px",
+              fontWeight: 700,
+              fontSize: 14,
+              textTransform: "none",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 1,
+              "&:hover": { bgcolor: tokens.primaryHover },
+              "&.Mui-disabled": { opacity: 0.6, bgcolor: tokens.primary, color: tokens.textWhite },
+            }}
+          >
+            {isSubmitting ? (
+              <>
+                <CircularProgress size={16} sx={{ color: tokens.textWhite }} />
+                <span>প্রসেস হচ্ছে...</span>
+              </>
+            ) : (
+              "ক্যাশ অন ডেলিভারিতে অর্ডার করুন"
+            )}
+          </Button>
         </Box>
       </Box>
     </Box>
@@ -1154,34 +658,7 @@ ${orderDetails}
 // ─── Page shell ────────────────────────────────────────────
 export default function CheckoutPage() {
   return (
-    <Suspense
-      fallback={
-        <Box
-          sx={{
-            minHeight: "100vh",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            bgcolor: tokens.bgPanel,
-          }}
-        >
-          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-            <CircularProgress size={48} sx={{ color: tokens.primary }} />
-            <Typography
-              sx={{
-                fontSize: 18,
-                fontWeight: 700,
-                color: tokens.textMuted,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-              }}
-            >
-              Setting up Secure Checkout...
-            </Typography>
-          </Box>
-        </Box>
-      }
-    >
+    <Suspense fallback={<CheckoutPageSkeleton />}>
       <CheckoutPageContent />
     </Suspense>
   );

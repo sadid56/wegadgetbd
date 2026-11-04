@@ -1,86 +1,44 @@
 "use client";
 
-import NextLink from "next/link";
-import { useEffect, useRef } from "react";
+import { useState } from "react";
 import Box from "@mui/material/Box";
-import { Button } from "@/components/ui/button";
-import { IconButton } from "@/components/ui/icon-button";
-import { EmptyState } from "@/components/ui/empty-state";
 import Typography from "@mui/material/Typography";
+import { Button } from "@/components/ui/button";
 import { InputBase } from "@/components/ui/input";
-import { keyframes } from "@emotion/react";
+import { AlertDialog } from "@/components/ui/alert-dialog";
 
-import RemoveIcon from "@mui/icons-material/Remove";
-import AddIcon from "@mui/icons-material/Add";
-import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
-import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
-import ReplayIcon from "@mui/icons-material/Replay";
 import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import BoltIcon from "@mui/icons-material/Bolt";
-import PercentIcon from "@mui/icons-material/Percent";
-import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
-import StarIcon from "@mui/icons-material/Star";
+import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
 
 import { useCart } from "@/hooks/useCart";
-import { getAssetUrl } from "@/lib/storage";
 import { tokens } from "@/theme/theme";
+import { CheckoutStepperHeader } from "@/components/common/CheckoutStepperHeader";
 
-const itemFadeIn = keyframes`
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-`;
-
-const TRUST = [
-  { icon: LocalShippingOutlinedIcon, text: "Free Delivery", sub: "Orders over ৳999" },
-  { icon: ShieldOutlinedIcon, text: "Secure Checkout", sub: "SSL encrypted" },
-  { icon: ReplayIcon, text: "Easy Returns", sub: "30-day policy" },
-  { icon: BoltIcon, text: "Fast Processing", sub: "Same-day dispatch" },
-];
-
-function EmptyCart() {
-  return (
-    <Box
-      sx={{
-        minHeight: "70vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        bgcolor: tokens.bgCanvas,
-        px: 2,
-        py: 6,
-      }}
-    >
-      <EmptyState
-        icon={<ShoppingBagOutlinedIcon sx={{ fontSize: 32, color: tokens.textSecondary }} />}
-        title="Your cart is empty"
-        description="Looks like you haven't added anything yet. Explore our collection and find something you'll love."
-        action={
-          <Button
-            component={NextLink}
-            href="/products"
-            variant="primary"
-            startIcon={<Inventory2OutlinedIcon sx={{ fontSize: 16 }} />}
-            sx={{ height: 44, px: 3.5 }}
-          >
-            Explore Collection
-          </Button>
-        }
-        card={false}
-        sx={{ maxWidth: 420 }}
-      />
-    </Box>
-  );
-}
+import CartPageSkeleton from "./cart-page-skeleton";
+import EmptyCart from "./empty-cart";
+import CartItemRow from "./cart-item-row";
+import OrderSummary from "./order-summery";
 
 export default function CartPage() {
-  const { cart, removeItem, updateQty, totalPrice, totalCount, clearCart } = useCart();
+  const { cart, removeItem, updateQty, totalPrice, totalCount, clearCart, isLoaded } = useCart();
+  const [deleteTarget, setDeleteTarget] = useState<
+    | { type: "single"; id: string; title: string }
+    | { type: "all" }
+    | null
+  >(null);
 
+  if (!isLoaded) return <CartPageSkeleton />;
   if (cart.length === 0) return <EmptyCart />;
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return;
+    if (deleteTarget.type === "single") {
+      removeItem(deleteTarget.id);
+    } else {
+      clearCart();
+    }
+    setDeleteTarget(null);
+  };
 
   const savings = cart.reduce((acc, item) => {
     const orig = Number(item.price || 0);
@@ -89,933 +47,187 @@ export default function CartPage() {
   }, 0);
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: tokens.bgCanvas }}>
-      {/* Sticky header */}
-      <Box
-        sx={{
-          position: "sticky",
-          top: 0,
-          zIndex: 40,
-          bgcolor: "rgba(255,255,255,0.95)",
-          backdropFilter: "blur(20px)",
-          borderBottom: `1px solid ${tokens.borderSubtle}`,
-        }}
-      >
-        <Box
-          sx={{
-            maxWidth: 1152,
-            mx: "auto",
-            px: 2,
-            height: { xs: 56, sm: 64 },
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: { xs: 1, sm: 2 },
-          }}
-        >
+    <Box sx={{ minHeight: "100vh", bgcolor: tokens.bgCanvas, pb: { xs: 8, md: 10 } }}>
+      {/* Top Stepper Navigation */}
+      <CheckoutStepperHeader
+        currentStep="cart"
+        backHref="/products"
+        backLabel="Continue Shopping"
+        rightAction={
           <Box
-            component={NextLink}
-            href='/products'
+            component="button"
+            onClick={() => setDeleteTarget({ type: "all" })}
             sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 0.75,
-              fontSize: 14,
-              fontWeight: 600,
-              color: tokens.textMuted,
-              textDecoration: "none",
-              flexShrink: 0,
-              transition: "color 200ms",
-              "&:hover": { color: tokens.textPrimary, "& .back-icon": { transform: "translateX(-2px)" } },
-            }}
-          >
-            <ArrowBackIcon className='back-icon' sx={{ fontSize: 16, transition: "transform 200ms" }} />
-            <Box component='span' sx={{ display: { xs: "none", sm: "inline" } }}>
-              Continue Shopping
-            </Box>
-            <Box component='span' sx={{ display: { xs: "inline", sm: "none" }, fontSize: 12 }}>
-              Shop
-            </Box>
-          </Box>
-
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: { xs: 0.5, sm: 0.75 },
-              fontSize: { xs: 11, sm: 12 },
-              fontWeight: 600,
-              color: tokens.textDisabled,
-            }}
-          >
-            <Box component='span' sx={{ color: tokens.textPrimary, fontWeight: 900 }}>
-              Cart
-            </Box>
-            <ChevronRightIcon sx={{ fontSize: 12 }} />
-            <Box component='span'>Checkout</Box>
-            <ChevronRightIcon sx={{ fontSize: 12 }} />
-            <Box component='span' sx={{ display: { xs: "none", sm: "inline" } }}>
-              Done
-            </Box>
-          </Box>
-
-          <Box
-            component='button'
-            onClick={clearCart}
-            sx={{
-              display: "flex",
+              display: "inline-flex",
               alignItems: "center",
               gap: 0.5,
               bgcolor: "transparent",
-              border: 0,
+              border: "none",
               cursor: "pointer",
-              fontSize: 12,
+              fontSize: 13,
               fontWeight: 600,
               color: tokens.danger,
-              flexShrink: 0,
-              transition: "color 200ms",
-              "&:hover": { color: tokens.dangerHover },
+              p: 0,
+              transition: "opacity 150ms ease",
+              "&:hover": { opacity: 0.8 },
             }}
           >
-            <DeleteOutlinedIcon sx={{ fontSize: 14 }} />
-            <Box component='span' sx={{ display: { xs: "none", sm: "inline" } }}>
-              Clear cart
-            </Box>
+            <DeleteOutlinedIcon sx={{ fontSize: 16 }} />
+            <span>Clear Cart</span>
           </Box>
-        </Box>
-      </Box>
+        }
+      />
 
-      <Box sx={{ maxWidth: 1152, mx: "auto", px: { xs: 1.5, sm: 2 }, py: { xs: 2.5, sm: 3, md: 5 } }}>
-        {/* Page title */}
-        <Box sx={{ mb: { xs: 2.5, sm: 4 }, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <Box>
-            <Typography
-              component='h1'
-              sx={{
-                fontSize: { xs: 18, sm: 24, md: 28 },
-                fontWeight: 900,
-                color: tokens.textPrimary,
-                letterSpacing: "-0.02em",
-              }}
-            >
-              Shopping Cart
-            </Typography>
-            <Typography sx={{ fontSize: { xs: 12, sm: 14 }, color: tokens.textDisabled, mt: 0.25 }}>
-              {totalCount} item{totalCount !== 1 ? "s" : ""} · Review before checkout
-            </Typography>
-          </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, bgcolor: tokens.bgSubtle, px: 1.5, py: 0.75, borderRadius: 999 }}>
-            <ShoppingCartIcon sx={{ fontSize: 14, color: tokens.textMuted }} />
-            <Typography component='span' sx={{ fontSize: 14, fontWeight: 900, color: tokens.textSecondary }}>
-              {totalCount}
-            </Typography>
-          </Box>
+      {/* Main Container */}
+      <Box sx={{ maxWidth: 1200, mx: "auto", px: { xs: 2, sm: 3 }, pt: { xs: 3, md: 4 } }}>
+        <Box sx={{ mb: 3 }}>
+          <Typography
+            component="h1"
+            sx={{
+              fontSize: { xs: 22, md: 28 },
+              fontWeight: 800,
+              color: tokens.textPrimary,
+              letterSpacing: "-0.02em",
+            }}
+          >
+            Shopping Cart
+          </Typography>
+          <Typography sx={{ fontSize: 14, color: tokens.textMuted, mt: 0.5 }}>
+            {totalCount} {totalCount === 1 ? "item" : "items"} in your cart
+          </Typography>
         </Box>
 
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: { xs: "1fr", lg: "repeat(12, minmax(0, 1fr))" },
-            gap: { xs: 2, sm: 3, lg: 4 },
+            gridTemplateColumns: { xs: "1fr", lg: "1fr 380px" },
+            gap: 3,
             alignItems: "flex-start",
           }}
         >
-          {/* LEFT */}
-          <Box
-            sx={{
-              gridColumn: { lg: "span 7", xl: "span 8" },
-              display: "flex",
-              flexDirection: "column",
-              gap: 1.5,
-            }}
-          >
-            {/* Desktop header row */}
-            <Box
-              sx={{
-                display: { xs: "none", sm: "grid" },
-                gridTemplateColumns: "repeat(12, minmax(0, 1fr))",
-                gap: 2,
-                px: 2,
-                py: 1,
-                fontSize: 10,
-                fontWeight: 900,
-                color: tokens.textDisabled,
-                textTransform: "uppercase",
-                letterSpacing: "0.15em",
-                borderBottom: `1px solid ${tokens.borderDefault}`,
-              }}
-            >
-              <Box sx={{ gridColumn: "span 6" }}>Product</Box>
-              <Box sx={{ gridColumn: "span 2", textAlign: "center" }}>Price</Box>
-              <Box sx={{ gridColumn: "span 2", textAlign: "center" }}>Qty</Box>
-              <Box sx={{ gridColumn: "span 2", textAlign: "right", pr: 1 }}>Total</Box>
-            </Box>
-
-            {cart.map((item, idx) => {
-              const unitPrice = Number(item.discountPrice || item.price || 0);
-              const origPrice = Number(item.price || 0);
-              const lineTotal = unitPrice * item.qty;
-              const hasDisc = origPrice > unitPrice;
-              const discPct = hasDisc ? Math.round((1 - unitPrice / origPrice) * 100) : 0;
-
-              return (
-                <Box
-                  key={item.id}
-                  sx={{
-                    bgcolor: tokens.bgPanel,
-                    border: `1px solid ${tokens.borderDefault}`,
-                    borderRadius: "16px",
-                    overflow: "hidden",
-                    transition: "all 300ms",
-                    animation: `${itemFadeIn} 280ms cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.04}s both`,
-                    "&:hover": {
-                      borderColor: tokens.borderElevated,
-                      boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1)",
-                      "& .cart-img": { transform: "scale(1.05)" },
-                    },
-                  }}
-                >
-                  {/* MOBILE */}
-                  <Box sx={{ display: { xs: "flex", sm: "none" }, p: 1.5, gap: 1.5 }}>
-                    <Box
-                      sx={{
-                        position: "relative",
-                        width: 72,
-                        height: 72,
-                        borderRadius: "12px",
-                        overflow: "hidden",
-                        bgcolor: tokens.bgCanvas,
-                        border: `1px solid ${tokens.borderSubtle}`,
-                        flexShrink: 0,
-                      }}
-                    >
-                      {item.images?.[0] ? (
-                        <Box
-                          component='img'
-                          className='cart-img'
-                          src={getAssetUrl(item.images[0])}
-                          alt={item.title}
-                          sx={{ width: "100%", height: "100%", objectFit: "contain", p: 0.5, transition: "transform 300ms" }}
-                        />
-                      ) : (
-                        <Box sx={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <Inventory2OutlinedIcon sx={{ fontSize: 24, color: tokens.borderElevated }} />
-                        </Box>
-                      )}
-                      {hasDisc && (
-                        <Box
-                          sx={{
-                            position: "absolute",
-                            top: 4,
-                            left: 4,
-                            fontSize: 9,
-                            fontWeight: 900,
-                            color: tokens.textWhite,
-                            bgcolor: tokens.danger,
-                            px: 0.75,
-                            py: 0.25,
-                            borderRadius: "6px",
-                            lineHeight: 1,
-                          }}
-                        >
-                          -{discPct}%
-                        </Box>
-                      )}
-                    </Box>
-
-                    <Box sx={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 1 }}>
-                      <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1 }}>
-                        <Typography
-                          sx={{
-                            fontWeight: 700,
-                            color: tokens.textPrimary,
-                            fontSize: 14,
-                            lineHeight: 1.35,
-                            flex: 1,
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            display: "-webkit-box",
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: "vertical",
-                          }}
-                        >
-                          {item.title}
-                        </Typography>
-                        <IconButton
-                          onClick={() => removeItem(item.id)}
-                          size='small'
-                          sx={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: "8px",
-                            color: tokens.borderElevated,
-                            flexShrink: 0,
-                            mt: 0.25,
-                            "&:hover": { color: tokens.danger, bgcolor: tokens.dangerSubtle },
-                          }}
-                        >
-                          <DeleteOutlinedIcon sx={{ fontSize: 14 }} />
-                        </IconButton>
-                      </Box>
-
-                      <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
-                        <Typography component='span' sx={{ fontSize: 16, fontWeight: 900, color: tokens.textPrimary }}>
-                          ৳{unitPrice.toLocaleString()}
-                        </Typography>
-                        {hasDisc && (
-                          <Typography component='span' sx={{ fontSize: 12, color: tokens.textDisabled, textDecoration: "line-through" }}>
-                            ৳{origPrice.toLocaleString()}
-                          </Typography>
-                        )}
-                      </Box>
-
-                      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            border: `1px solid ${tokens.borderDefault}`,
-                            borderRadius: "12px",
-                            overflow: "hidden",
-                          }}
-                        >
-                          <Box
-                            component='button'
-                            onClick={() => updateQty(item.id, item.qty - 1)}
-                            sx={{
-                              width: 32,
-                              height: 32,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              bgcolor: "transparent",
-                              border: 0,
-                              cursor: "pointer",
-                              color: tokens.textMuted,
-                              transition: "background-color 150ms",
-                              "&:hover": { bgcolor: tokens.bgCanvas },
-                            }}
-                          >
-                            <RemoveIcon sx={{ fontSize: 12 }} />
-                          </Box>
-                          <Box
-                            component='span'
-                            sx={{
-                              width: 36,
-                              height: 32,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontSize: 14,
-                              fontWeight: 900,
-                              color: tokens.textPrimary,
-                              borderLeft: `1px solid ${tokens.borderDefault}`,
-                              borderRight: `1px solid ${tokens.borderDefault}`,
-                            }}
-                          >
-                            {item.qty}
-                          </Box>
-                          <Box
-                            component='button'
-                            onClick={() => updateQty(item.id, item.qty + 1)}
-                            sx={{
-                              width: 32,
-                              height: 32,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              bgcolor: "transparent",
-                              border: 0,
-                              cursor: "pointer",
-                              color: tokens.textMuted,
-                              transition: "background-color 150ms",
-                              "&:hover": { bgcolor: tokens.bgCanvas },
-                            }}
-                          >
-                            <AddIcon sx={{ fontSize: 12 }} />
-                          </Box>
-                        </Box>
-                        <Typography sx={{ fontSize: 14, fontWeight: 900, color: tokens.textPrimary }}>৳{lineTotal.toLocaleString()}</Typography>
-                      </Box>
-                    </Box>
-                  </Box>
-
-                  {/* DESKTOP */}
-                  <Box
-                    sx={{
-                      display: { xs: "none", sm: "grid" },
-                      gridTemplateColumns: "repeat(12, minmax(0, 1fr))",
-                      gap: 2,
-                      alignItems: "center",
-                      p: 2,
-                    }}
-                  >
-                    <Box sx={{ gridColumn: "span 6", display: "flex", alignItems: "center", gap: 1.5 }}>
-                      <Box
-                        sx={{
-                          position: "relative",
-                          width: 68,
-                          height: 68,
-                          borderRadius: "12px",
-                          overflow: "hidden",
-                          bgcolor: tokens.bgCanvas,
-                          border: `1px solid ${tokens.borderSubtle}`,
-                          flexShrink: 0,
-                        }}
-                      >
-                        {item.images?.[0] ? (
-                          <Box
-                            component='img'
-                            className='cart-img'
-                            src={getAssetUrl(item.images[0])}
-                            alt={item.title}
-                            sx={{ width: "100%", height: "100%", objectFit: "contain", p: 0.75, transition: "transform 300ms" }}
-                          />
-                        ) : (
-                          <Box sx={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <Inventory2OutlinedIcon sx={{ fontSize: 28, color: tokens.borderElevated }} />
-                          </Box>
-                        )}
-                        {hasDisc && (
-                          <Box
-                            sx={{
-                              position: "absolute",
-                              top: 4,
-                              left: 4,
-                              fontSize: 9,
-                              fontWeight: 900,
-                              color: tokens.textWhite,
-                              bgcolor: tokens.danger,
-                              px: 0.75,
-                              py: 0.25,
-                              borderRadius: "6px",
-                              lineHeight: 1,
-                            }}
-                          >
-                            -{discPct}%
-                          </Box>
-                        )}
-                      </Box>
-                      <Typography
-                        sx={{
-                          fontWeight: 700,
-                          color: tokens.textPrimary,
-                          fontSize: 14,
-                          lineHeight: 1.35,
-                          flex: 1,
-                          minWidth: 0,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          display: "-webkit-box",
-                          WebkitLineClamp: 3,
-                          WebkitBoxOrient: "vertical",
-                        }}
-                      >
-                        {item.title}
-                      </Typography>
-                    </Box>
-
-                    <Box sx={{ gridColumn: "span 2", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
-                      <Typography sx={{ fontSize: 14, fontWeight: 900, color: tokens.textPrimary }}>৳{unitPrice.toLocaleString()}</Typography>
-                      {hasDisc && (
-                        <Typography sx={{ fontSize: 10, color: tokens.textDisabled, textDecoration: "line-through" }}>
-                          ৳{origPrice.toLocaleString()}
-                        </Typography>
-                      )}
-                    </Box>
-
-                    <Box sx={{ gridColumn: "span 2", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          border: `1px solid ${tokens.borderDefault}`,
-                          borderRadius: "12px",
-                          overflow: "hidden",
-                        }}
-                      >
-                        <Box
-                          component='button'
-                          onClick={() => updateQty(item.id, item.qty - 1)}
-                          sx={{
-                            width: 32,
-                            height: 32,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            bgcolor: "transparent",
-                            border: 0,
-                            cursor: "pointer",
-                            color: tokens.textMuted,
-                            transition: "background-color 150ms, color 150ms",
-                            "&:hover": { bgcolor: tokens.bgCanvas, color: tokens.textPrimary },
-                          }}
-                        >
-                          <RemoveIcon sx={{ fontSize: 12 }} />
-                        </Box>
-                        <Box
-                          component='span'
-                          sx={{
-                            width: 40,
-                            height: 32,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: 14,
-                            fontWeight: 900,
-                            color: tokens.textPrimary,
-                            borderLeft: `1px solid ${tokens.borderDefault}`,
-                            borderRight: `1px solid ${tokens.borderDefault}`,
-                          }}
-                        >
-                          {item.qty}
-                        </Box>
-                        <Box
-                          component='button'
-                          onClick={() => updateQty(item.id, item.qty + 1)}
-                          sx={{
-                            width: 32,
-                            height: 32,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            bgcolor: "transparent",
-                            border: 0,
-                            cursor: "pointer",
-                            color: tokens.textMuted,
-                            transition: "background-color 150ms, color 150ms",
-                            "&:hover": { bgcolor: tokens.bgCanvas, color: tokens.textPrimary },
-                          }}
-                        >
-                          <AddIcon sx={{ fontSize: 12 }} />
-                        </Box>
-                      </Box>
-                    </Box>
-
-                    <Box sx={{ gridColumn: "span 2", display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 1, pr: 0.5 }}>
-                      <Typography sx={{ fontSize: 14, fontWeight: 900, color: tokens.textPrimary }}>৳{lineTotal.toLocaleString()}</Typography>
-                      <IconButton
-                        onClick={() => removeItem(item.id)}
-                        size='small'
-                        sx={{
-                          width: 32,
-                          height: 32,
-                          borderRadius: "12px",
-                          color: tokens.borderElevated,
-                          "&:hover": { color: tokens.danger, bgcolor: tokens.dangerSubtle },
-                        }}
-                      >
-                        <DeleteOutlinedIcon sx={{ fontSize: 14 }} />
-                      </IconButton>
-                    </Box>
-                  </Box>
-                </Box>
-              );
-            })}
-
-            {/* Promo code */}
-            <Box sx={{ bgcolor: tokens.bgPanel, border: `1px solid ${tokens.borderDefault}`, borderRadius: "16px", p: 2 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
-                <LocalOfferOutlinedIcon sx={{ fontSize: 14, color: tokens.textDisabled }} />
-                <Box
-                  component='span'
-                  sx={{ fontSize: 12, fontWeight: 900, color: tokens.textMuted, textTransform: "uppercase", letterSpacing: "0.15em" }}
-                >
-                  Promo Code
-                </Box>
-              </Box>
-              <Box sx={{ display: "flex", gap: 1 }}>
-                <InputBase
-                  placeholder='Enter coupon code'
-                  sx={{
-                    flex: 1,
-                    height: 44,
-                    px: 2,
-                    borderRadius: "12px",
-                    border: `1px solid ${tokens.borderDefault}`,
-                    bgcolor: tokens.bgCanvas,
-                    fontSize: 14,
-                    fontWeight: 500,
-                    color: tokens.textPrimary,
-                    minWidth: 0,
-                    transition: "border-color 200ms, box-shadow 200ms",
-                    "& input::placeholder": { color: tokens.textDisabled, opacity: 1 },
-                    "&.Mui-focused": { borderColor: tokens.borderHover, boxShadow: "0 0 0 2px rgba(15,23,42,0.1)" },
-                  }}
-                />
-                <Box
-                  component='button'
-                  sx={{
-                    height: 44,
-                    px: { xs: 2, sm: 2.5 },
-                    borderRadius: "12px",
-                    bgcolor: tokens.textPrimary,
-                    color: tokens.textWhite,
-                    fontWeight: 700,
-                    fontSize: 14,
-                    border: 0,
-                    cursor: "pointer",
-                    whiteSpace: "nowrap",
-                    flexShrink: 0,
-                    transition: "background-color 200ms",
-                    "&:hover": { bgcolor: tokens.textSecondary },
-                  }}
-                >
-                  Apply
-                </Box>
-              </Box>
-            </Box>
-
-            {/* Trust strip */}
-            <Box
-              sx={{
-                display: "grid",
-                gridTemplateColumns: { xs: "repeat(2, minmax(0, 1fr))", sm: "repeat(4, minmax(0, 1fr))" },
-                gap: 1,
-              }}
-            >
-              {TRUST.map(({ icon: Icon, text, sub }) => (
-                <Box
-                  key={text}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: { xs: 1, sm: 1.25 },
-                    bgcolor: tokens.bgPanel,
-                    border: `1px solid ${tokens.borderDefault}`,
-                    borderRadius: "12px",
-                    px: { xs: 1.25, sm: 1.5 },
-                    py: { xs: 1.25, sm: 1.5 },
-                  }}
-                >
-                  <Icon sx={{ fontSize: 16, color: tokens.textDisabled, flexShrink: 0 }} />
-                  <Box sx={{ minWidth: 0 }}>
-                    <Typography sx={{ fontSize: { xs: 10, sm: 11 }, fontWeight: 700, color: tokens.textSecondary, lineHeight: 1 }}>{text}</Typography>
-                    <Typography
-                      sx={{
-                        fontSize: { xs: 9, sm: 10 },
-                        color: tokens.textDisabled,
-                        mt: 0.25,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {sub}
-                    </Typography>
-                  </Box>
-                </Box>
-              ))}
-            </Box>
-          </Box>
-
-          {/* RIGHT — Summary */}
-          <Box
-            sx={{
-              gridColumn: { lg: "span 5", xl: "span 4" },
-              display: "flex",
-              flexDirection: "column",
-              gap: 1.5,
-            }}
-          >
+          {/* Left Column: Products List + Coupon */}
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
             <Box
               sx={{
                 bgcolor: tokens.bgPanel,
                 border: `1px solid ${tokens.borderDefault}`,
-                borderRadius: "16px",
+                borderRadius: "12px",
                 overflow: "hidden",
-                boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
-                position: { lg: "sticky" },
-                top: { lg: "88px" },
               }}
             >
               <Box
                 sx={{
-                  px: { xs: 2, sm: 3 },
-                  py: { xs: 1.75, sm: 2 },
-                  borderBottom: `1px solid ${tokens.borderSubtle}`,
-                  bgcolor: tokens.bgCanvas,
-                  display: "flex",
+                  display: { xs: "none", sm: "grid" },
+                  gridTemplateColumns: "1fr 110px 130px 110px 44px",
                   alignItems: "center",
-                  justifyContent: "space-between",
+                  px: 2.5,
+                  py: 1.5,
+                  bgcolor: tokens.bgCanvas,
+                  borderBottom: `1px solid ${tokens.borderDefault}`,
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: tokens.textMuted,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.06em",
                 }}
               >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <ShoppingCartIcon sx={{ fontSize: 16, color: tokens.textMuted }} />
-                  <Typography
-                    component='h2'
-                    sx={{
-                      fontSize: { xs: 12, sm: 14 },
-                      fontWeight: 900,
-                      color: tokens.textPrimary,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
-                    }}
-                  >
-                    Order Summary
-                  </Typography>
-                </Box>
-                <Typography sx={{ fontSize: 12, fontWeight: 700, color: tokens.textDisabled }}>
-                  {totalCount} item{totalCount !== 1 ? "s" : ""}
-                </Typography>
+                <Box>Product</Box>
+                <Box sx={{ textAlign: "right" }}>Price</Box>
+                <Box sx={{ textAlign: "center" }}>Quantity</Box>
+                <Box sx={{ textAlign: "right" }}>Total</Box>
+                <Box></Box>
               </Box>
 
-              <Box sx={{ px: { xs: 2, sm: 3 }, py: { xs: 2, sm: 2.5 } }}>
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75, mb: 2, maxHeight: 144, overflowY: "auto" }}>
-                  {cart.map((item) => {
-                    const p = Number(item.discountPrice || item.price || 0);
-                    return (
-                      <Box
-                        key={item.id}
-                        sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12, gap: 1 }}
-                      >
-                        <Box
-                          component='span'
-                          sx={{ color: tokens.textMuted, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-                        >
-                          {item.title} ×{item.qty}
-                        </Box>
-                        <Box component='span' sx={{ fontWeight: 700, color: tokens.textSecondary, flexShrink: 0 }}>
-                          ৳{(p * item.qty).toLocaleString()}
-                        </Box>
-                      </Box>
-                    );
-                  })}
-                </Box>
-
-                <Box sx={{ height: 1, bgcolor: tokens.bgSubtle, mb: 1.5 }} />
-
-                <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25, mb: 2 }}>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
-                    <Box component='span' sx={{ color: tokens.textMuted, fontWeight: 500 }}>
-                      Subtotal
-                    </Box>
-                    <Box component='span' sx={{ fontWeight: 700, color: tokens.textPrimary }}>
-                      ৳{totalPrice.toLocaleString()}
-                    </Box>
-                  </Box>
-                  {savings > 0 && (
-                    <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
-                      <Box component='span' sx={{ color: tokens.successText, fontWeight: 500, display: "flex", alignItems: "center", gap: 0.5 }}>
-                        <PercentIcon sx={{ fontSize: 14 }} /> You save
-                      </Box>
-                      <Box component='span' sx={{ fontWeight: 700, color: tokens.successText }}>
-                        -৳{savings.toLocaleString()}
-                      </Box>
-                    </Box>
-                  )}
-                  <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: 14, alignItems: "flex-start" }}>
-                    <Box component='span' sx={{ color: tokens.textMuted, fontWeight: 500 }}>
-                      Delivery
-                    </Box>
-                    <Box component='span' sx={{ color: tokens.textDisabled, fontSize: 12, textAlign: "right" }}>
-                      Calculated at checkout
-                    </Box>
-                  </Box>
-                </Box>
-
-                <Box sx={{ height: 1, bgcolor: tokens.bgSubtle, mb: 2 }} />
-
-                <Box sx={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", mb: 2.5 }}>
-                  <Box>
-                    <Box
-                      component='p'
-                      sx={{
-                        fontSize: 10,
-                        fontWeight: 900,
-                        color: tokens.textDisabled,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.15em",
-                        mb: 0.25,
-                      }}
-                    >
-                      Grand Total
-                    </Box>
-                    <Typography
-                      sx={{ fontSize: { xs: 24, sm: 30 }, fontWeight: 900, color: tokens.textPrimary, letterSpacing: "-0.02em", lineHeight: 1.1 }}
-                    >
-                      ৳{totalPrice.toLocaleString()}
-                    </Typography>
-                    {savings > 0 && (
-                      <Typography sx={{ fontSize: 12, color: tokens.successText, fontWeight: 600, mt: 0.25 }}>
-                        Saving ৳{savings.toLocaleString()}
-                      </Typography>
-                    )}
-                  </Box>
-                  <Box component='p' sx={{ fontSize: 10, color: tokens.textDisabled, fontWeight: 500, mb: 0.5 }}>
-                    Excl. delivery
-                  </Box>
-                </Box>
-
-                <Button
-                  component={NextLink}
-                  href='/checkout'
-                  fullWidth
-                  endIcon={<ChevronRightIcon sx={{ fontSize: 16 }} />}
-                  disableElevation
-                  sx={{
-                    height: 48,
-                    mb: 1.25,
-                    borderRadius: "16px",
-                    bgcolor: tokens.textPrimary,
-                    color: tokens.textWhite,
-                    fontWeight: 900,
-                    fontSize: 14,
-                    textTransform: "none",
-                    boxShadow: "0 20px 25px -5px rgba(15,23,42,0.2)",
-                    transition: "all 200ms",
-                    "&:hover": { bgcolor: tokens.textSecondary, transform: "scale(1.02)" },
-                    "&:active": { transform: "scale(0.98)" },
-                  }}
-                >
-                  Proceed to Checkout
-                </Button>
-
-                <Button
-                  component={NextLink}
-                  href='/products'
-                  fullWidth
-                  startIcon={<ArrowBackIcon sx={{ fontSize: 14 }} />}
-                  disableElevation
-                  sx={{
-                    height: { xs: 40, sm: 44 },
-                    borderRadius: "16px",
-                    bgcolor: tokens.bgPanel,
-                    border: `1px solid ${tokens.borderDefault}`,
-                    color: tokens.textSecondary,
-                    fontWeight: 600,
-                    fontSize: 14,
-                    textTransform: "none",
-                    transition: "background-color 200ms",
-                    "&:hover": { bgcolor: tokens.bgCanvas, borderColor: tokens.borderDefault },
-                  }}
-                >
-                  Continue Shopping
-                </Button>
-
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 1,
-                    mt: 2,
-                    pt: 2,
-                    borderTop: `1px solid ${tokens.borderSubtle}`,
-                  }}
-                >
-                  <ShieldOutlinedIcon sx={{ fontSize: 14, color: tokens.borderElevated }} />
-                  <Typography sx={{ fontSize: 10, color: tokens.textDisabled, fontWeight: 500, textAlign: "center" }}>
-                    Secured by{" "}
-                    <Box component='span' sx={{ fontWeight: 700, color: tokens.textMuted }}>
-                      We Gadget BD
-                    </Box>
-                    {" · SSL Encrypted"}
-                  </Typography>
-                </Box>
-              </Box>
+              {cart.map((item, index) => (
+                <CartItemRow
+                  key={item.id}
+                  item={item}
+                  isLast={index === cart.length - 1}
+                  onUpdateQty={updateQty}
+                  onRemove={(targetItem) =>
+                    setDeleteTarget({
+                      type: "single",
+                      id: String(targetItem.id),
+                      title: targetItem.title || targetItem.name || "this item",
+                    })
+                  }
+                />
+              ))}
             </Box>
 
+            {/* Promo Code Box */}
             <Box
               sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                bgcolor: tokens.primaryLight,
-                border: `1px solid ${tokens.successBorder}`,
-                borderRadius: "12px",
-                px: { xs: 1.5, sm: 2 },
-                py: 1.5,
-              }}
-            >
-              <ShieldOutlinedIcon sx={{ fontSize: 16, color: tokens.primary, flexShrink: 0 }} />
-              <Typography sx={{ fontSize: 11, fontWeight: 600, color: tokens.successText, lineHeight: 1.35 }}>
-                100% genuine products · 30-day return guarantee
-              </Typography>
-            </Box>
-
-            <Box
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1.5,
                 bgcolor: tokens.bgPanel,
                 border: `1px solid ${tokens.borderDefault}`,
                 borderRadius: "12px",
-                px: { xs: 1.5, sm: 2 },
-                py: 1.5,
+                p: 2.5,
               }}
             >
-              <Box sx={{ display: "flex", gap: 0.25 }}>
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <StarIcon key={s} sx={{ fontSize: 14, color: tokens.warning }} />
-                ))}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>
+                <LocalOfferOutlinedIcon sx={{ fontSize: 16, color: tokens.primary }} />
+                <Typography sx={{ fontSize: 13, fontWeight: 700, color: tokens.textPrimary }}>
+                  Have a Promo Code?
+                </Typography>
               </Box>
-              <Typography sx={{ fontSize: 11, color: tokens.textMuted, fontWeight: 500 }}>
-                <Box component='span' sx={{ fontWeight: 900, color: tokens.textSecondary }}>
-                  4.9/5
-                </Box>{" "}
-                from 18,400+ customers
-              </Typography>
+              <Box sx={{ display: "flex", gap: 1 }}>
+                <InputBase
+                  placeholder="Enter promo or voucher code"
+                  sx={{
+                    flex: 1,
+                    height: 42,
+                    px: 2,
+                    borderRadius: "8px",
+                    border: `1px solid ${tokens.borderDefault}`,
+                    bgcolor: tokens.bgCanvas,
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: tokens.textPrimary,
+                    "&.Mui-focused": {
+                      borderColor: tokens.primary,
+                      bgcolor: tokens.bgPanel,
+                    },
+                  }}
+                />
+                <Button
+                  variant="secondary"
+                  sx={{
+                    height: 42,
+                    px: 3,
+                    borderRadius: "8px",
+                    fontWeight: 700,
+                    fontSize: 13,
+                    bgcolor: tokens.bgDark,
+                    color: tokens.textWhite,
+                    "&:hover": { bgcolor: tokens.bgDarkSurface },
+                  }}
+                >
+                  Apply
+                </Button>
+              </Box>
             </Box>
           </Box>
+
+          {/* Right Column: Order Summary */}
+          <OrderSummary totalPrice={totalPrice} totalCount={totalCount} savings={savings} />
         </Box>
       </Box>
 
-      {/* Mobile sticky bottom bar */}
-      <Box
-        sx={{
-          display: { xs: "block", lg: "none" },
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 40,
-          bgcolor: "rgba(255,255,255,0.95)",
-          backdropFilter: "blur(20px)",
-          borderTop: `1px solid ${tokens.borderSubtle}`,
-          boxShadow: "0 -4px 20px rgba(0,0,0,0.07)",
-          px: 2,
-          py: 1.5,
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, maxWidth: 1152, mx: "auto" }}>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography component='p' sx={{ fontSize: 10, color: tokens.textDisabled, fontWeight: 500, lineHeight: 1, mb: 0.25 }}>
-              Grand Total
-            </Typography>
-            <Typography sx={{ fontSize: 20, fontWeight: 900, color: tokens.textPrimary, letterSpacing: "-0.02em", lineHeight: 1 }}>
-              ৳{totalPrice.toLocaleString()}
-            </Typography>
-            {savings > 0 && (
-              <Typography sx={{ fontSize: 10, color: tokens.successText, fontWeight: 600, mt: 0.25 }}>Saving ৳{savings.toLocaleString()}</Typography>
-            )}
-          </Box>
-          <Button
-            component={NextLink}
-            href='/checkout'
-            endIcon={<ChevronRightIcon sx={{ fontSize: 16 }} />}
-            disableElevation
-            sx={{
-              height: 48,
-              px: 3,
-              borderRadius: "16px",
-              bgcolor: tokens.textPrimary,
-              color: tokens.textWhite,
-              fontWeight: 900,
-              fontSize: 14,
-              textTransform: "none",
-              flexShrink: 0,
-              boxShadow: "0 10px 15px -3px rgba(15,23,42,0.2)",
-              transition: "all 150ms",
-              "&:hover": { bgcolor: tokens.textSecondary },
-              "&:active": { transform: "scale(0.97)" },
-            }}
-          >
-            Checkout
-          </Button>
-        </Box>
-      </Box>
+      {/* Unified Delete Confirmation Dialog */}
+      <AlertDialog
+        open={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleConfirmDelete}
+        title={deleteTarget?.type === "all" ? "Clear shopping cart?" : "Remove item from cart?"}
+        description={
+          deleteTarget?.type === "all"
+            ? "Are you sure you want to remove all items from your shopping cart? This action cannot be undone."
+            : `Are you sure you want to remove "${deleteTarget?.title}" from your shopping cart?`
+        }
+        confirmText={deleteTarget?.type === "all" ? "Clear All" : "Remove"}
+        cancelText="Cancel"
+        confirmVariant="destructive"
+      />
     </Box>
   );
 }

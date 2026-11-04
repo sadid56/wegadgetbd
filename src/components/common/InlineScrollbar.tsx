@@ -272,7 +272,8 @@ export function InlineScrollbar() {
         cursor: "pointer",
         "&:hover > div": {
           width: 7,
-          bgcolor: tokens.primary,
+          bgcolor: "rgba(0, 191, 166, 0.65)",
+          boxShadow: "0 0 8px rgba(0, 191, 166, 0.3)",
         },
       }}
     >
@@ -286,14 +287,15 @@ export function InlineScrollbar() {
           width: 5,
           height: 0,
           borderRadius: `${tokens.radiusPill}px`,
-          bgcolor: "rgba(37, 99, 235, 0.75)",
-          boxShadow: "0 0 0 1px rgba(8, 13, 26, 0.25)",
-          transition: "width 0.15s ease, background-color 0.15s ease",
+          bgcolor: "rgba(16, 24, 32, 0.3)",
+          boxShadow: "none",
+          transition: "width 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease",
           cursor: "grab",
           "&:active": {
             cursor: "grabbing",
             width: 7,
             bgcolor: tokens.primary,
+            boxShadow: "0 0 10px rgba(0, 191, 166, 0.45)",
           },
         }}
       />

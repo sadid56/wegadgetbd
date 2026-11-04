@@ -2,9 +2,9 @@
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { keyframes } from "@emotion/react";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
+import { CircularProgress } from "@/components/ui/spinner";
 import { tokens } from "@/theme/theme";
 
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
@@ -22,15 +22,11 @@ interface OrderSummaryProps {
   totalAmount: number;
   isBuyNow: boolean;
   localQty: number;
+  isSubmitting?: boolean;
   onIncreaseQty?: (id: string) => void;
   onDecreaseQty?: (id: string) => void;
   onRemoveItem?: (id: string) => void;
 }
-
-const fadeInX = keyframes`
-  from { opacity: 0; transform: translateX(20px); }
-  to   { opacity: 1; transform: translateX(0); }
-`;
 
 export function OrderSummary({
   products,
@@ -40,6 +36,7 @@ export function OrderSummary({
   totalAmount,
   isBuyNow,
   localQty,
+  isSubmitting = false,
   onIncreaseQty,
   onDecreaseQty,
   onRemoveItem,
@@ -48,14 +45,11 @@ export function OrderSummary({
     <Box
       sx={{
         bgcolor: tokens.bgPanel,
-        boxShadow: tokens.shadowElevated,
-        borderRadius: { xs: "0 0 24px 24px", md: "24px" },
-        p: 2.5,
-        border: "1px solid",
-        borderColor: tokens.borderDefault,
+        borderRadius: "12px",
+        p: { xs: 2, sm: 2.5 },
+        border: `1px solid ${tokens.borderDefault}`,
         position: { md: "sticky" },
-        top: { md: 40 },
-        animation: `${fadeInX} 400ms ease-out both`,
+        top: { md: 24 },
       }}
     >
       {/* Header */}
@@ -64,18 +58,17 @@ export function OrderSummary({
           display: "flex",
           alignItems: "center",
           gap: 1,
-          mb: 1,
-          pb: 1,
-          borderBottom: "1px solid",
-          borderColor: tokens.borderDefault,
+          mb: 2,
+          pb: 1.5,
+          borderBottom: `1px solid ${tokens.borderDefault}`,
         }}
       >
-        <ShoppingBagOutlinedIcon sx={{ fontSize: 20, color: tokens.primary }} />
+        <ShoppingBagOutlinedIcon sx={{ fontSize: 18, color: tokens.primary }} />
         <Typography
           component='h2'
           sx={{
             ...BN,
-            fontSize: 24,
+            fontSize: { xs: 17, sm: 19 },
             fontWeight: 700,
             color: tokens.textPrimary,
             lineHeight: 1.2,
@@ -90,51 +83,45 @@ export function OrderSummary({
         sx={{
           display: "flex",
           flexDirection: "column",
-          gap: 2,
-          maxHeight: 400,
+          gap: 1.5,
+          maxHeight: 360,
           overflowY: "auto",
-          pr: 1,
+          pr: 0.5,
           scrollbarWidth: "thin",
-          "&::-webkit-scrollbar": { width: 6 },
+          "&::-webkit-scrollbar": { width: 5 },
           "&::-webkit-scrollbar-thumb": {
             bgcolor: tokens.borderElevated,
             borderRadius: 3,
           },
-          "&::-webkit-scrollbar-track": { bgcolor: "transparent" },
         }}
       >
         {products.map((item: any) => {
           const qty = isBuyNow ? localQty : item.qty;
+          const price = Number(item.price || 0);
+          const salePrice = Number(item.discountPrice || item.price || 0);
 
           return (
             <Box
               key={item.id}
               sx={{
                 display: "flex",
-                gap: 2,
-                p: 1,
+                gap: 1.5,
+                p: 1.25,
                 bgcolor: tokens.bgCanvas,
-                borderRadius: "12px",
-                border: "1px solid",
-                borderColor: tokens.borderSubtle,
-                transition: "all 200ms",
-                "&:hover": {
-                  bgcolor: tokens.bgPanel,
-                  boxShadow: tokens.shadowMd,
-                },
+                borderRadius: "10px",
+                border: `1px solid ${tokens.borderDefault}`,
               }}
             >
               {/* Image */}
               <Box
                 sx={{
                   position: "relative",
-                  width: 80,
-                  height: 80,
+                  width: 68,
+                  height: 68,
                   bgcolor: tokens.bgPanel,
-                  borderRadius: "12px",
+                  borderRadius: "8px",
                   overflow: "hidden",
-                  border: "1px solid",
-                  borderColor: tokens.borderDefault,
+                  border: `1px solid ${tokens.borderDefault}`,
                   flexShrink: 0,
                 }}
               >
@@ -158,9 +145,9 @@ export function OrderSummary({
                     color: tokens.textWhite,
                     fontSize: 10,
                     fontWeight: 700,
-                    px: 1,
-                    py: "2px",
-                    borderBottomLeftRadius: "8px",
+                    px: 0.75,
+                    py: "1px",
+                    borderBottomLeftRadius: "6px",
                   }}
                 >
                   x{qty}
@@ -180,36 +167,36 @@ export function OrderSummary({
                 <Typography
                   sx={{
                     ...BN,
-                    fontSize: 14,
-                    fontWeight: 700,
+                    fontSize: 13,
+                    fontWeight: 600,
                     color: tokens.textPrimary,
                     overflow: "hidden",
                     textOverflow: "ellipsis",
                     display: "-webkit-box",
                     WebkitLineClamp: 2,
                     WebkitBoxOrient: "vertical",
-                    lineHeight: 1.35,
+                    lineHeight: 1.3,
                   }}
                 >
                   {item.title}
                 </Typography>
 
                 {/* Price */}
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  {discountAmount > 0 && (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
+                  {price > salePrice && (
                     <Typography
                       component='span'
                       sx={{
-                        fontSize: 14,
+                        fontSize: 12,
                         color: tokens.textDisabled,
                         textDecoration: "line-through",
                       }}
                     >
-                      ৳{Number(item.price) * qty}
+                      ৳{price * qty}
                     </Typography>
                   )}
-                  <Typography component='span' sx={{ fontWeight: 900, color: tokens.primary, fontSize: 15 }}>
-                    ৳{Number(item.discountPrice || item.price) * qty}
+                  <Typography component='span' sx={{ fontWeight: 700, color: tokens.textPrimary, fontSize: 14 }}>
+                    ৳{salePrice * qty}
                   </Typography>
                 </Box>
 
@@ -224,73 +211,75 @@ export function OrderSummary({
                 >
                   <Box
                     sx={{
-                      display: "flex",
+                      display: "inline-flex",
                       alignItems: "center",
-                      border: "1px solid",
-                      borderColor: tokens.borderDefault,
-                      borderRadius: "8px",
+                      border: `1px solid ${tokens.borderDefault}`,
+                      borderRadius: "6px",
+                      bgcolor: tokens.bgPanel,
                       overflow: "hidden",
                     }}
                   >
                     <Box
                       component='button'
+                      type='button'
                       onClick={() => onDecreaseQty?.(item.id)}
                       sx={{
                         px: 1,
-                        py: 0.5,
-                        bgcolor: tokens.bgSubtle,
+                        py: 0.25,
+                        bgcolor: "transparent",
                         border: 0,
                         cursor: "pointer",
                         display: "flex",
                         alignItems: "center",
-                        transition: "background-color 150ms",
-                        "&:hover": { bgcolor: tokens.borderDefault },
+                        color: tokens.textSecondary,
+                        "&:hover": { bgcolor: tokens.bgSubtle },
                       }}
                     >
-                      <RemoveIcon sx={{ fontSize: 14 }} />
+                      <RemoveIcon sx={{ fontSize: 13 }} />
                     </Box>
                     <Box
                       component='span'
                       sx={{
-                        px: 1.5,
-                        fontSize: 14,
+                        px: 1,
+                        fontSize: 12,
                         fontWeight: 600,
-                        minWidth: 32,
+                        minWidth: 24,
                         textAlign: "center",
+                        color: tokens.textPrimary,
                       }}
                     >
                       {qty}
                     </Box>
                     <Box
                       component='button'
+                      type='button'
                       onClick={() => onIncreaseQty?.(item.id)}
                       sx={{
                         px: 1,
-                        py: 0.5,
-                        bgcolor: tokens.bgSubtle,
+                        py: 0.25,
+                        bgcolor: "transparent",
                         border: 0,
                         cursor: "pointer",
                         display: "flex",
                         alignItems: "center",
-                        transition: "background-color 150ms",
-                        "&:hover": { bgcolor: tokens.borderDefault },
+                        color: tokens.textSecondary,
+                        "&:hover": { bgcolor: tokens.bgSubtle },
                       }}
                     >
-                      <AddIcon sx={{ fontSize: 14 }} />
+                      <AddIcon sx={{ fontSize: 13 }} />
                     </Box>
                   </Box>
 
                   {!isBuyNow && (
                     <IconButton
                       size='small'
+                      type='button'
                       onClick={() => onRemoveItem?.(item.id)}
                       sx={{
-                        bgcolor: tokens.dangerSubtle,
-                        color: tokens.danger,
-                        borderRadius: "8px",
-                        p: 1,
-                        transition: "background-color 150ms",
-                        "&:hover": { bgcolor: tokens.dangerBorder },
+                        color: tokens.textSecondary,
+                        p: 0.5,
+                        borderRadius: "6px",
+                        "&:hover": { color: tokens.danger, bgcolor: tokens.dangerSubtle },
                       }}
                     >
                       <DeleteOutlinedIcon sx={{ fontSize: 16 }} />
@@ -303,46 +292,34 @@ export function OrderSummary({
         })}
       </Box>
 
-      {/* Price section */}
-      <Box
-        sx={{
-          p: 1.5,
-          borderRadius: "0 0 12px 12px",
-          background: `linear-gradient(to bottom, ${tokens.bgPanel}, ${tokens.bgCanvas})`,
-          boxShadow: tokens.shadowMd,
-        }}
-      >
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-          <Box sx={{ display: "flex", justifyContent: "space-between", color: tokens.textSecondary }}>
-            <Box component='span' sx={{ color: tokens.textPrimary, fontSize: 14 }}>
-              সাবটোটাল:
+      {/* Price breakdown */}
+      <Box sx={{ mt: 2.5, pt: 2, borderTop: `1px solid ${tokens.borderDefault}` }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+            <Box component='span' sx={{ ...BN, color: tokens.textSecondary }}>
+              সাবটোটাল
             </Box>
-            <Box component='span' sx={{ fontWeight: 900, fontSize: 14 }}>
+            <Box component='span' sx={{ fontWeight: 600, color: tokens.textPrimary }}>
               ৳{originalSubtotal}
             </Box>
           </Box>
 
           {discountAmount > 0 && (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                color: tokens.textSecondary,
-                fontSize: 14,
-              }}
-            >
-              <Box component='span'>
-                ডিসকাউন্টঃ
+            <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+              <Box component='span' sx={{ ...BN, color: tokens.successText }}>
+                ডিসকাউন্ট
               </Box>
-              <Box component='span'>-৳{discountAmount}</Box>
+              <Box component='span' sx={{ fontWeight: 600, color: tokens.successText }}>
+                -৳{discountAmount}
+              </Box>
             </Box>
           )}
 
-          <Box sx={{ display: "flex", justifyContent: "space-between", color: tokens.textSecondary }}>
-            <Box component='span' sx={{ fontSize: 14, color: tokens.textPrimary }}>
-              ডেলিভারি-চার্জ:
+          <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+            <Box component='span' sx={{ ...BN, color: tokens.textSecondary }}>
+              ডেলিভারি চার্জ
             </Box>
-            <Box component='span' sx={{ fontSize: 14 }}>
+            <Box component='span' sx={{ fontWeight: 600, color: tokens.textPrimary }}>
               ৳{deliveryCharge}
             </Box>
           </Box>
@@ -351,38 +328,50 @@ export function OrderSummary({
             sx={{
               display: "flex",
               justifyContent: "space-between",
+              alignItems: "baseline",
               pt: 1.5,
-              borderTop: "1px solid",
-              borderColor: tokens.borderDefault,
-              fontSize: 16,
-              fontWeight: 700,
+              mt: 0.5,
+              borderTop: `1px solid ${tokens.borderDefault}`,
             }}
           >
-            <Box component='span'>সর্বমোট:</Box>
-            <Box component='span' sx={{ color: tokens.primaryHover, fontWeight: 900 }}>
+            <Box component='span' sx={{ ...BN, fontSize: 15, fontWeight: 700, color: tokens.textPrimary }}>
+              সর্বমোট
+            </Box>
+            <Box component='span' sx={{ fontSize: 20, fontWeight: 800, color: tokens.primary }}>
               ৳{totalAmount}
             </Box>
           </Box>
         </Box>
 
         <Button
+          type='submit'
+          form='checkout-form'
+          disabled={isSubmitting}
           fullWidth
           disableElevation
           sx={{
             ...BN,
             mt: 2.5,
-            bgcolor: tokens.textPrimary,
+            bgcolor: tokens.primary,
             color: tokens.textWhite,
-            py: 1.5,
-            borderRadius: "12px",
-            fontWeight: 600,
+            py: 1.25,
+            borderRadius: "8px",
+            fontWeight: 700,
             fontSize: 14,
             textTransform: "none",
-            transition: "background-color 200ms",
-            "&:hover": { bgcolor: tokens.bgDark },
+            transition: "background-color 150ms ease",
+            "&:hover": { bgcolor: tokens.primaryHover },
+            "&.Mui-disabled": { opacity: 0.6, bgcolor: tokens.primary, color: tokens.textWhite },
           }}
         >
-          Order Now
+          {isSubmitting ? (
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <CircularProgress size={16} sx={{ color: tokens.textWhite }} />
+              <span>প্রসেস হচ্ছে...</span>
+            </Box>
+          ) : (
+            "Order Now"
+          )}
         </Button>
       </Box>
     </Box>

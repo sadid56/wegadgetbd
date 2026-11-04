@@ -2,7 +2,6 @@
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { keyframes } from "@emotion/react";
 import { TextField } from "@/components/ui/input";
 import { tokens } from "@/theme/theme";
 import { BN } from "./checkout-constants";
@@ -14,11 +13,6 @@ interface CheckoutFormProps {
   locationValue: string;
   setValue: any;
 }
-
-const fadeInX = keyframes`
-  from { opacity: 0; transform: translateX(-20px); }
-  to   { opacity: 1; transform: translateX(0); }
-`;
 
 const locationOptions = [
   { value: "inside_dhaka", label: "ঢাকার ভিতরে", charge: "৳80", desc: "হোম ডেলিভারি" },
@@ -35,27 +29,21 @@ export function CheckoutForm({ register, errors, locationValue, setValue }: Chec
     <Box
       sx={{
         bgcolor: tokens.bgPanel,
-        boxShadow: tokens.shadowElevated,
-        borderRadius: "24px 24px 0 0",
-        px: 3,
-        py: 2.5,
-        mb: { xs: 0, md: 2.5 },
-        border: "1px solid",
-        borderColor: tokens.borderDefault,
-        animation: `${fadeInX} 400ms ease-out both`,
+        borderRadius: "12px",
+        p: { xs: 2.5, sm: 3 },
+        border: `1px solid ${tokens.borderDefault}`,
       }}
     >
       <Typography
         component='h2'
         sx={{
           ...BN,
-          fontSize: 20,
+          fontSize: { xs: 17, sm: 19 },
           fontWeight: 700,
           color: tokens.textPrimary,
-          mb: { xs: 2, md: 4 },
-          pb: 2,
-          borderBottom: "1px solid",
-          borderColor: tokens.borderDefault,
+          mb: { xs: 2.5, md: 3 },
+          pb: 1.5,
+          borderBottom: `1px solid ${tokens.borderDefault}`,
         }}
       >
         ক্যাশ অন ডেলিভারিতে অর্ডার করতে আপনার তথ্য দিন
@@ -65,7 +53,7 @@ export function CheckoutForm({ register, errors, locationValue, setValue }: Chec
         sx={{
           display: "flex",
           flexDirection: "column",
-          gap: { xs: 1.5, md: 3 },
+          gap: { xs: 2, md: 2.5 },
         }}
       >
         <Field label='আপনার নাম*' error={errors.name?.message}>
@@ -84,7 +72,7 @@ export function CheckoutForm({ register, errors, locationValue, setValue }: Chec
             fullWidth
             slotProps={{
               htmlInput: {
-                style: { ...BN, fontSize: 12, letterSpacing: "0.15em" },
+                style: { ...BN, fontSize: 13, letterSpacing: "0.08em" },
               },
             }}
           />
@@ -93,7 +81,7 @@ export function CheckoutForm({ register, errors, locationValue, setValue }: Chec
         <Field label='সম্পূর্ণ ঠিকানা*' error={errors.address?.message}>
           <TextField
             {...fieldProps("address")}
-            placeholder='জেলা, থানা, সম্পূর্ণ ঠিকানা'
+            placeholder='বাসা/ফ্ল্যাট নম্বর, রাস্তা, এলাকা, থানা, জেলা'
             fullWidth
             multiline
             minRows={2}
@@ -104,9 +92,9 @@ export function CheckoutForm({ register, errors, locationValue, setValue }: Chec
           <Box
             sx={{
               display: "grid",
-              gridTemplateColumns: "1fr",
+              gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" },
               gap: 1.5,
-              mt: 1,
+              mt: 0.5,
             }}
           >
             {locationOptions.map((opt) => {
@@ -121,55 +109,76 @@ export function CheckoutForm({ register, errors, locationValue, setValue }: Chec
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
-                    py: 1,
-                    px: 1.5,
+                    p: 1.5,
                     borderRadius: "8px",
-                    border: "1px solid",
-                    borderColor: active ? tokens.primary : tokens.borderDefault,
-                    bgcolor: active ? tokens.primaryLight : tokens.bgPanel,
-                    boxShadow: active ? `0 0 0 2px ${tokens.primaryBorder}` : "none",
+                    border: `1.5px solid ${active ? tokens.primary : tokens.borderDefault}`,
+                    bgcolor: active ? tokens.primaryLight : tokens.bgCanvas,
                     cursor: "pointer",
-                    transition: "all 300ms",
                     textAlign: "left",
+                    transition: "border-color 150ms ease, background-color 150ms ease",
                     "&:hover": {
                       borderColor: active ? tokens.primary : tokens.borderHover,
                     },
                   }}
                 >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                    {active && (
-                      <Box
-                        sx={{
-                          width: 12,
-                          height: 12,
-                          bgcolor: tokens.primary,
-                          borderRadius: "50%",
-                          flexShrink: 0,
-                        }}
-                      />
-                    )}
-                    <Typography
-                      component='span'
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
+                    <Box
                       sx={{
-                        ...BN,
-                        fontSize: 14,
-                        fontWeight: 700,
-                        color: active ? tokens.primaryHover : tokens.textSecondary,
+                        width: 16,
+                        height: 16,
+                        borderRadius: "50%",
+                        border: `2px solid ${active ? tokens.primary : tokens.borderElevated}`,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        bgcolor: tokens.bgPanel,
+                        flexShrink: 0,
                       }}
                     >
-                      {opt.label}
-                    </Typography>
-                    <Typography component='span' sx={{ ...BN, fontSize: 12, color: tokens.textMuted }}>
-                      ({opt.desc})
-                    </Typography>
+                      {active && (
+                        <Box
+                          sx={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: "50%",
+                            bgcolor: tokens.primary,
+                          }}
+                        />
+                      )}
+                    </Box>
+                    <Box>
+                      <Typography
+                        component='span'
+                        sx={{
+                          ...BN,
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: active ? tokens.textPrimary : tokens.textSecondary,
+                          display: "block",
+                        }}
+                      >
+                        {opt.label}
+                      </Typography>
+                      <Typography
+                        component='span'
+                        sx={{
+                          ...BN,
+                          fontSize: 11,
+                          color: tokens.textMuted,
+                          display: "block",
+                        }}
+                      >
+                        {opt.desc}
+                      </Typography>
+                    </Box>
                   </Box>
 
                   <Typography
                     component='span'
                     sx={{
-                      fontSize: 16,
+                      fontSize: 14,
                       fontWeight: 700,
-                      color: tokens.primary,
+                      color: active ? tokens.primary : tokens.textSecondary,
                       flexShrink: 0,
                     }}
                   >
@@ -180,21 +189,6 @@ export function CheckoutForm({ register, errors, locationValue, setValue }: Chec
             })}
           </Box>
         </Field>
-
-        <Box sx={{ display: { xs: "none", md: "block" } }}>
-          {/* ⚠️ Original bug preserved: this registers "address" again,
-              overwriting the address above on submit. Consider registering
-              a distinct field name (e.g. "note") if your schema has one. */}
-          <Field label='অর্ডার নোট*' error={errors.address?.message}>
-            <TextField
-              {...fieldProps("address")}
-              placeholder='আপনার মতামত জানান....'
-              fullWidth
-              multiline
-              minRows={2}
-            />
-          </Field>
-        </Box>
       </Box>
     </Box>
   );

@@ -40,12 +40,13 @@ a {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.45);
+  background: rgba(16, 24, 32, 0.15);
   border-radius: 9999px;
+  transition: background-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 191, 166, 0.75);
+  background: rgba(0, 191, 166, 0.45);
 }
 
 /* Prevent Chrome/Safari/Edge autofill from creating a central blue/gray background box */
@@ -53,15 +54,35 @@ input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+textarea:-webkit-autofill:active,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus,
+select:-webkit-autofill:active,
 input:autofill,
 input:autofill:hover,
 input:autofill:focus,
-input:autofill:active {
+input:autofill:active,
+textarea:autofill,
+textarea:autofill:hover,
+textarea:autofill:focus,
+textarea:autofill:active,
+select:autofill,
+select:autofill:hover,
+select:autofill:focus,
+select:autofill:active {
   -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
   box-shadow: 0 0 0 1000px #ffffff inset !important;
   -webkit-text-fill-color: #101820 !important;
   caret-color: #101820 !important;
   transition: background-color 5000s ease-in-out 0s;
   border-radius: inherit !important;
+}
+
+textarea {
+  background-color: transparent !important;
 }
 
