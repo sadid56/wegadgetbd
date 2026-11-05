@@ -1,3 +1,58 @@
+:root {
+  --font-inter-family: var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-hind-family: var(--font-hind-siliguri), var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-app: var(--font-inter-family);
+}
+
+/* Dynamic Locale Font Routing */
+[data-locale="bn"],
+.font-bn,
+[lang="bn"],
+html[lang="bn"] {
+  --font-app: var(--font-hind-family) !important;
+}
+
+[data-locale="en"],
+.font-en,
+[lang="en"],
+html[lang="en"] {
+  --font-app: var(--font-inter-family) !important;
+}
+
+/* Force Bengali Typography across MUI and standard HTML elements when on Bengali */
+html[lang="bn"] body,
+html[lang="bn"] .MuiTypography-root,
+html[lang="bn"] .MuiButtonBase-root,
+html[lang="bn"] .MuiInputBase-root,
+[data-locale="bn"],
+[data-locale="bn"] body,
+[data-locale="bn"] .MuiTypography-root,
+[data-locale="bn"] .MuiButtonBase-root,
+[data-locale="bn"] .MuiInputBase-root,
+.font-bn,
+.font-bn .MuiTypography-root,
+.font-bn .MuiButtonBase-root,
+.font-bn .MuiInputBase-root {
+  font-family: var(--font-hind-family) !important;
+}
+
+/* Force Inter Typography when on English */
+html[lang="en"] body,
+html[lang="en"] .MuiTypography-root,
+html[lang="en"] .MuiButtonBase-root,
+html[lang="en"] .MuiInputBase-root,
+[data-locale="en"],
+[data-locale="en"] body,
+[data-locale="en"] .MuiTypography-root,
+[data-locale="en"] .MuiButtonBase-root,
+[data-locale="en"] .MuiInputBase-root,
+.font-en,
+.font-en .MuiTypography-root,
+.font-en .MuiButtonBase-root,
+.font-en .MuiInputBase-root {
+  font-family: var(--font-inter-family) !important;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -12,7 +67,7 @@ body {
   -ms-overflow-style: none;
   background-color: #F7F8FA;
   color: #101820;
-  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-app);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

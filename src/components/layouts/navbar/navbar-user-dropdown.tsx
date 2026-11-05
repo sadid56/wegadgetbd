@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, type ElementType } from "react";
-import NextLink from "next/link";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Link, useRouter } from "@/i18n/routing";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { IconButton } from "@/components/ui/icon-button";
@@ -32,6 +32,7 @@ type DropdownItem = {
 };
 
 export function NavbarUserDropdown() {
+  const t = useTranslations("navbar");
   const router = useRouter();
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
 
@@ -61,14 +62,14 @@ export function NavbarUserDropdown() {
   if (!user) {
     return (
       <IconButton
-        component={NextLink}
+        component={Link}
         href="/auth/sign-in"
         sx={{
           color: "rgba(255, 255, 255, 0.85)",
           p: 1,
           "&:hover": { color: tokens.textWhite, bgcolor: "rgba(255, 255, 255, 0.08)" },
         }}
-        aria-label="Account"
+        aria-label={t("login")}
       >
         <PersonOutlineOutlinedIcon sx={{ fontSize: 22 }} />
       </IconButton>
@@ -79,11 +80,11 @@ export function NavbarUserDropdown() {
 
   const menuItems: DropdownItem[] = [
     ...(isAdmin
-      ? [{ label: "Admin Dashboard", href: "/admin", Icon: DashboardOutlinedIcon, accent: true }]
+      ? [{ label: t("adminDashboard"), href: "/admin", Icon: DashboardOutlinedIcon, accent: true }]
       : []),
-    { label: "My Shopping Bag", href: "/cart", Icon: ShoppingBagOutlinedIcon, badge: totalCount },
-    { label: "Browse All Gadgets", href: "/products", Icon: StorefrontOutlinedIcon },
-    { label: "Help & Support", href: "/contact-us", Icon: SupportAgentOutlinedIcon },
+    { label: t("cart"), href: "/cart", Icon: ShoppingBagOutlinedIcon, badge: totalCount },
+    { label: t("products"), href: "/products", Icon: StorefrontOutlinedIcon },
+    { label: t("about"), href: "/about", Icon: SupportAgentOutlinedIcon },
   ];
 
   return (
@@ -192,7 +193,7 @@ export function NavbarUserDropdown() {
 
         <MenuItem variant="danger" onClick={handleSignOut}>
           <LogoutIcon />
-          Sign Out
+          {t("logout")}
         </MenuItem>
       </Menu>
     </>

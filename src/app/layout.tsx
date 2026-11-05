@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Hind_Siliguri } from "next/font/google";
+import { getLocale } from "next-intl/server";
 import { AppProvider } from "@/providers/app-provider";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { getSiteUrl } from "@/lib/seo";
@@ -8,6 +9,13 @@ import "../styles/globals.css";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  display: "swap",
+});
+
+const hindSiliguri = Hind_Siliguri({
+  weight: ["300", "400", "500", "600", "700"],
+  subsets: ["bengali", "latin"],
+  variable: "--font-hind-siliguri",
   display: "swap",
 });
 
@@ -168,14 +176,20 @@ const rootJsonLd = {
   ],
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const locale = await getLocale();
+  const isBn = locale === "bn";
+  const fontApp = isBn ? "var(--font-hind-siliguri)" : "var(--font-inter)";
+
   return (
-    <html lang='en' className={`${inter.variable} ${inter.className}`} suppressHydrationWarning>
-      <body className={`${inter.className} antialiased`}>
+    <html
+      lang={locale}
+      data-locale={locale}
+      className={`${inter.variable} ${hindSiliguri.variable}`}
+      style={{ "--font-app": fontApp } as React.CSSProperties}
+      suppressHydrationWarning
+    >
+      <body className={`antialiased ${isBn ? "font-bn" : "font-en"}`}>
         <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(rootJsonLd) }} />
         <AppRouterCacheProvider>
           <AppProvider>{children}</AppProvider>

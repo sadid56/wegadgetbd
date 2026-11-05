@@ -1,6 +1,6 @@
 import { createTheme } from "@mui/material";
 
-export const APP_FONT_FAMILY = "var(--font-inter), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+export const APP_FONT_FAMILY = "var(--font-app), 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
 export const tokens = {
   fontFamily: APP_FONT_FAMILY,

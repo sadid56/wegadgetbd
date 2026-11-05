@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import NextLink from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import Box from "@mui/material/Box";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -13,15 +14,9 @@ export type CheckoutStep = "cart" | "checkout" | "done";
 interface CheckoutStepperHeaderProps {
   currentStep: CheckoutStep;
   backHref: string;
-  backLabel: string;
+  backLabel?: string;
   rightAction?: React.ReactNode;
 }
-
-const steps: { key: CheckoutStep; label: string; href?: string }[] = [
-  { key: "cart", label: "1. Cart", href: "/cart" },
-  { key: "checkout", label: "2. Checkout", href: "/checkout" },
-  { key: "done", label: "3. Done" },
-];
 
 export function CheckoutStepperHeader({
   currentStep,
@@ -29,7 +24,15 @@ export function CheckoutStepperHeader({
   backLabel,
   rightAction,
 }: CheckoutStepperHeaderProps) {
-  const stepIndex = steps.findIndex((s) => s.key === currentStep);
+  const t = useTranslations("checkout");
+
+  const localizedSteps = [
+    { key: "cart" as CheckoutStep, label: t("stepCart"), href: "/cart" },
+    { key: "checkout" as CheckoutStep, label: t("stepCheckout"), href: "/checkout" },
+    { key: "done" as CheckoutStep, label: t("stepDone") },
+  ];
+
+  const stepIndex = localizedSteps.findIndex((s) => s.key === currentStep);
 
   return (
     <Box
@@ -53,7 +56,7 @@ export function CheckoutStepperHeader({
       >
         {/* Back Link */}
         <Box
-          component={NextLink}
+          component={Link}
           href={backHref}
           sx={{
             display: "inline-flex",
@@ -69,7 +72,7 @@ export function CheckoutStepperHeader({
           }}
         >
           <ArrowBackIcon sx={{ fontSize: 16 }} />
-          <span>{backLabel}</span>
+          <span>{backLabel || (currentStep === "checkout" ? t("backToCart") : t("backToProduct"))}</span>
         </Box>
 
         {/* Desktop Stepper */}
@@ -82,7 +85,7 @@ export function CheckoutStepperHeader({
             fontWeight: 600,
           }}
         >
-          {steps.map((step, idx) => {
+          {localizedSteps.map((step, idx) => {
             const isActive = step.key === currentStep;
             const isCompleted = idx < stepIndex;
 
@@ -98,7 +101,7 @@ export function CheckoutStepperHeader({
                 )}
                 {isCompleted && step.href ? (
                   <Box
-                    component={NextLink}
+                    component={Link}
                     href={step.href}
                     sx={{
                       color: tokens.textSecondary,

@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import NextLink from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import Box from "@mui/material/Box";
 import { IconButton } from "@/components/ui/icon-button";
 import { CountBadge as Badge } from "@/components/ui/badge";
@@ -19,6 +20,7 @@ import { useCategories } from "@/query-client/categories";
 import { tokens } from "@/theme/theme";
 import { SectionContainer } from "@/components/common/SectionContainer";
 import { BrandLogo } from "@/components/common/BrandLogo";
+import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 import { NavbarUserDropdown } from "./navbar-user-dropdown";
 import { NavbarMegaMenu } from "./navbar-mega-menu";
 import { NavbarMobile, type NavLinkItem } from "./navbar-mobile";
@@ -28,26 +30,27 @@ interface ExtendedNavItem extends NavLinkItem {
   hasDropdown?: boolean;
 }
 
-const NAV_ITEMS: ExtendedNavItem[] = [
-  {
-    name: "Products",
-    href: "/products",
-    Icon: StorefrontOutlinedIcon,
-    hasDropdown: true,
-  },
-  {
-    name: "Deals",
-    href: "/products?sort=discount",
-    Icon: WhatshotOutlinedIcon,
-    badge: "HOT",
-  },
-  { name: "Offers", href: "/products?filter=offers", Icon: LocalOfferOutlinedIcon },
-  { name: "About", href: "/about", Icon: ArticleOutlinedIcon },
-];
-
 export function Navbar() {
+  const t = useTranslations("navbar");
   const pathname = usePathname();
-  const isHome = pathname === "/";
+  const isHome = pathname === "/" || pathname === "/en" || pathname === "/bn";
+
+  const navItems: ExtendedNavItem[] = [
+    {
+      name: t("products"),
+      href: "/products",
+      Icon: StorefrontOutlinedIcon,
+      hasDropdown: true,
+    },
+    {
+      name: t("deals"),
+      href: "/products?sort=discount",
+      Icon: WhatshotOutlinedIcon,
+      badge: "HOT",
+    },
+    { name: t("offers"), href: "/products?filter=offers", Icon: LocalOfferOutlinedIcon },
+    { name: t("about"), href: "/about", Icon: ArticleOutlinedIcon },
+  ];
 
   const [navState, setNavState] = useState<"top" | "visible" | "hidden">("top");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -200,15 +203,15 @@ export function Navbar() {
               gap: { md: 1, lg: 1.5 },
             }}
           >
-            {NAV_ITEMS.map((item) => {
+            {navItems.map((item) => {
               const Icon = item.Icon;
               const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
               const isProducts = item.hasDropdown;
 
               return (
                 <Box
-                  key={item.name}
-                  component={NextLink}
+                  key={item.href}
+                  component={Link}
                   href={item.href}
                   onMouseEnter={isProducts ? handleMouseEnter : undefined}
                   onMouseLeave={isProducts ? handleMouseLeave : undefined}
@@ -285,15 +288,21 @@ export function Navbar() {
             })}
           </Box>
 
-          {/* Right: Actions (User Dropdown, Cart, Mobile Menu) */}
+          {/* Right: Actions (Language Switcher, User Dropdown, Cart, Mobile Menu) */}
           <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.5, sm: 1.25 } }}>
+            {/* Desktop Language Switcher */}
+            <Box sx={{ display: { xs: "none", md: "flex" } }}>
+              <LanguageSwitcher variant="navbar" />
+            </Box>
+
             {/* User Profile */}
             <NavbarUserDropdown />
 
             {/* Shopping Cart Button */}
             <IconButton
-              component={NextLink}
+              component={Link}
               href='/cart'
+              aria-label={t("cart")}
               sx={{
                 color: "rgba(255, 255, 255, 0.85)",
                 p: 1,
@@ -308,7 +317,6 @@ export function Navbar() {
                   boxShadow: "0 0 12px rgba(0, 191, 166, 0.3)",
                 },
               }}
-              aria-label='Shopping Cart'
             >
               <Badge
                 badgeContent={totalCount}
@@ -354,7 +362,7 @@ export function Navbar() {
       </Box>
 
       {/* Mobile Drawer */}
-      <NavbarMobile open={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} links={NAV_ITEMS} categories={categories} />
+      <NavbarMobile open={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} links={navItems} categories={categories} />
     </>
   );
 }

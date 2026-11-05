@@ -1,13 +1,14 @@
 "use client";
 
 import React from "react";
-import NextLink from "next/link";
+import { Link } from "@/i18n/routing";
 import Box from "@mui/material/Box";
 import Container from "@mui/material/Container";
 import Typography from "@mui/material/Typography";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { tokens } from "@/theme/theme";
+import { useTranslations } from "next-intl";
 
 export interface ContentSection {
   title?: string;
@@ -186,6 +187,7 @@ export function ContentPageLayout({
   sections,
   children,
 }: ContentPageLayoutProps) {
+  const t = useTranslations("common");
   const renderTitle = () => {
     if (!highlightedWord) {
       const words = title.split(" ");
@@ -228,7 +230,7 @@ export function ContentPageLayout({
       <Container maxWidth="md">
         {/* Header */}
         <Box sx={{ mb: { xs: 3, md: 5 } }}>
-          <NextLink href="/" style={{ textDecoration: "none" }}>
+          <Link href="/" style={{ textDecoration: "none" }}>
             <Typography
               component="span"
               sx={{
@@ -241,9 +243,9 @@ export function ContentPageLayout({
                 "&:hover": { color: tokens.primary },
               }}
             >
-              ← হোমপেজে ফিরে যান
+              {t("backToHome")}
             </Typography>
-          </NextLink>
+          </Link>
 
           <Typography
             component="h1"
@@ -269,7 +271,7 @@ export function ContentPageLayout({
                 textTransform: "uppercase",
               }}
             >
-              সর্বশেষ আপডেট: {lastUpdated}
+              {t("lastUpdated", { date: lastUpdated })}
             </Typography>
           )}
         </Box>

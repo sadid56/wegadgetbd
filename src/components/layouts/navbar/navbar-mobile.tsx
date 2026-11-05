@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import NextLink from "next/link";
+import { Link } from "@/i18n/routing";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Collapse from "@mui/material/Collapse";
@@ -16,6 +16,7 @@ import DevicesOtherRoundedIcon from "@mui/icons-material/DevicesOtherRounded";
 
 import { tokens } from "@/theme/theme";
 import { BrandLogo } from "@/components/common/BrandLogo";
+import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 import { getAssetUrl } from "@/lib/storage";
 
 export interface NavLinkItem {
@@ -77,7 +78,7 @@ export function NavbarMobile({ open, onClose, links, categories = [] }: NavbarMo
             return (
               <Box
                 key={link.name}
-                component={NextLink}
+                component={Link}
                 href={link.href}
                 onClick={onClose}
                 sx={{
@@ -145,7 +146,7 @@ export function NavbarMobile({ open, onClose, links, categories = [] }: NavbarMo
                 return (
                   <Box
                     key={cat.slug}
-                    component={NextLink}
+                    component={Link}
                     href={`/products?category=${cat.slug}`}
                     onClick={onClose}
                     sx={{
@@ -200,6 +201,22 @@ export function NavbarMobile({ open, onClose, links, categories = [] }: NavbarMo
             </Box>
           </Collapse>
         </Box>
+      </Box>
+
+      {/* Language Switcher in Mobile Drawer */}
+      <Box
+        sx={{
+          pt: 2,
+          borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Typography sx={{ fontSize: "0.8125rem", color: "rgba(255, 255, 255, 0.7)", fontWeight: 500 }}>
+          Language / ভাষা
+        </Typography>
+        <LanguageSwitcher variant="footer" showIcon={false} />
       </Box>
     </Drawer>
   );

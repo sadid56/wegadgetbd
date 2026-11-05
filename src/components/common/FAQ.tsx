@@ -6,49 +6,26 @@ import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutlineOutlined
 import { Box, Typography } from "@mui/material";
 import { Collapse } from "@/components/ui/modal";
 import { tokens } from "@/theme/theme";
-
-interface FAQItem {
-  question: string;
-  answer: string;
-}
+import { useTranslations } from "next-intl";
 
 interface FAQProps {
   className?: string;
 }
 
-const items: FAQItem[] = [
-  {
-    question: "Are your products 100% authentic?",
-    answer:
-      "Absolutely. We source our products directly from authorized global manufacturers and trusted distributors to ensure 100% authenticity for everything we sell.",
-  },
-  {
-    question: "How fast is your delivery service?",
-    answer:
-      "We pride ourselves on elite logistics. For orders within major hubs, expect delivery within 24–48 hours. Real-time tracking is provided for every shipment.",
-  },
-  {
-    question: "Do you provide any warranty for tech products?",
-    answer:
-      "Yes, all our products come with either a manufacturer's official warranty or a We Gadget BD service warranty, depending on the item. Details are clearly listed on each product page.",
-  },
-  {
-    question: "What if I receive a defective item?",
-    answer:
-      "We offer a seamless 7-day replacement policy for manufacturing defects. Simply contact our 24/7 support team, and we'll handle the rest.",
-  },
-  {
-    question: "How can I track my order?",
-    answer:
-      "Once your order is dispatched, you'll receive a tracking link via SMS and email. You can also view your order status directly in your We Gadget BD account dashboard.",
-  },
-];
-
 export function FAQ({ className }: FAQProps) {
+  const t = useTranslations("home");
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
+  const items = [
+    { question: t("faq1Q"), answer: t("faq1A") },
+    { question: t("faq2Q"), answer: t("faq2A") },
+    { question: t("faq3Q"), answer: t("faq3A") },
+    { question: t("faq4Q"), answer: t("faq4A") },
+    { question: t("faq5Q"), answer: t("faq5A") },
+  ];
+
   return (
-    <Box component='section' sx={{ py: { xs: 6, md: 10 }, position: "relative" }} className={className}>
+    <Box component="section" sx={{ py: { xs: 6, md: 10 }, position: "relative" }} className={className}>
       <Box sx={{ maxWidth: 840, mx: "auto", px: 2 }}>
         {/* Header */}
         <Box sx={{ textAlign: "center", mb: 6 }}>
@@ -68,15 +45,15 @@ export function FAQ({ className }: FAQProps) {
             <ChatBubbleOutlineIcon sx={{ fontSize: 28 }} />
           </Box>
 
-          <Typography variant='h4' sx={{ fontWeight: 800, mb: 1.5, color: tokens.textPrimary }}>
-            Frequently Asked{" "}
-            <Typography component='span' variant='inherit' sx={{ color: tokens.primary }}>
-              Questions
+          <Typography variant="h4" sx={{ fontWeight: 800, mb: 1.5, color: tokens.textPrimary }}>
+            {t("faqTitlePart1")}{" "}
+            <Typography component="span" variant="inherit" sx={{ color: tokens.primary }}>
+              {t("faqTitleHighlight")}
             </Typography>
           </Typography>
 
-          <Typography variant='body1' sx={{ color: tokens.textMuted }}>
-            Quick answers to common questions about your experience.
+          <Typography variant="body1" sx={{ color: tokens.textMuted }}>
+            {t("faqSubtitle")}
           </Typography>
         </Box>
 
@@ -134,7 +111,7 @@ export function FAQ({ className }: FAQProps) {
                     </Box>
 
                     <Typography
-                      variant='subtitle1'
+                      variant="subtitle1"
                       sx={{
                         fontWeight: 600,
                         color: isOpen ? tokens.textPrimary : tokens.textSecondary,
@@ -165,7 +142,7 @@ export function FAQ({ className }: FAQProps) {
                 {/* Answer */}
                 <Collapse in={isOpen} timeout={250} unmountOnExit>
                   <Box sx={{ px: 2.5, pb: 2.5, pl: { xs: 2.5, sm: 8 } }}>
-                    <Typography variant='body2' sx={{ color: tokens.textSecondary, lineHeight: 1.7 }}>
+                    <Typography variant="body2" sx={{ color: tokens.textSecondary, lineHeight: 1.7 }}>
                       {item.answer}
                     </Typography>
                   </Box>
@@ -178,3 +155,5 @@ export function FAQ({ className }: FAQProps) {
     </Box>
   );
 }
+
+export default FAQ;

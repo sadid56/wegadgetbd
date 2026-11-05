@@ -1,6 +1,6 @@
 "use client";
 
-import NextLink from "next/link";
+import { Link } from "@/i18n/routing";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { tokens } from "@/theme/theme";
@@ -72,7 +72,7 @@ export function BrandLogo({ variant = "dark", size = "md", href = "/", showText 
 
   if (href) {
     return (
-      <Box component={NextLink} href={href} sx={{ textDecoration: "none", display: "inline-flex" }}>
+      <Box component={Link} href={href} sx={{ textDecoration: "none", display: "inline-flex" }}>
         {content}
       </Box>
     );

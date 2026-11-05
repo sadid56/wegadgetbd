@@ -1,7 +1,8 @@
 "use client";
 
-import NextLink from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { IconButton } from "@/components/ui/icon-button";
@@ -14,43 +15,19 @@ import XIcon from "@mui/icons-material/X";
 import { tokens } from "@/theme/theme";
 import { SectionContainer } from "@/components/common/SectionContainer";
 import { BrandLogo } from "@/components/common/BrandLogo";
+import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 
-const FOOTER_GROUPS = {
-  shop: {
-    title: "Shop",
-    links: [
-      { label: "All Categories", href: "/products" },
-      { label: "Laptops", href: "/products?category=laptops" },
-      { label: "Smartphones", href: "/products?category=smartphones" },
-      { label: "Accessories", href: "/products?category=accessories" },
-      { label: "Audio", href: "/products?category=audio" },
-      { label: "Gaming", href: "/products?category=gaming" },
-    ],
-  },
-  support: {
-    title: "Support",
-    links: [
-      { label: "Help Center", href: "/contact-us" },
-      { label: "Shipping Policy", href: "/terms" },
-      { label: "Return & Refund", href: "/terms" },
-      { label: "Warranty", href: "/terms" },
-      { label: "Contact Us", href: "/contact-us" },
-    ],
-  },
-  company: {
-    title: "Company",
-    links: [
-      { label: "About Us", href: "/about" },
-      { label: "Our Story", href: "/about" },
-      { label: "Careers", href: "/about" },
-      { label: "Privacy Policy", href: "/privacy" },
-      { label: "Terms & Conditions", href: "/terms" },
-    ],
-  },
+const linkSx = {
+  fontSize: 13.5,
+  color: tokens.textDarkMuted,
+  textDecoration: "none",
+  transition: "color 0.2s ease",
+  "&:hover": { color: tokens.primary },
 };
 
 export function Footer() {
   const pathname = usePathname();
+  const t = useTranslations("footer");
   if (pathname.startsWith("/admin")) return null;
 
   return (
@@ -95,7 +72,7 @@ export function Footer() {
                 lineHeight: 1.6,
               }}
             >
-              Smarter Tech • Brighter Days
+              {t("tagline")}
             </Typography>
 
             {/* Social Icons */}
@@ -169,25 +146,15 @@ export function Footer() {
                 mb: 2,
               }}
             >
-              {FOOTER_GROUPS.shop.title}
+              {t("shopTitle")}
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
-              {FOOTER_GROUPS.shop.links.map((link) => (
-                <Box
-                  key={link.label}
-                  component={NextLink}
-                  href={link.href}
-                  sx={{
-                    fontSize: 13.5,
-                    color: tokens.textDarkMuted,
-                    textDecoration: "none",
-                    transition: "color 0.2s ease",
-                    "&:hover": { color: tokens.primary },
-                  }}
-                >
-                  {link.label}
-                </Box>
-              ))}
+              <Box component={Link} href="/products" sx={linkSx}>{t("allCategories")}</Box>
+              <Box component={Link} href="/products?category=laptops" sx={linkSx}>{t("laptops")}</Box>
+              <Box component={Link} href="/products?category=smartphones" sx={linkSx}>{t("smartphones")}</Box>
+              <Box component={Link} href="/products?category=accessories" sx={linkSx}>{t("accessories")}</Box>
+              <Box component={Link} href="/products?category=audio" sx={linkSx}>{t("audio")}</Box>
+              <Box component={Link} href="/products?category=gaming" sx={linkSx}>{t("gaming")}</Box>
             </Box>
           </Box>
 
@@ -201,25 +168,14 @@ export function Footer() {
                 mb: 2,
               }}
             >
-              {FOOTER_GROUPS.support.title}
+              {t("supportTitle")}
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
-              {FOOTER_GROUPS.support.links.map((link) => (
-                <Box
-                  key={link.label}
-                  component={NextLink}
-                  href={link.href}
-                  sx={{
-                    fontSize: 13.5,
-                    color: tokens.textDarkMuted,
-                    textDecoration: "none",
-                    transition: "color 0.2s ease",
-                    "&:hover": { color: tokens.primary },
-                  }}
-                >
-                  {link.label}
-                </Box>
-              ))}
+              <Box component={Link} href="/contact-us" sx={linkSx}>{t("helpCenter")}</Box>
+              <Box component={Link} href="/terms" sx={linkSx}>{t("shippingPolicy")}</Box>
+              <Box component={Link} href="/terms" sx={linkSx}>{t("returnRefund")}</Box>
+              <Box component={Link} href="/terms" sx={linkSx}>{t("warranty")}</Box>
+              <Box component={Link} href="/contact-us" sx={linkSx}>{t("contactUs")}</Box>
             </Box>
           </Box>
 
@@ -233,25 +189,14 @@ export function Footer() {
                 mb: 2,
               }}
             >
-              {FOOTER_GROUPS.company.title}
+              {t("companyTitle")}
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1.2 }}>
-              {FOOTER_GROUPS.company.links.map((link) => (
-                <Box
-                  key={link.label}
-                  component={NextLink}
-                  href={link.href}
-                  sx={{
-                    fontSize: 13.5,
-                    color: tokens.textDarkMuted,
-                    textDecoration: "none",
-                    transition: "color 0.2s ease",
-                    "&:hover": { color: tokens.primary },
-                  }}
-                >
-                  {link.label}
-                </Box>
-              ))}
+              <Box component={Link} href="/about" sx={linkSx}>{t("aboutUs")}</Box>
+              <Box component={Link} href="/about" sx={linkSx}>{t("ourStory")}</Box>
+              <Box component={Link} href="/about" sx={linkSx}>{t("careers")}</Box>
+              <Box component={Link} href="/privacy" sx={linkSx}>{t("privacyPolicy")}</Box>
+              <Box component={Link} href="/terms" sx={linkSx}>{t("termsConditions")}</Box>
             </Box>
           </Box>
         </Box>
@@ -266,15 +211,18 @@ export function Footer() {
             flexDirection: { xs: "column", sm: "row" },
             justifyContent: "space-between",
             alignItems: "center",
-            gap: 1.5,
+            gap: 2,
+            flexWrap: "wrap",
           }}
         >
           <Typography sx={{ fontSize: 12.5, color: tokens.textDarkMuted }}>
-            © {new Date().getFullYear()} We Gadget BD. All rights reserved.
+            © {new Date().getFullYear()} We Gadget BD. {t("copyright")}
           </Typography>
 
+          <LanguageSwitcher variant="footer" />
+
           <Typography sx={{ fontSize: 12.5, color: tokens.textDarkMuted }}>
-            Made with 💚 for tech lovers
+            {t("craftedWith")}
           </Typography>
         </Box>
       </SectionContainer>

@@ -1,0 +1,16 @@
+{
+  "products": "Products",
+  "deals": "Deals",
+  "offers": "Offers",
+  "about": "About",
+  "cart": "Cart",
+  "myAccount": "My Account",
+  "login": "Login",
+  "register": "Register",
+  "logout": "Logout",
+  "orders": "My Orders",
+  "adminDashboard": "Admin Dashboard",
+  "searchAria": "Search for gadgets...",
+  "cartItems": "items in cart"
+}
+
