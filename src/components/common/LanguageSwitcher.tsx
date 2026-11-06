@@ -1,16 +1,15 @@
 "use client";
 
-import React, { useTransition } from "react";
-import { useLocale } from "next-intl";
+import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import LanguageRoundedIcon from "@mui/icons-material/LanguageRounded";
-import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
+import { useLocale } from "next-intl";
+import { useTransition } from "react";
 
-import { tokens } from "@/theme/theme";
+import { MenuItem, Select } from "@/components/ui/select";
 import { LOCALES, LOCALE_MAP, type Locale } from "@/i18n/config";
-import { useRouter, usePathname } from "@/i18n/routing";
-import { Select, MenuItem } from "@/components/ui/select";
+import { usePathname, useRouter } from "@/i18n/routing";
+import { tokens } from "@/theme/theme";
 
 export interface LanguageSwitcherProps {
   variant?: "footer" | "navbar" | "inline";
@@ -45,15 +44,6 @@ export function LanguageSwitcher({
         transition: "opacity 0.2s ease",
       }}
     >
-      {showIcon && (
-        <LanguageRoundedIcon
-          sx={{
-            fontSize: isFooter ? 18 : 19,
-            color: isFooter ? tokens.primary : tokens.textSecondary,
-          }}
-        />
-      )}
-
       <Select
         size="small"
         value={currentLocale || "en"}
@@ -68,8 +58,15 @@ export function LanguageSwitcher({
           color: isFooter ? "#FFFFFF" : tokens.textPrimary,
           fontSize: "0.8125rem",
           fontWeight: 600,
+          "& .MuiSelect-select": {
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
+          },
           "& .MuiOutlinedInput-notchedOutline": {
-            borderColor: isFooter ? "rgba(0, 191, 166, 0.3)" : tokens.borderDefault,
+            borderColor: isFooter
+              ? "rgba(0, 191, 166, 0.3)"
+              : tokens.borderDefault,
           },
           "&:hover .MuiOutlinedInput-notchedOutline": {
             borderColor: tokens.primary,
@@ -95,7 +92,10 @@ export function LanguageSwitcher({
               }}
             >
               <span>{item.flag}</span>
-              <Typography component="span" sx={{ fontSize: "0.8125rem", fontWeight: "inherit" }}>
+              <Typography
+                component="span"
+                sx={{ fontSize: "0.8125rem", fontWeight: "inherit" }}
+              >
                 {item.nativeName}
               </Typography>
             </MenuItem>
@@ -107,4 +107,3 @@ export function LanguageSwitcher({
 }
 
 export default LanguageSwitcher;
-

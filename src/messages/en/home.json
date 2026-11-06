@@ -41,5 +41,13 @@
   "faq4Q": "What if I receive a defective item?",
   "faq4A": "We offer a seamless 7-day replacement policy for manufacturing defects. Simply contact our 24/7 support team, and we'll handle the rest.",
   "faq5Q": "How can I track my order?",
-  "faq5A": "Once your order is dispatched, you'll receive a tracking link via SMS and email. You can also view your order status directly in your We Gadget BD account dashboard."
+  "faq5A": "Once your order is dispatched, you'll receive a tracking link via SMS and email. You can also view your order status directly in your We Gadget BD account dashboard.",
+  "searchModalTrending": "Trending Products",
+  "searchModalPopularSearches": "Popular Searches",
+  "searchModalResults": "Search Results",
+  "searchModalNoResults": "No products found for",
+  "searchModalTryDifferent": "Try searching by product title, brand, model, or category.",
+  "searchModalViewAll": "View all results for",
+  "searchModalClose": "Close",
+  "searchModalCloseHint": "Press ESC to close"
 }

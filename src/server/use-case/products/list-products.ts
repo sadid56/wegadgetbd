@@ -76,6 +76,9 @@ export class ListProductsUseCase {
       conditions.push(
         or(
           ilike(product.title, `%${search}%`),
+          ilike(product.slug, `%${search}%`),
+          ilike(product.brand, `%${search}%`),
+          ilike(product.model, `%${search}%`),
           ilike(product.description, `%${search}%`),
           sql`${product.tags} && ARRAY[${search}]::text[]`,
         )!,

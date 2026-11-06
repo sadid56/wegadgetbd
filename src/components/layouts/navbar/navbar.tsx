@@ -2,16 +2,12 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import Box from "@mui/material/Box";
 import { IconButton } from "@/components/ui/icon-button";
 import { CountBadge as Badge } from "@/components/ui/badge";
 
-import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
-import WhatshotOutlinedIcon from "@mui/icons-material/WhatshotOutlined";
-import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
-import ArticleOutlinedIcon from "@mui/icons-material/ArticleOutlined";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
 import MenuIcon from "@mui/icons-material/Menu";
@@ -21,42 +17,19 @@ import { tokens } from "@/theme/theme";
 import { SectionContainer } from "@/components/common/SectionContainer";
 import { BrandLogo } from "@/components/common/BrandLogo";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
+import { Dropdown } from "@/components/ui/dropdown";
 import { NavbarUserDropdown } from "./navbar-user-dropdown";
-import { NavbarMegaMenu } from "./navbar-mega-menu";
-import { NavbarMobile, type NavLinkItem } from "./navbar-mobile";
-
-interface ExtendedNavItem extends NavLinkItem {
-  badge?: string;
-  hasDropdown?: boolean;
-}
+import { NavbarMobile } from "./navbar-mobile";
+import { NAV_CATEGORIES } from "./nav-data";
 
 export function Navbar() {
   const t = useTranslations("navbar");
+  const locale = useLocale();
   const pathname = usePathname();
   const isHome = pathname === "/" || pathname === "/en" || pathname === "/bn";
 
-  const navItems: ExtendedNavItem[] = [
-    {
-      name: t("products"),
-      href: "/products",
-      Icon: StorefrontOutlinedIcon,
-      hasDropdown: true,
-    },
-    {
-      name: t("deals"),
-      href: "/products?sort=discount",
-      Icon: WhatshotOutlinedIcon,
-      badge: "HOT",
-    },
-    { name: t("offers"), href: "/products?filter=offers", Icon: LocalOfferOutlinedIcon },
-    { name: t("about"), href: "/about", Icon: ArticleOutlinedIcon },
-  ];
-
   const [navState, setNavState] = useState<"top" | "visible" | "hidden">("top");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [productsMenuOpen, setProductsMenuOpen] = useState(false);
-
-  const closeTimerRef = useRef<NodeJS.Timeout | null>(null);
   const headerContainerRef = useRef<HTMLDivElement | null>(null);
 
   const { totalCount } = useCart();
@@ -93,7 +66,6 @@ export function Navbar() {
           if (diff > 0 && clampedY > 80) {
             // Scrolling down -> hide navbar
             setNavState("hidden");
-            setProductsMenuOpen(false);
           } else if (diff < 0) {
             // Scrolling up -> show navbar
             setNavState("visible");
@@ -108,50 +80,6 @@ export function Navbar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  // Close dropdown on outside click or Escape
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (headerContainerRef.current && !headerContainerRef.current.contains(e.target as Node)) {
-        setProductsMenuOpen(false);
-      }
-    };
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setProductsMenuOpen(false);
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
-
-  // Close dropdown on route change
-  useEffect(() => {
-    setProductsMenuOpen(false);
-  }, [pathname]);
-
-  const handleMouseEnter = () => {
-    if (closeTimerRef.current) {
-      clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
-    setProductsMenuOpen(true);
-  };
-
-  const handleMouseLeave = () => {
-    if (closeTimerRef.current) {
-      clearTimeout(closeTimerRef.current);
-    }
-    closeTimerRef.current = setTimeout(() => {
-      setProductsMenuOpen(false);
-    }, 200);
-  };
 
   return (
     <>
@@ -191,107 +119,78 @@ export function Navbar() {
           }}
         >
           {/* Left: Brand Logo */}
-          <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Box sx={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
             <BrandLogo variant='dark' size='md' href='/' />
           </Box>
 
-          {/* Center: Sleek Cyber Navigation */}
+          {/* Center: Gadgets Categories with Dropdown */}
           <Box
             sx={{
-              display: { xs: "none", md: "flex" },
+              display: { xs: "none", lg: "flex" },
               alignItems: "center",
-              gap: { md: 1, lg: 1.5 },
+              gap: { lg: 1.25, xl: 2 },
             }}
           >
-            {navItems.map((item) => {
-              const Icon = item.Icon;
-              const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-              const isProducts = item.hasDropdown;
+            {NAV_CATEGORIES.map((category, index) => {
+              const displayName = locale === "bn" ? category.nameBn : category.name;
+              const isNearRight = index >= NAV_CATEGORIES.length - 2;
 
               return (
-                <Box
-                  key={item.href}
-                  component={Link}
-                  href={item.href}
-                  onMouseEnter={isProducts ? handleMouseEnter : undefined}
-                  onMouseLeave={isProducts ? handleMouseLeave : undefined}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 0.75,
-                    textDecoration: "none",
-                    fontSize: 13,
-                    fontWeight: isActive || (isProducts && productsMenuOpen) ? 600 : 500,
-                    color: isActive || (isProducts && productsMenuOpen) ? tokens.primary : "rgba(255, 255, 255, 0.78)",
-                    px: 1.6,
-                    py: 0.65,
-                    borderRadius: "999px",
-                    bgcolor: isActive || (isProducts && productsMenuOpen) ? "rgba(0, 191, 166, 0.15)" : "transparent",
-                    border: isActive || (isProducts && productsMenuOpen) ? "1px solid rgba(0, 191, 166, 0.35)" : "1px solid transparent",
-                    boxShadow: isActive || (isProducts && productsMenuOpen) ? "0 0 12px rgba(0, 191, 166, 0.25)" : "none",
-                    position: "relative",
-                    transition: "color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease",
-                    "&:hover": {
-                      color: tokens.textWhite,
-                      bgcolor: isActive || (isProducts && productsMenuOpen) ? "rgba(0, 191, 166, 0.2)" : "rgba(255, 255, 255, 0.08)",
-                      "& .nav-icon": {
-                        color: tokens.primary,
-                      },
-                    },
-                  }}
-                >
-                  {Icon && (
-                    <Icon
-                      className='nav-icon'
-                      sx={{
-                        fontSize: 17,
-                        color: isActive || (isProducts && productsMenuOpen) ? tokens.primary : "rgba(255, 255, 255, 0.65)",
-                        transition: "color 0.2s ease",
-                      }}
-                    />
-                  )}
-                  {item.name}
-
-                  {/* Dropdown Chevron for Products */}
-                  {isProducts && (
-                    <KeyboardArrowDownRoundedIcon
-                      sx={{
-                        fontSize: 15,
-                        color: productsMenuOpen ? tokens.primary : "rgba(255, 255, 255, 0.5)",
-                        transition: "transform 0.2s ease, color 0.2s ease",
-                        transform: productsMenuOpen ? "rotate(180deg)" : "rotate(0deg)",
-                      }}
-                    />
-                  )}
-
-                  {/* Micro Badge (e.g. HOT on Deals) */}
-                  {item.badge && (
+                <Dropdown
+                  key={category.id}
+                  triggerOn="hover"
+                  align={isNearRight ? "right" : "left"}
+                  trigger={
                     <Box
-                      component='span'
+                      component="button"
+                      type="button"
                       sx={{
-                        fontSize: 9,
-                        fontWeight: 800,
-                        px: 0.75,
-                        py: 0.15,
-                        borderRadius: "999px",
-                        bgcolor: "#ff4d4f",
-                        color: "#ffffff",
-                        letterSpacing: "0.04em",
-                        boxShadow: "0 0 8px rgba(255, 77, 79, 0.6)",
+                        background: "transparent",
+                        border: "none",
+                        outline: "none",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 0.35,
+                        fontFamily: "inherit",
+                        fontSize: { lg: "12.5px", xl: "13.5px" },
+                        fontWeight: 500,
+                        color: "rgba(255, 255, 255, 0.85)",
+                        py: 0.75,
+                        px: { lg: 0.5, xl: 0.75 },
+                        borderRadius: "6px",
+                        whiteSpace: "nowrap",
+                        transition: "color 0.15s ease",
+                        "&:hover": {
+                          color: tokens.textWhite,
+                        },
                       }}
                     >
-                      {item.badge}
+                      <span>{displayName}</span>
+                      <KeyboardArrowDownRoundedIcon
+                        sx={{
+                          fontSize: 15,
+                          color: "rgba(255, 255, 255, 0.5)",
+                        }}
+                      />
                     </Box>
-                  )}
-                </Box>
+                  }
+                  items={category.subCategories.map((sub) => ({
+                    label: locale === "bn" && sub.nameBn ? sub.nameBn : sub.name,
+                    children: sub.items?.map((item) => ({
+                      label: item.title,
+                      href: item.href,
+                    })),
+                  }))}
+                />
               );
             })}
           </Box>
 
           {/* Right: Actions (Language Switcher, User Dropdown, Cart, Mobile Menu) */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.5, sm: 1.25 } }}>
-            {/* Desktop Language Switcher */}
-            <Box sx={{ display: { xs: "none", md: "flex" } }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.5, sm: 1.25 }, flexShrink: 0 }}>
+            {/* Language Switcher */}
+            <Box sx={{ display: { xs: "none", sm: "flex" } }}>
               <LanguageSwitcher variant="navbar" />
             </Box>
 
@@ -337,11 +236,11 @@ export function Navbar() {
               </Badge>
             </IconButton>
 
-            {/* Mobile Hamburger Menu Icon */}
+            {/* Hamburger Menu Icon (visible on mobile and tablet < 1200px) */}
             <IconButton
               onClick={() => setMobileMenuOpen(true)}
               sx={{
-                display: { xs: "inline-flex", md: "none" },
+                display: { xs: "inline-flex", lg: "none" },
                 color: tokens.textWhite,
                 p: 1,
               }}
@@ -351,18 +250,14 @@ export function Navbar() {
             </IconButton>
           </Box>
         </SectionContainer>
-
-        {/* Clean Products Mega Menu on Hover */}
-        <NavbarMegaMenu
-          open={productsMenuOpen}
-          onClose={() => setProductsMenuOpen(false)}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        />
       </Box>
 
       {/* Mobile Drawer */}
-      <NavbarMobile open={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} links={navItems} categories={categories} />
+      <NavbarMobile
+        open={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        categories={categories}
+      />
     </>
   );
 }

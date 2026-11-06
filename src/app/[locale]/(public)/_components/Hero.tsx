@@ -13,6 +13,7 @@ import { InputBase } from "@/components/ui/input";
 import { SectionContainer } from "@/components/common/SectionContainer";
 import { getAssetUrl } from "@/lib/storage";
 import { useTranslations } from "next-intl";
+import { HeroSearchModal } from "./HeroSearchModal";
 
 const HERO_BACKGROUNDS = [
   getAssetUrl("banners/hero-slide-1.png"),
@@ -27,6 +28,7 @@ export function Hero() {
   const t = useTranslations("home");
   const router = useRouter();
   const [searchValue, setSearchValue] = useState("");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeBgIndex, setActiveBgIndex] = useState(0);
 
   useEffect(() => {
@@ -40,10 +42,7 @@ export function Hero() {
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const query = searchValue.trim();
-    if (query) {
-      router.push(`/products?search=${encodeURIComponent(query)}`);
-    }
+    setIsSearchOpen(true);
   };
 
   return (
@@ -52,15 +51,15 @@ export function Hero() {
       sx={{
         position: "relative",
         width: "100%",
-        minHeight: { xs: "auto", md: 540, lg: 640 },
+        minHeight: { xs: 560, sm: 600, md: 560, lg: 640 },
         display: "flex",
         alignItems: "center",
         bgcolor: tokens.bgDark,
         borderBottomLeftRadius: { xs: 24, md: 36 },
         borderBottomRightRadius: { xs: 24, md: 36 },
         overflow: "hidden",
-        pt: { xs: 9, md: 10.5 },
-        pb: { xs: 10, md: 12 },
+        pt: { xs: 11, sm: 12, md: 10.5 },
+        pb: { xs: 12, sm: 13, md: 12 },
       }}
     >
       <Box sx={{ position: "absolute", inset: 0, zIndex: 1, overflow: "hidden" }}>
@@ -101,7 +100,7 @@ export function Hero() {
           zIndex: 2,
           pointerEvents: "none",
           background: {
-            xs: "linear-gradient(180deg, rgba(4, 20, 24, 0.84) 0%, rgba(4, 20, 24, 0.62) 55%, rgba(4, 20, 24, 0.08) 100%)",
+            xs: "linear-gradient(180deg, rgba(4, 20, 24, 0.90) 0%, rgba(4, 20, 24, 0.72) 48%, rgba(4, 20, 24, 0.40) 80%, rgba(4, 20, 24, 0.22) 100%)",
             md: "linear-gradient(90deg, rgba(4, 20, 24, 0.88) 0%, rgba(4, 20, 24, 0.74) 30%, rgba(4, 20, 24, 0.32) 48%, rgba(4, 20, 24, 0) 62%)",
           },
         }}
@@ -114,6 +113,7 @@ export function Hero() {
           zIndex: 3,
           display: "flex",
           alignItems: "center",
+          width: "100%",
         }}
       >
         <Box sx={{ maxWidth: { xs: "100%", md: 540, lg: 600 } }}>
@@ -121,11 +121,11 @@ export function Hero() {
             component="h1"
             sx={{
               fontWeight: 800,
-              fontSize: { xs: "2.1rem", sm: "2.6rem", md: "2.9rem", lg: "3.2rem" },
-              lineHeight: 1.1,
+              fontSize: { xs: "2rem", sm: "2.4rem", md: "2.9rem", lg: "3.2rem" },
+              lineHeight: { xs: 1.18, md: 1.1 },
               letterSpacing: "-0.03em",
               color: tokens.textWhite,
-              mb: 2,
+              mb: { xs: 1.75, md: 2 },
             }}
           >
             {t("heroHeadingPart1")} <br />
@@ -145,10 +145,10 @@ export function Hero() {
 
           <Typography
             sx={{
-              fontSize: { xs: 14, sm: 15 },
+              fontSize: { xs: 13.5, sm: 14.5, md: 15 },
               lineHeight: 1.6,
-              color: "rgba(255, 255, 255, 0.72)",
-              mb: 2.5,
+              color: "rgba(255, 255, 255, 0.78)",
+              mb: { xs: 3, sm: 3.5 },
               maxWidth: 520,
             }}
           >
@@ -156,44 +156,57 @@ export function Hero() {
           </Typography>
 
           <Box
-            component="form"
-            onSubmit={handleSearchSubmit}
+            onClick={() => setIsSearchOpen(true)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setIsSearchOpen(true);
+              }
+            }}
             sx={{
               display: "flex",
               alignItems: "center",
               gap: 1.5,
-              bgcolor: "rgba(255, 255, 255, 0.08)",
-              backdropFilter: "blur(16px)",
-              WebkitBackdropFilter: "blur(16px)",
-              border: `1px solid ${tokens.borderDarkSubtle}`,
+              bgcolor: "#FFFFFF",
+              border: "1px solid rgba(255, 255, 255, 0.9)",
               borderRadius: `${tokens.radiusPill}px`,
-              p: "5px 7px 5px 16px",
+              boxShadow: "0 12px 32px -4px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.12)",
+              p: { xs: "5px 7px 5px 16px", sm: "6px 8px 6px 18px" },
               maxWidth: 500,
-              mb: 2.5,
-              transition: "border-color 0.2s ease",
-              "&:focus-within": {
-                borderColor: tokens.primary,
-              },
+              mb: { xs: 1, md: 0 },
+              cursor: "pointer",
             }}
           >
-            <SearchIcon sx={{ color: "rgba(255, 255, 255, 0.5)", fontSize: 21 }} />
+            <SearchIcon sx={{ color: tokens.primary, fontSize: 21 }} />
             <InputBase
               variant="plain"
               placeholder={t("heroSearchPlaceholder")}
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
+              readOnly
+              tabIndex={-1}
               fullWidth
               sx={{
-                color: tokens.textWhite,
+                pointerEvents: "none",
+                color: "#1E293B",
                 fontSize: 14.5,
-                "& input::placeholder": {
-                  color: "rgba(255, 255, 255, 0.45)",
-                  opacity: 1,
+                fontWeight: 500,
+                "& input": {
+                  cursor: "pointer",
+                  "&::placeholder": {
+                    color: "#94A3B8",
+                    opacity: 1,
+                  },
                 },
               }}
             />
             <IconButton
-              type="submit"
+              type="button"
+              aria-label="Open search"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsSearchOpen(true);
+              }}
               sx={{
                 bgcolor: tokens.primary,
                 color: tokens.textWhite,
@@ -201,9 +214,7 @@ export function Hero() {
                 height: 38,
                 borderRadius: "50%",
                 flexShrink: 0,
-                "&:hover": {
-                  bgcolor: tokens.primaryHover,
-                },
+                boxShadow: "0 2px 8px rgba(0, 191, 166, 0.35)",
               }}
             >
               <ArrowForwardIcon sx={{ fontSize: 17 }} />
@@ -211,6 +222,13 @@ export function Hero() {
           </Box>
         </Box>
       </SectionContainer>
+
+      {/* Expandable Hero Search Modal */}
+      <HeroSearchModal
+        open={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        initialQuery={searchValue}
+      />
     </Box>
   );
 }
