@@ -1,4 +1,4 @@
-import { asc } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { category } from "@/db/schema";
 import type { Context } from "@/server/context";
 import { cacheService, CACHE_KEYS, CACHE_TTL, type ICacheService } from "@/server/services/cache";
@@ -18,6 +18,7 @@ export class ListCategoriesUseCase {
           icon: category.icon,
         })
         .from(category)
+        .where(eq(category.isDeleted, false))
         .orderBy(asc(category.name));
     });
   }

@@ -23,46 +23,56 @@ export const Switch = React.forwardRef<HTMLButtonElement, SwitchProps>(
     return (
       <MuiSwitch
         ref={ref}
-        checked={checked}
+        checked={Boolean(checked)}
         disabled={disabled}
         onChange={handleChange}
         sx={{
-          width: 44,
-          height: 24,
+          width: 52,
+          height: 32,
           padding: 0,
-          display: "flex",
-          "&:active": {
-            "& .MuiSwitch-thumb": {
-              width: 18,
-            },
-            "& .MuiSwitch-switchBase.Mui-checked": {
-              transform: "translateX(16px)",
-            },
-          },
+          display: "inline-flex",
+          alignItems: "center",
           "& .MuiSwitch-switchBase": {
-            padding: 2,
+            padding: "4px !important",
+            margin: "0 !important",
+            transition: "transform 200ms cubic-bezier(0.2, 0, 0, 1)",
             "&.Mui-checked": {
-              transform: "translateX(20px)",
-              color: "#fff",
+              transform: "translateX(20px) !important",
+              color: "#ffffff !important",
+              "& .MuiSwitch-thumb": {
+                width: "24px !important",
+                height: "24px !important",
+                backgroundColor: "#ffffff !important",
+              },
               "& + .MuiSwitch-track": {
-                opacity: 1,
-                backgroundColor: tokens.primary,
+                opacity: "1 !important",
+                backgroundColor: `${tokens.primary} !important`,
+                borderColor: `${tokens.primary} !important`,
+              },
+            },
+            "&.Mui-disabled": {
+              opacity: 0.5,
+              "& + .MuiSwitch-track": {
+                opacity: 0.38,
               },
             },
           },
           "& .MuiSwitch-thumb": {
-            boxShadow: tokens.shadowSm,
-            width: 20,
-            height: 20,
-            borderRadius: 10,
-            transition: "width 0.2s",
-            backgroundColor: "#fff",
+            width: "18px !important",
+            height: "18px !important",
+            boxSizing: "border-box",
+            borderRadius: "50% !important",
+            backgroundColor: `${tokens.outline} !important`,
+            boxShadow: tokens.elevation1,
+            transition: "all 200ms cubic-bezier(0.2, 0, 0, 1)",
           },
           "& .MuiSwitch-track": {
-            borderRadius: 12,
-            opacity: 1,
-            backgroundColor: tokens.bgSubtle,
+            borderRadius: "16px !important",
+            opacity: "1 !important",
+            backgroundColor: `${tokens.bgSurfaceContainerHighest} !important`,
+            border: `2px solid ${tokens.outlineVariant} !important`,
             boxSizing: "border-box",
+            transition: "all 200ms cubic-bezier(0.2, 0, 0, 1)",
           },
           ...sx,
         }}

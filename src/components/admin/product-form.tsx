@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -8,6 +8,8 @@ import dynamic from "next/dynamic";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import Autocomplete from "@mui/material/Autocomplete";
+import Chip from "@mui/material/Chip";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { TextField, InputAdornment } from "@/components/ui/input";
@@ -21,6 +23,7 @@ import { Card } from "@/components/ui/card";
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import VideocamOutlinedIcon from "@mui/icons-material/VideocamOutlined";
+import AddIcon from "@mui/icons-material/Add";
 
 import { useCreateProduct, useUpdateProduct } from "@/query-client/products";
 import { useAdminCategories } from "@/query-client/categories";
@@ -39,6 +42,51 @@ interface ProductFormProps {
   initialData?: any;
 }
 
+export const COMMON_GADGET_ATTRIBUTES = [
+  "Motor Speed / RPM",
+  "Battery Capacity",
+  "Battery Life",
+  "Charging Port",
+  "Charging Time",
+  "Waterproof Standard",
+  "Screen Display",
+  "Screen Resolution",
+  "Connectivity",
+  "Bluetooth Version",
+  "Build Material",
+  "Dimensions",
+  "Weight",
+  "Power / Wattage",
+  "Wind Speed",
+  "Noise Level",
+  "Suction Power",
+  "Input Voltage",
+  "Output Power",
+  "Compatible OS",
+  "Package Contents",
+];
+
+const parseInitialSpecifications = (raw: any): { id: string; key: string; value: string }[] => {
+  if (!raw) return [];
+  if (Array.isArray(raw)) {
+    return raw
+      .filter((s: any) => s && (s.key || s.value))
+      .map((s: any) => ({
+        id: crypto.randomUUID(),
+        key: String(s.key || ""),
+        value: String(s.value || ""),
+      }));
+  }
+  if (typeof raw === "object") {
+    return Object.entries(raw).map(([key, value]) => ({
+      id: crypto.randomUUID(),
+      key,
+      value: String(value || ""),
+    }));
+  }
+  return [];
+};
+
 export function ProductForm({ initialData }: ProductFormProps) {
   const router = useRouter();
   const toast = useToast();
@@ -47,6 +95,44 @@ export function ProductForm({ initialData }: ProductFormProps) {
   const { mutate: updateProduct, isPending: isUpdating } = useUpdateProduct();
   const [uploading, setUploading] = useState(false);
   const [tagInput, setTagInput] = useState("");
+
+  const [specsList, setSpecsList] = useState<{ id: string; key: string; value: string }[]>(() =>
+    parseInitialSpecifications(initialData?.specifications)
+  );
+
+  useEffect(() => {
+    if (initialData?.specifications) {
+      setSpecsList(parseInitialSpecifications(initialData.specifications));
+    }
+  }, [initialData?.specifications]);
+
+  const handleAddAttributeRow = () => {
+    setSpecsList((prev) => [...prev, { id: crypto.randomUUID(), key: "", value: "" }]);
+  };
+
+  const handleAddSuggestedAttribute = (attrName: string) => {
+    if (specsList.some((s) => s.key.toLowerCase() === attrName.toLowerCase())) {
+      toast.info(`"${attrName}" is already in the list.`);
+      return;
+    }
+    setSpecsList((prev) => [...prev, { id: crypto.randomUUID(), key: attrName, value: "" }]);
+  };
+
+  const handleRemoveSpecRow = (index: number) => {
+    setSpecsList((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSpecKeyChange = (index: number, newKey: string) => {
+    setSpecsList((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, key: newKey } : item))
+    );
+  };
+
+  const handleSpecValueChange = (index: number, newValue: string) => {
+    setSpecsList((prev) =>
+      prev.map((item, i) => (i === index ? { ...item, value: newValue } : item))
+    );
+  };
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(createProductInputSchema) as any,
@@ -61,16 +147,12 @@ export function ProductForm({ initialData }: ProductFormProps) {
           inStock: initialData.inStock ?? true,
           rating: Number(initialData.rating || 5),
           videoLinks: initialData.videoLinks || ["", ""],
-          model: initialData.model || "",
-          brand: initialData.brand || "",
-          whyBuyText: initialData.whyBuyText || "",
           soldCount: Number(initialData.soldCount || 360),
           markdown_description: initialData.markdown_description || "",
         }
       : {
           title: "",
           slug: "",
-          description: "",
           price: "" as any,
           discountPrice: "" as any,
           categoryId: "",
@@ -81,17 +163,19 @@ export function ProductForm({ initialData }: ProductFormProps) {
           inStock: true,
           rating: 5,
           videoLinks: ["", ""],
-          model: "",
-          brand: "",
-          whyBuyText: "",
           soldCount: 360,
           markdown_description: "",
         },
   });
 
   const onSubmit = (values: ProductFormValues) => {
+    const validSpecs = specsList
+      .filter((s) => s.key.trim() && s.value.trim())
+      .map((s) => ({ key: s.key.trim(), value: s.value.trim() }));
+
     const payload = {
       ...values,
+      specifications: validSpecs,
       images: (values.images || []).map((img) => stripAssetDomain(img)),
       videoLinks: values.videoLinks?.map((link) => normalizeVideoInput(link)).filter((link) => link && link.trim() !== "") || [],
     };
@@ -328,30 +412,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
         </Box>
       </Box>
 
-      {/* Brand, Model, Rating, Sold count */}
-      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "repeat(4, 1fr)" }, gap: 2.5 }}>
-        <Box>
-          <Label sx={{ mb: 0.75, display: "block" }}>
-            Brand
-          </Label>
-          <Controller
-            name='brand'
-            control={form.control}
-            render={({ field }) => <TextField {...field} placeholder='Brand name' fullWidth size='small' />}
-          />
-        </Box>
-
-        <Box>
-          <Label sx={{ mb: 0.75, display: "block" }}>
-            Model
-          </Label>
-          <Controller
-            name='model'
-            control={form.control}
-            render={({ field }) => <TextField {...field} placeholder='Model name/number' fullWidth size='small' />}
-          />
-        </Box>
-
+      {/* Rating & Sold count */}
+      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2.5 }}>
         <Box>
           <Label sx={{ mb: 0.75, display: "block" }}>
             Rating (0 - 5)
@@ -397,6 +459,117 @@ export function ProductForm({ initialData }: ProductFormProps) {
         </Box>
       </Box>
 
+      {/* Dynamic Key Attributes & Technical Specifications */}
+      <Card sx={{ p: { xs: 2, sm: 2.5 }, display: "flex", flexDirection: "column", gap: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1 }}>
+          <Box>
+            <Typography sx={{ fontSize: 16, fontWeight: 700, color: "text.primary" }}>
+              Key Attributes & Technical Specifications
+            </Typography>
+            <Typography variant='caption' sx={{ color: "text.secondary", display: "block" }}>
+              Add custom attributes for this gadget without restrictions. These appear directly in the Alibaba-style Key Attributes table.
+            </Typography>
+          </Box>
+          <Button
+            type='button'
+            variant='primary'
+            size='small'
+            onClick={handleAddAttributeRow}
+            startIcon={<AddIcon sx={{ fontSize: 16 }} />}
+          >
+            Add Attribute
+          </Button>
+        </Box>
+
+        {/* Suggestion Chips */}
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, flexWrap: "wrap", pt: 0.5 }}>
+          <Typography sx={{ fontSize: 12, fontWeight: 700, color: "text.secondary", mr: 0.5 }}>
+            Quick Suggestions:
+          </Typography>
+          {COMMON_GADGET_ATTRIBUTES.map((attr) => (
+            <Chip
+              key={attr}
+              label={`+ ${attr}`}
+              size='small'
+              onClick={() => handleAddSuggestedAttribute(attr)}
+              variant='outlined'
+              sx={{ cursor: "pointer", fontSize: 11.5, "&:hover": { bgcolor: "action.hover" } }}
+            />
+          ))}
+        </Box>
+
+        {/* Dynamic Key-Value Rows */}
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25, mt: 0.5 }}>
+          {specsList.map((spec, index) => (
+            <Box
+              key={spec.id}
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr auto" },
+                gap: 1.5,
+                alignItems: "center",
+                p: 1.25,
+                bgcolor: "action.hover",
+                borderRadius: "8px",
+                border: "1px solid",
+                borderColor: "divider",
+              }}
+            >
+              <Autocomplete
+                freeSolo
+                options={COMMON_GADGET_ATTRIBUTES}
+                value={spec.key}
+                onInputChange={(_, newValue) => handleSpecKeyChange(index, newValue)}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    placeholder='Attribute Name (e.g. Motor Speed)'
+                    size='small'
+                    fullWidth
+                  />
+                )}
+              />
+
+              <TextField
+                placeholder='Attribute Value (e.g. 150,000 RPM)'
+                size='small'
+                fullWidth
+                value={spec.value}
+                onChange={(e) => handleSpecValueChange(index, e.target.value)}
+              />
+
+              <IconButton
+                size='small'
+                onClick={() => handleRemoveSpecRow(index)}
+                sx={{
+                  color: "error.main",
+                  p: 0.75,
+                  "&:hover": { bgcolor: "error.lighter" },
+                }}
+              >
+                <CloseIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Box>
+          ))}
+
+          {specsList.length === 0 && (
+            <Box
+              sx={{
+                p: 3,
+                textAlign: "center",
+                border: "1px dashed",
+                borderColor: "divider",
+                borderRadius: "8px",
+              }}
+            >
+              <Typography sx={{ fontSize: 13, color: "text.secondary" }}>
+                No custom specifications added yet. Click &quot;Add Attribute&quot; or choose from quick suggestions above.
+              </Typography>
+            </Box>
+          )}
+        </Box>
+      </Card>
+
       {/* Stock Availability */}
       <Card sx={{ p: 2 }}>
         <Controller
@@ -412,7 +585,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
                     : "Out of Stock — product is marked as unavailable"}
                 </Typography>
               </Box>
-              <Switch checked={field.value} onChange={(e) => field.onChange(e.target.checked)} color='primary' />
+              <Switch checked={Boolean(field.value)} onCheckedChange={(val) => field.onChange(val)} />
             </Box>
           )}
         />
@@ -449,51 +622,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
             />
           ))}
         </Box>
-      </Box>
-
-      {/* Why Buy Text */}
-      <Box>
-        <Label sx={{ mb: 0.75, display: "block" }}>
-          Why Buy Text (Product Page)
-        </Label>
-        <Controller
-          name='whyBuyText'
-          control={form.control}
-          render={({ field }) => (
-            <TextField
-              {...field}
-              multiline
-              rows={3}
-              placeholder='Explain why this product is worth buying...'
-              fullWidth
-              size='small'
-              helperText="This appears in the 'Why Buy [Product Name]?' section."
-            />
-          )}
-        />
-      </Box>
-
-      {/* Description */}
-      <Box>
-        <Label sx={{ mb: 0.75, display: "block" }}>
-          Short Description *
-        </Label>
-        <Controller
-          name='description'
-          control={form.control}
-          render={({ field }) => (
-            <TextField
-              {...field}
-              multiline
-              rows={4}
-              placeholder='Product description'
-              fullWidth
-              size='small'
-              error={!!form.formState.errors.description}
-              helperText={form.formState.errors.description?.message}
-            />
-          )}
-        />
       </Box>
 
       {/* Tags */}

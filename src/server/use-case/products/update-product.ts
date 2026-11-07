@@ -1,9 +1,10 @@
 import { eq } from "drizzle-orm";
-import { product, auditLog, type ProductStatus, type AuditAction } from "@/db/schema";
+import { product, type ProductStatus, type AuditAction } from "@/db/schema";
 import { normalizeVideoInput } from "@/lib/video-links";
 import type { Context } from "@/server/context";
 import type { UpdateProductInput } from "@/server/schemas/products.schema";
 import { formatProduct } from "./_shared";
+import { writeAudit } from "@/server/lib/orm";
 
 type UpdateData = UpdateProductInput["data"];
 
@@ -24,7 +25,8 @@ export class UpdateProductUseCase {
     const payload = this.buildUpdatePayload(data);
     await this.persistUpdate(id, payload);
 
-    const [updated] = await Promise.all([this.findUpdated(id), this.recordAudit(id, data)]);
+    const updated = await this.findUpdated(id);
+    await this.recordAudit(id, data, updated?.title);
 
     return formatProduct(updated);
   }
@@ -53,16 +55,19 @@ export class UpdateProductUseCase {
     });
   }
 
-  private async recordAudit(id: string, data: UpdateData) {
-    const action: AuditAction = data.status ? "STATUS_CHANGE" : "UPDATE_PRODUCT";
-    try {
-      return await this.db.insert(auditLog).values({
-        action,
-        actorId: this.actorId,
-        metadata: { productId: id, changes: Object.keys(data) },
-      });
-    } catch {
-      return null;
-    }
+  private async recordAudit(id: string, data: UpdateData, title?: string) {
+    const keys = Object.keys(data);
+    const isOnlyStatusChange = keys.length === 1 && data.status !== undefined;
+    const action: AuditAction = isOnlyStatusChange ? "STATUS_CHANGE" : "UPDATE_PRODUCT";
+
+    return writeAudit(this.db, {
+      action,
+      actorId: this.actorId,
+      metadata: {
+        productId: id,
+        title: title || (data as any)?.title,
+        changes: keys,
+      },
+    });
   }
 }

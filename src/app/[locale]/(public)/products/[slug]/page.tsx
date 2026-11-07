@@ -48,7 +48,6 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   }
 
   const effectivePrice = foundProduct.discountPrice ? Number(foundProduct.discountPrice) : Number(foundProduct.price);
-  const brandName = foundProduct.brand ? `${foundProduct.brand} ` : "";
   const isBn = locale === "bn";
 
   const pageTitle = isBn
@@ -58,8 +57,8 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const formattedPrice = isBn ? toBengaliNumber(effectivePrice.toLocaleString("en-US")) : effectivePrice.toLocaleString("en-US");
 
   const pageDescription = isBn
-    ? `বাংলাদেশে আসল ${brandName}${foundProduct.title} কিনুন মাত্র ৳${formattedPrice} টাকায়। ১০০% অরিজিনাল কোয়ালিটি, অফিসিয়াল ওয়ারেন্টি ও দ্রুত ক্যাশ অন ডেলিভারি We Gadget BD থেকে।`
-    : `Buy authentic ${brandName}${foundProduct.title} in Bangladesh at ৳${formattedPrice}. 100% genuine quality, official warranty, fast delivery & cash on delivery from We Gadget BD.`;
+    ? `বাংলাদেশে আসল ${foundProduct.title} কিনুন মাত্র ৳${formattedPrice} টাকায়। ১০০% অরিজিনাল কোয়ালিটি ও দ্রুত ক্যাশ অন ডেলিভারি We Gadget BD থেকে।`
+    : `Buy authentic ${foundProduct.title} in Bangladesh at ৳${formattedPrice}. 100% genuine quality, fast delivery & cash on delivery from We Gadget BD.`;
 
   const canonicalUrl = isBn ? `${siteUrl}/bn/products/${foundProduct.slug}` : `${siteUrl}/products/${foundProduct.slug}`;
   const ogImage = foundProduct.images?.[0] ? getAssetUrl(foundProduct.images[0]) : `${siteUrl}/images/default.png`;
@@ -68,8 +67,6 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     foundProduct.title,
     `${foundProduct.title} price in BD`,
     `${foundProduct.title} Bangladesh`,
-    foundProduct.brand,
-    foundProduct.model,
     foundProduct.category?.name,
     "authentic gadgets Bangladesh",
     "buy online BD",
@@ -164,13 +161,13 @@ export default async function ProductDetails({ params }: ProductPageProps) {
             "@type": "Product",
             "@id": `${productUrl}#product`,
             name: foundProduct.title,
-            description: foundProduct.description || `Buy ${foundProduct.title} online in Bangladesh with official warranty from We Gadget BD.`,
+            description: (foundProduct as any).markdown_description || `Buy ${foundProduct.title} online in Bangladesh with official warranty from We Gadget BD.`,
             image: foundProduct.images && foundProduct.images.length > 0 ? foundProduct.images.map(getAssetUrl) : [`${siteUrl}/images/default.png`],
             sku: foundProduct.id,
-            mpn: foundProduct.model || foundProduct.id,
+            mpn: (foundProduct as any).model || foundProduct.id,
             brand: {
               "@type": "Brand",
-              name: foundProduct.brand || "We Gadget BD",
+              name: (foundProduct as any).brand || "We Gadget BD",
             },
             category: foundProduct.category?.name || "Gadgets",
             offers: {

@@ -2,9 +2,10 @@ import { cookies, headers } from "next/headers";
 import type { Session as SupabaseSession, User as SupabaseUser } from "@supabase/supabase-js";
 import { supabase, supabaseAdmin } from "@/lib/supabase";
 import { db } from "@/db";
-import { user as userTable, type Role } from "@/db/schema";
+import { user as userTable, session as sessionTable, type Role } from "@/db/schema";
 import { eq, or } from "drizzle-orm";
 import { getSiteUrl } from "@/lib/seo";
+import { recordSession } from "@/server/lib/session";
 
 const ACCESS_MAX_AGE = 60 * 60 * 24 * 7;
 const REFRESH_MAX_AGE = 60 * 60 * 24 * 30;
@@ -167,6 +168,13 @@ export class SignInUseCase {
 
       const { role } = await syncUser(data.user, email);
       await setAuthCookies(data.session, role);
+      await recordSession({
+        userId: data.user.id,
+        token: data.session.access_token,
+        role,
+        expiresAt: data.session.expires_at ? new Date(data.session.expires_at * 1000) : undefined,
+        method: "password",
+      });
 
       const meta = (data.user.user_metadata ?? {}) as UserMetadata;
       return {
@@ -226,7 +234,16 @@ export class SignUpUseCase {
         if (retry?.data?.session) session = retry.data.session;
       }
 
-      if (session) await setAuthCookies(session, role);
+      if (session) {
+        await setAuthCookies(session, role);
+        await recordSession({
+          userId: data.user.id,
+          token: session.access_token,
+          role,
+          expiresAt: session.expires_at ? new Date(session.expires_at * 1000) : undefined,
+          method: "signup",
+        });
+      }
 
       return {
         success: true as const,
@@ -284,6 +301,11 @@ export class GetGoogleOAuthUrlUseCase {
 export class SignOutUseCase {
   async execute() {
     try {
+      const cookieStore = await cookies();
+      const token = cookieStore.get("access-token")?.value;
+      if (token) {
+        await db.delete(sessionTable).where(eq(sessionTable.token, token)).catch(() => null);
+      }
       await clearAuthCookies();
       await supabase.auth.signOut().catch(() => null);
       return { success: true as const, data: null };

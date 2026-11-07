@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
-import { product, auditLog, type AuditAction } from "@/db/schema";
+import { product } from "@/db/schema";
 import type { Context } from "@/server/context";
+import { writeAudit } from "@/server/lib/orm";
 
 export class DeleteProductUseCase {
   constructor(
@@ -9,17 +10,18 @@ export class DeleteProductUseCase {
   ) {}
 
   async execute(id: string) {
-    const [deleted] = await this.db.delete(product).where(eq(product.id, id)).returning();
+    const [deleted] = await this.db
+      .update(product)
+      .set({ isDeleted: true, deletedAt: new Date() })
+      .where(eq(product.id, id))
+      .returning();
 
     if (deleted) {
-      await this.db
-        .insert(auditLog)
-        .values({
-          action: "DELETE_PRODUCT" as AuditAction,
-          actorId: this.actorId,
-          metadata: { productId: id, title: deleted.title },
-        })
-        .catch(() => null);
+      await writeAudit(this.db, {
+        action: "DELETE_PRODUCT",
+        actorId: this.actorId,
+        metadata: { productId: id, title: deleted.title, softDelete: true },
+      });
     }
 
     return {

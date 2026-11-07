@@ -76,11 +76,15 @@ export class CreateOrderUseCase {
         .returning();
 
       await writeAudit(this.dbInstance, {
-        actorId: input.userId || "anonymous",
-        action: "CREATE",
-        targetType: "ORDER",
-        targetId: newOrder.id,
-        metadata: { customerName: newOrder.customerName, total: finalTotal },
+        actorId: input.userId,
+        actorType: input.userId ? "USER" : "ADMIN",
+        action: "STATUS_CHANGE",
+        metadata: {
+          orderId: newOrder.id,
+          customerName: newOrder.customerName,
+          total: finalTotal,
+          event: "ORDER_CREATED",
+        },
       });
 
       return {

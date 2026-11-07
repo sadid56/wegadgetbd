@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { publicProcedure, adminProcedure } from "@/server/init";
+import { publicProcedure, protectedProcedure, adminProcedure } from "@/server/init";
 import { paginationInputSchema } from "@/server/schemas/common.schema";
 import {
   productSchema,
@@ -9,6 +9,11 @@ import {
   customerReviewSchema,
   createProductInputSchema,
   updateProductInputSchema,
+  listProductReviewsInputSchema,
+  listProductReviewsOutputSchema,
+  createProductReviewInputSchema,
+  toggleReviewLikeInputSchema,
+  createReviewReplyInputSchema,
 } from "@/server/schemas/products.schema";
 
 import { ListProductsUseCase } from "@/server/use-case/products/list-products";
@@ -22,6 +27,10 @@ import { AdminGetProductUseCase } from "@/server/use-case/products/admin-get-pro
 import { CreateProductUseCase } from "@/server/use-case/products/create-product";
 import { UpdateProductUseCase } from "@/server/use-case/products/update-product";
 import { DeleteProductUseCase } from "@/server/use-case/products/delete-product";
+import { ListInteractiveProductReviewsUseCase } from "@/server/use-case/products/reviews/list-product-reviews";
+import { CreateInteractiveProductReviewUseCase } from "@/server/use-case/products/reviews/create-product-review";
+import { ToggleReviewLikeUseCase } from "@/server/use-case/products/reviews/toggle-review-like";
+import { CreateReviewReplyUseCase } from "@/server/use-case/products/reviews/create-review-reply";
 
 export const productsRouter = {
   topPicks: publicProcedure
@@ -92,6 +101,70 @@ export const productsRouter = {
     .input(z.object({ productId: z.string() }))
     .output(z.array(customerReviewSchema))
     .handler(async ({ input, context }) => new ListProductReviewsUseCase(context.db).execute(input.productId)),
+
+  interactiveReviews: publicProcedure
+    .route({
+      method: "GET",
+      path: "/products/:productId/interactive-reviews",
+      summary: "Get interactive reviews, ratings, and replies for a product",
+      tags: ["Products"],
+    })
+    .input(listProductReviewsInputSchema)
+    .output(listProductReviewsOutputSchema)
+    .handler(async ({ input, context }) =>
+      new ListInteractiveProductReviewsUseCase(context.db).execute({
+        ...input,
+        currentUserId: context.user?.id,
+      }),
+    ),
+
+  addReview: publicProcedure
+    .route({
+      method: "POST",
+      path: "/products/:productId/interactive-reviews",
+      summary: "Submit a new review with rating",
+      tags: ["Products"],
+    })
+    .input(createProductReviewInputSchema)
+    .output(z.any())
+    .handler(async ({ input, context }) =>
+      new CreateInteractiveProductReviewUseCase(context.db).execute({
+        ...input,
+        user: context.user,
+      }),
+    ),
+
+  toggleLikeReview: protectedProcedure
+    .route({
+      method: "POST",
+      path: "/products/reviews/like",
+      summary: "Toggle like on a product review",
+      tags: ["Products"],
+    })
+    .input(toggleReviewLikeInputSchema)
+    .output(z.object({ liked: z.boolean(), likesCount: z.number() }))
+    .handler(async ({ input, context }) =>
+      new ToggleReviewLikeUseCase(context.db).execute({
+        reviewId: input.reviewId,
+        userId: context.user.id,
+      }),
+    ),
+
+  replyReview: publicProcedure
+    .route({
+      method: "POST",
+      path: "/products/reviews/reply",
+      summary: "Reply to a review or nested reply",
+      tags: ["Products"],
+    })
+    .input(createReviewReplyInputSchema)
+    .output(z.any())
+    .handler(async ({ input, context }) =>
+      new CreateReviewReplyUseCase(context.db).execute({
+        ...input,
+        user: context.user,
+      }),
+    ),
 
   adminList: adminProcedure
     .route({

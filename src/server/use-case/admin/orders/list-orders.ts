@@ -52,7 +52,7 @@ export class ListOrdersUseCase {
   }
 
   private buildWhereClause({ search, status }: ListOrdersInput) {
-    const conditions: any[] = [];
+    const conditions: any[] = [eq(order.isDeleted, false)];
 
     if (search?.trim()) {
       const q = `%${search.trim()}%`;

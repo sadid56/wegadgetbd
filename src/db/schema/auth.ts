@@ -39,6 +39,7 @@ export const session = pgTable("session", {
   token: text("token").notNull().unique(),
   createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
   updatedAt: timestamp("updatedAt", { mode: "date" })
+    .defaultNow()
     .notNull()
     .$onUpdate(() => new Date()),
   ipAddress: text("ipAddress"),

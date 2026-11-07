@@ -143,6 +143,8 @@ export function Badge({ variant = "default", color, sx, label, children, size = 
     }
   };
 
+  const isSmall = size === "small";
+
   return (
     <MuiChip
       size={size}
@@ -150,9 +152,10 @@ export function Badge({ variant = "default", color, sx, label, children, size = 
       sx={[
         {
           fontWeight: 600,
-          fontSize: "0.75rem",
-          height: 24,
+          fontSize: isSmall ? "0.75rem" : "0.82rem",
+          height: isSmall ? 24 : 32,
           borderRadius: `${tokens.radiusPill}px`,
+          transition: "all 0.15s cubic-bezier(0.2, 0, 0, 1)",
           ...getStyles(),
         },
         ...(Array.isArray(sx) ? sx : sx ? [sx] : []),

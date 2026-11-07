@@ -1,4 +1,4 @@
-import { eq, asc, count } from "drizzle-orm";
+import { and, eq, asc, count } from "drizzle-orm";
 import { category, product } from "@/db/schema";
 import type { Context } from "@/server/context";
 
@@ -32,7 +32,8 @@ export class AdminListCategoriesUseCase {
         productCount: count(product.id),
       })
       .from(category)
-      .leftJoin(product, eq(product.categoryId, category.id))
+      .leftJoin(product, and(eq(product.categoryId, category.id), eq(product.isDeleted, false)))
+      .where(eq(category.isDeleted, false))
       .groupBy(category.id)
       .orderBy(asc(category.name));
   }

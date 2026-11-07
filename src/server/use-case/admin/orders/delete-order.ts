@@ -11,16 +11,19 @@ export class DeleteOrderUseCase {
   ) {}
 
   async execute(id: string) {
-    const [deleted] = await this.dbInstance.delete(order).where(eq(order.id, id)).returning({ id: order.id });
+    const [deleted] = await this.dbInstance
+      .update(order)
+      .set({ isDeleted: true, deletedAt: new Date() })
+      .where(eq(order.id, id))
+      .returning({ id: order.id });
     if (!deleted) {
       return { success: false as const, error: "Order not found", message: "Order not found" };
     }
 
     await writeAudit(this.dbInstance, {
       actorId: this.actorId,
-      action: "DELETE",
-      targetType: "ORDER",
-      targetId: id,
+      action: "STATUS_CHANGE",
+      metadata: { orderId: id, event: "ORDER_DELETED", softDelete: true },
     });
 
     return { success: true as const, data: undefined };

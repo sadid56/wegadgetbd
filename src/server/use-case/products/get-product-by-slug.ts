@@ -8,7 +8,7 @@ export class GetProductBySlugUseCase {
 
   async execute(slug: string) {
     const foundProduct = await this.db.query.product.findFirst({
-      where: and(or(eq(product.slug, slug), eq(product.id, slug)), eq(product.status, "ACTIVE")),
+      where: and(or(eq(product.slug, slug), eq(product.id, slug)), eq(product.status, "ACTIVE"), eq(product.isDeleted, false)),
       with: { category: true },
     });
 

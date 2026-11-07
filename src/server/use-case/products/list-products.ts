@@ -42,7 +42,7 @@ export class ListProductsUseCase {
 
   private buildWhereClause(input: Partial<ListProductsInput> = {}) {
     const { search, featured, inStock, onSale, minPrice, maxPrice, rating, brand } = input;
-    const conditions = [eq(product.status, "ACTIVE")];
+    const conditions = [eq(product.status, "ACTIVE"), eq(product.isDeleted, false)];
 
     if (featured) {
       conditions.push(eq(product.isFeatured, true));
@@ -69,7 +69,7 @@ export class ListProductsUseCase {
     }
 
     if (brand) {
-      conditions.push(ilike(product.brand, `%${brand}%`));
+      conditions.push(sql`CAST(${product.specifications} AS text) ILIKE ${'%' + brand + '%'}`);
     }
 
     if (search) {
@@ -77,9 +77,8 @@ export class ListProductsUseCase {
         or(
           ilike(product.title, `%${search}%`),
           ilike(product.slug, `%${search}%`),
-          ilike(product.brand, `%${search}%`),
-          ilike(product.model, `%${search}%`),
-          ilike(product.description, `%${search}%`),
+          ilike(product.markdown_description, `%${search}%`),
+          sql`CAST(${product.specifications} AS text) ILIKE ${'%' + search + '%'}`,
           sql`${product.tags} && ARRAY[${search}]::text[]`,
         )!,
       );

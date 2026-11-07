@@ -96,7 +96,7 @@ export default function SessionsPage() {
         header: "IP Address",
         cell: (session) => (
           <Box component='span' sx={{ fontSize: 13, color: "text.primary" }}>
-            {session.ip || "Unknown"}
+            {session.ipAddress || session.ip || "Unknown"}
           </Box>
         ),
       },

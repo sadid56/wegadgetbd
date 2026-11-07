@@ -1,4 +1,4 @@
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { customerReview } from "@/db/schema";
 import type { Context } from "@/server/context";
 import { PRODUCT_COLUMNS } from "./_shared";
@@ -8,6 +8,7 @@ export class ListReviewsUseCase {
 
   async execute() {
     return this.db.query.customerReview.findMany({
+      where: eq(customerReview.isDeleted, false),
       with: { product: { columns: PRODUCT_COLUMNS } },
       orderBy: [desc(customerReview.createdAt)],
     });

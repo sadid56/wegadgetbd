@@ -50,6 +50,9 @@ export function LanguageSwitcher({
         onChange={(e) => handleLocaleChange(String(e.target.value))}
         IconComponent={KeyboardArrowDownRoundedIcon}
         aria-label="Language selector"
+        MenuProps={{
+          disableScrollLock: true,
+        }}
         sx={{
           height: isFooter ? 34 : 36,
           minWidth: isFooter ? 115 : 120,

@@ -1,9 +1,10 @@
 import { eq } from "drizzle-orm";
-import { product, auditLog, type ProductStatus, type AuditAction } from "@/db/schema";
+import { product, type ProductStatus } from "@/db/schema";
 import { normalizeVideoInput } from "@/lib/video-links";
 import type { Context } from "@/server/context";
 import type { CreateProductInput } from "@/server/schemas/products.schema";
 import { formatProduct } from "./_shared";
+import { writeAudit } from "@/server/lib/orm";
 
 const DEFAULT_STATUS: ProductStatus = "PENDING";
 const DEFAULT_SOLD_COUNT = 360;
@@ -28,7 +29,6 @@ export class CreateProductUseCase {
       .values({
         title: input.title,
         slug: input.slug,
-        description: input.description,
         markdown_description: input.markdown_description,
         price: String(input.price),
         discountPrice: input.discountPrice != null ? String(input.discountPrice) : null,
@@ -38,9 +38,7 @@ export class CreateProductUseCase {
         isFeatured: input.isFeatured ?? false,
         inStock: input.inStock ?? true,
         tags: input.tags || [],
-        brand: input.brand,
-        model: input.model,
-        whyBuyText: input.whyBuyText,
+        packagingDelivery: input.packagingDelivery,
         specifications: input.specifications,
         soldCount: input.soldCount ?? DEFAULT_SOLD_COUNT,
         videoLinks: this.normalizeVideoLinks(input.videoLinks),
@@ -61,14 +59,10 @@ export class CreateProductUseCase {
   }
 
   private async recordAudit(productId: string, title: string) {
-    try {
-      return await this.db.insert(auditLog).values({
-        action: "CREATE_PRODUCT" as AuditAction,
-        actorId: this.actorId,
-        metadata: { productId, title },
-      });
-    } catch {
-      return null;
-    }
+    return writeAudit(this.db, {
+      action: "CREATE_PRODUCT",
+      actorId: this.actorId,
+      metadata: { productId, title },
+    });
   }
 }

@@ -32,22 +32,25 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
         flexDirection: "column",
         bgcolor: tokens.bgCanvas,
         position: "relative",
+        px: 2,
+        py: { xs: 3, sm: 5 },
       }}
     >
-      {/* Top Header Navigation */}
+      {/* Top Floating Controls: Back to Home + Language Switcher */}
       <Box
-        component='header'
         sx={{
-          px: { xs: 2.5, sm: 4 },
-          py: 2,
+          position: { xs: "static", sm: "absolute" },
+          top: { sm: 24 },
+          left: { sm: 28 },
+          right: { sm: 28 },
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          borderBottom: `1px solid ${tokens.borderDefault}`,
-          bgcolor: tokens.bgPanel,
+          mb: { xs: 3, sm: 0 },
+          zIndex: 10,
         }}
       >
-        {/* Back to Home Button */}
+        {/* User-friendly Back to Store / Home Button */}
         <Link href='/' style={{ textDecoration: "none" }}>
           <Box
             sx={{
@@ -55,63 +58,61 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
               alignItems: "center",
               gap: 1,
               color: tokens.textSecondary,
-              fontSize: { xs: 13, sm: 13.5 },
+              fontSize: 13,
               fontWeight: 600,
-              px: { xs: 1.75, sm: 2.25 },
-              py: 0.85,
+              px: 2,
+              py: 0.9,
               borderRadius: `${tokens.radiusPill}px`,
-              bgcolor: tokens.bgCanvas,
+              bgcolor: tokens.bgPanel,
               border: `1px solid ${tokens.borderDefault}`,
-              transition: "all 0.15s ease",
+              boxShadow: tokens.shadowSm,
+              transition: "all 0.18s ease",
               "&:hover": {
                 bgcolor: tokens.bgSubtle,
                 borderColor: tokens.borderElevated,
                 color: tokens.textPrimary,
-                transform: "translateX(-2px)",
+                transform: "translateX(-3px)",
               },
             }}
           >
             <ArrowBackIcon sx={{ fontSize: 16, color: tokens.primary }} />
-            {t("backToHome")}
+            <span>{t("backToHome")}</span>
           </Box>
         </Link>
 
-        {/* Brand Logo in Header & Language Switcher */}
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <LanguageSwitcher variant="inline" showIcon={false} />
-          <BrandLogo variant="light" size="sm" href="/" />
-        </Box>
+        {/* Language Switcher */}
+        <LanguageSwitcher variant="inline" showIcon={false} />
       </Box>
 
-      {/* Main Content Area */}
+      {/* Main Centered Content */}
       <Box
         component='main'
         sx={{
           flex: 1,
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          px: 2,
-          py: { xs: 4, sm: 7 },
+          width: "100%",
+          my: "auto",
         }}
       >
-        <Box sx={{ width: "100%", maxWidth: 440 }}>{children}</Box>
-      </Box>
+        <Box
+          sx={{
+            width: "100%",
+            maxWidth: 440,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          {/* Brand Logo Above Card */}
+          <Box sx={{ mb: 3 }}>
+            <BrandLogo variant="light" size="md" href="/" />
+          </Box>
 
-      {/* Clean Minimalist Footer */}
-      <Box
-        component='footer'
-        sx={{
-          py: 2.5,
-          px: 2,
-          textAlign: "center",
-          borderTop: `1px solid ${tokens.borderDefault}`,
-          bgcolor: tokens.bgPanel,
-        }}
-      >
-        <Typography sx={{ fontSize: 12.5, color: tokens.textMuted }}>
-          © {new Date().getFullYear()} We Gadget BD. All rights reserved.
-        </Typography>
+          {children}
+        </Box>
       </Box>
     </Box>
   );

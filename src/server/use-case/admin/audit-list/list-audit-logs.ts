@@ -1,4 +1,4 @@
-import { count, desc, eq, ilike, or } from "drizzle-orm";
+import { count, desc, eq, ilike, inArray, or } from "drizzle-orm";
 import { auditLog, user, type AuditAction } from "@/db/schema";
 import type { Context } from "@/server/context";
 import { buildWhere } from "@/server/lib/orm";
@@ -31,7 +31,12 @@ export class ListAuditLogsUseCase {
   private buildWhereClause({ search = "", action }: ListAuditLogsInput) {
     const conditions: any[] = [];
     if (search) {
-      conditions.push(or(ilike(auditLog.actorId, `%${search}%`), ilike(user.name, `%${search}%`), ilike(user.email, `%${search}%`)));
+      const matchingUsers = this.db
+        .select({ id: user.id })
+        .from(user)
+        .where(or(ilike(user.name, `%${search}%`), ilike(user.email, `%${search}%`)));
+
+      conditions.push(or(ilike(auditLog.actorId, `%${search}%`), inArray(auditLog.actorId, matchingUsers)));
     }
     if (action) conditions.push(eq(auditLog.action, action as AuditAction));
     return buildWhere(conditions);
@@ -48,6 +53,6 @@ export class ListAuditLogsUseCase {
   }
 
   private fetchLogCount(whereClause: ReturnType<typeof buildWhere>) {
-    return this.db.select({ total: count() }).from(auditLog).leftJoin(user, eq(auditLog.actorId, user.id)).where(whereClause);
+    return this.db.select({ total: count() }).from(auditLog).where(whereClause);
   }
 }

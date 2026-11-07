@@ -29,6 +29,8 @@ export const category = pgTable("Category", {
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
   icon: text("icon"),
+  isDeleted: boolean("isDeleted").default(false).notNull(),
+  deletedAt: timestamp("deletedAt", { mode: "date" }),
   createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
   updatedAt: timestamp("updatedAt", { mode: "date" })
     .notNull()
@@ -43,7 +45,6 @@ export const product = pgTable(
       .$defaultFn(() => crypto.randomUUID()),
     title: text("title").notNull(),
     slug: text("slug").notNull().unique(),
-    description: text("description").notNull(),
     markdown_description: text("markdown_description"),
     price: numeric("price", { precision: 12, scale: 2 }).notNull(),
     discountPrice: numeric("discountPrice", { precision: 12, scale: 2 }),
@@ -67,10 +68,10 @@ export const product = pgTable(
       .array()
       .notNull()
       .default(sql`'{}'::text[]`),
-    model: text("model"),
-    brand: text("brand"),
-    whyBuyText: text("whyBuyText"),
+    packagingDelivery: jsonb("packagingDelivery"),
     soldCount: integer("soldCount").default(360).notNull(),
+    isDeleted: boolean("isDeleted").default(false).notNull(),
+    deletedAt: timestamp("deletedAt", { mode: "date" }),
     createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updatedAt", { mode: "date" })
       .notNull()

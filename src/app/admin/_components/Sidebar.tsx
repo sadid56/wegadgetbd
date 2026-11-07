@@ -13,6 +13,7 @@ import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
 import CreditCardOutlinedIcon from "@mui/icons-material/CreditCardOutlined";
 import AssignmentOutlinedIcon from "@mui/icons-material/AssignmentOutlined";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 export const NAVIGATION: Navigation = [
   {
@@ -88,6 +89,11 @@ export const NAVIGATION: Navigation = [
     title: "Audit logs",
     icon: <AssignmentOutlinedIcon />,
   },
+  {
+    segment: "admin/trash",
+    title: "Trash",
+    icon: <DeleteOutlineOutlinedIcon />,
+  },
 ];
 
 export const sidebarItems = [
@@ -102,6 +108,7 @@ export const sidebarItems = [
   { href: "/admin/expenses", label: "Expense summary", icon: TrendingDownIcon },
   { href: "/admin/payments", label: "Payment history", icon: CreditCardOutlinedIcon },
   { href: "/admin/audit-logs", label: "Audit logs", icon: AssignmentOutlinedIcon },
+  { href: "/admin/trash", label: "Trash", icon: DeleteOutlineOutlinedIcon },
 ];
 
 export function SidebarContent(_props: { onItemClick?: () => void }) {

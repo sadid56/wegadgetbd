@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { product, category } from "@/db/schema";
 import type { Context } from "@/server/context";
 import type { TopPickProduct } from "@/server/schemas/products.schema";
@@ -16,7 +16,6 @@ export class GetTopPicksUseCase {
         price: product.price,
         discountPrice: product.discountPrice,
         images: product.images,
-        brand: product.brand,
         rating: product.rating,
         soldCount: product.soldCount,
         inStock: product.inStock,
@@ -24,7 +23,7 @@ export class GetTopPicksUseCase {
       })
       .from(product)
       .leftJoin(category, eq(product.categoryId, category.id))
-      .where(eq(product.status, "ACTIVE"))
+      .where(and(eq(product.status, "ACTIVE"), eq(product.isDeleted, false)))
       .orderBy(
         desc(product.soldCount),
         desc(product.rating),
@@ -43,7 +42,7 @@ export class GetTopPicksUseCase {
       price: string | number;
       discountPrice: string | number | null;
       images: string[] | null;
-      brand: string | null;
+      brand?: string | null;
       rating: string | number | null;
       soldCount: number | null;
       inStock: boolean | null;

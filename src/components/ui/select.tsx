@@ -37,16 +37,19 @@ export function Select<Value = unknown>({ sx, MenuProps, ...props }: SelectProps
         {
           bgcolor: tokens.bgInput,
           color: tokens.textPrimary,
-          borderRadius: `${tokens.radiusMd}px`,
+          borderRadius: `${tokens.radiusLg}px`,
           fontSize: "0.875rem",
+          transition: "all 0.2s cubic-bezier(0.2, 0, 0, 1)",
           "& .MuiOutlinedInput-notchedOutline": {
             borderColor: tokens.borderDefault,
+            transition: "border-color 0.15s ease",
           },
           "&:hover .MuiOutlinedInput-notchedOutline": {
             borderColor: tokens.borderHover,
           },
           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
             borderColor: tokens.primary,
+            borderWidth: "2px",
           },
         },
         ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
@@ -68,11 +71,12 @@ export const MenuItem = React.forwardRef<HTMLLIElement, MenuItemProps>(function 
           fontSize: 13.5,
           fontWeight: variant !== "default" ? 600 : 500,
           color: variant === "danger" ? tokens.danger : tokens.textPrimary,
-          borderRadius: `${tokens.radiusSm}px`,
-          py: 1,
-          px: 1.25,
+          borderRadius: `${tokens.radiusPill}px`,
+          py: 0.85,
+          px: 1.75,
           my: 0.25,
           gap: 1.5,
+          transition: "all 0.15s ease",
           textDecoration: "none",
           "& svg": {
             fontSize: 19,

@@ -402,13 +402,13 @@ export default function CategoriesPage() {
         open={!!categoryToDelete}
         onClose={() => !isDeleting && setCategoryToDelete(null)}
         onConfirm={hasProducts ? () => setCategoryToDelete(null) : confirmDelete}
-        title={hasProducts ? "Cannot Delete Category" : "Are you absolutely sure?"}
+        title={hasProducts ? "Cannot Delete Category" : "Move Category to Trash?"}
         description={
           hasProducts
-            ? `This category "${selectedCategoryToDelete?.name}" currently has ${selectedCategoryToDelete?._count?.products} associated product(s). To delete this category, please delete or reassign its products first.`
-            : `This action cannot be undone. This will permanently delete the category "${selectedCategoryToDelete?.name}".`
+            ? `This category "${selectedCategoryToDelete?.name}" currently has ${selectedCategoryToDelete?._count?.products} active associated product(s). To delete this category, please delete or reassign its products first.`
+            : `This will move "${selectedCategoryToDelete?.name}" to Trash. You can restore it anytime or delete it permanently from the Trash.`
         }
-        confirmText={hasProducts ? "Understood" : "Delete"}
+        confirmText={hasProducts ? "Understood" : "Move to Trash"}
         confirmVariant={hasProducts ? "primary" : "destructive"}
         cancelText={hasProducts ? undefined : "Cancel"}
       />

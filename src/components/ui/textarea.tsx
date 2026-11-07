@@ -69,7 +69,7 @@ export const Textarea = React.forwardRef<HTMLDivElement, TextareaProps>(
             "& .MuiInputBase-root": {
               bgcolor: tokens.bgInput,
               color: tokens.textPrimary,
-              borderRadius: `${tokens.radiusMd}px`,
+              borderRadius: `${tokens.radiusLg}px`,
               fontSize: "0.88rem",
               border: `1px solid ${error ? tokens.error : tokens.borderDefault}`,
               transition: "border-color 0.15s ease",
@@ -78,6 +78,7 @@ export const Textarea = React.forwardRef<HTMLDivElement, TextareaProps>(
               },
               "&.Mui-focused": {
                 borderColor: error ? tokens.error : tokens.primary,
+                boxShadow: `0 0 0 3px ${tokens.primarySubtle}`,
               },
             },
             "& .MuiOutlinedInput-notchedOutline": {

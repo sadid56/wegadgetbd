@@ -159,6 +159,48 @@ export const updateAdminReviewInputSchema = z.object({
   productId: z.string().nullable().optional(),
 });
 
+// Trash Schemas
+export const trashItemTypeSchema = z.enum(["PRODUCT", "CATEGORY", "REVIEW", "ORDER"]);
+export type TrashItemType = z.infer<typeof trashItemTypeSchema>;
+
+export const trashItemSchema = z.object({
+  id: z.string(),
+  itemType: trashItemTypeSchema,
+  title: z.string(),
+  subtitle: z.string().optional().default(""),
+  image: z.string().nullable().optional(),
+  deletedAt: z.date().or(z.string()),
+  metadata: z.record(z.string(), z.any()).optional(),
+});
+export type TrashItem = z.infer<typeof trashItemSchema>;
+
+export const listTrashInputSchema = paginationInputSchema.extend({
+  type: z.enum(["ALL", "PRODUCT", "CATEGORY", "REVIEW", "ORDER"]).optional().default("ALL"),
+  search: z.string().optional(),
+});
+export type ListTrashInput = z.infer<typeof listTrashInputSchema>;
+
+export const listTrashOutputSchema = z.object({
+  items: z.array(trashItemSchema),
+  total: z.number(),
+  page: z.number(),
+  totalPages: z.number(),
+  counts: z.object({
+    ALL: z.number(),
+    PRODUCT: z.number(),
+    CATEGORY: z.number(),
+    REVIEW: z.number(),
+    ORDER: z.number(),
+  }),
+});
+export type ListTrashOutput = z.infer<typeof listTrashOutputSchema>;
+
+export const trashActionInputSchema = z.object({
+  id: z.string(),
+  itemType: trashItemTypeSchema,
+});
+export type TrashActionInput = z.infer<typeof trashActionInputSchema>;
+
 export type DashboardStatsOutput = z.infer<typeof dashboardStatsOutputSchema>;
 export type AuditLog = z.infer<typeof auditLogSchema>;
 export type ListAuditLogsInput = z.infer<typeof listAuditLogsInputSchema>;

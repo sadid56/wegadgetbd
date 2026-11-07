@@ -12,6 +12,9 @@ export type ButtonVariant =
   | "primary"
   | "default"
   | "contained"
+  | "tonal"
+  | "filled-tonal"
+  | "elevated"
   | "secondary"
   | "outlined"
   | "outline"
@@ -74,14 +77,52 @@ export const Button: React.FC<ButtonProps> = ({
           bgcolor: tokens.primary,
           color: tokens.textWhite,
           border: "1px solid transparent",
-          fontWeight: 700,
+          fontWeight: 600,
+          boxShadow: tokens.elevation1,
           "&:hover": {
             bgcolor: tokens.primaryHover,
             color: tokens.textWhite,
+            boxShadow: tokens.elevation2,
           },
           "&.Mui-disabled": {
             bgcolor: tokens.primaryDisabled,
             color: tokens.textDisabled,
+            boxShadow: "none",
+          },
+        };
+
+      case "tonal":
+      case "filled-tonal":
+        return {
+          bgcolor: tokens.primaryContainer,
+          color: tokens.onPrimaryContainer,
+          border: "1px solid transparent",
+          fontWeight: 600,
+          "&:hover": {
+            bgcolor: "#B8F0E5",
+            color: tokens.onPrimaryContainer,
+          },
+          "&.Mui-disabled": {
+            bgcolor: tokens.bgSubtle,
+            color: tokens.textDisabled,
+          },
+        };
+
+      case "elevated":
+        return {
+          bgcolor: tokens.bgPanel,
+          color: tokens.primary,
+          border: "1px solid transparent",
+          boxShadow: tokens.elevation1,
+          fontWeight: 600,
+          "&:hover": {
+            bgcolor: tokens.bgSubtle,
+            boxShadow: tokens.elevation2,
+          },
+          "&.Mui-disabled": {
+            bgcolor: tokens.bgSubtle,
+            color: tokens.textDisabled,
+            boxShadow: "none",
           },
         };
 
@@ -89,14 +130,14 @@ export const Button: React.FC<ButtonProps> = ({
       case "outlined":
       case "outline":
         return {
-          bgcolor: tokens.bgPanel,
+          bgcolor: "transparent",
           color: color === "error" ? tokens.danger : tokens.textPrimary,
           border: `1px solid ${color === "error" ? tokens.dangerBorder : tokens.borderDefault}`,
           fontWeight: 600,
           "&:hover": {
             bgcolor: color === "error" ? tokens.dangerSubtle : tokens.bgSubtle,
-            borderColor: color === "error" ? tokens.dangerBorder : tokens.borderDefault,
-            color: color === "error" ? tokens.danger : tokens.textPrimary,
+            borderColor: color === "error" ? tokens.dangerBorder : tokens.borderHover,
+            color: color === "error" ? tokens.danger : tokens.primary,
             outline: "none",
             boxShadow: "none",
           },
@@ -186,13 +227,15 @@ export const Button: React.FC<ButtonProps> = ({
       endIcon={loading ? undefined : endIcon}
       sx={[
         {
-          borderRadius: `${tokens.radiusMd}px`,
+          borderRadius: `${tokens.radiusPill}px`, // Official Material You Pill Shape
           textTransform: "none",
-          fontSize: isSmall ? "0.82rem" : isLarge ? "0.98rem" : "0.88rem",
-          py: isIcon ? 0.8 : isSmall ? 0.6 : isLarge ? 1.2 : 0.9,
-          px: isIcon ? 0.8 : isSmall ? 1.8 : isLarge ? 3.2 : 2.4,
+          fontSize: isSmall ? "0.82rem" : isLarge ? "0.96rem" : "0.88rem",
+          letterSpacing: "0.01em",
+          minHeight: isIcon ? 36 : isSmall ? 32 : isLarge ? 48 : 40,
+          py: isIcon ? 0.8 : isSmall ? 0.6 : isLarge ? 1.2 : 0.85,
+          px: isIcon ? 0.8 : isSmall ? 2 : isLarge ? 3.5 : 2.5,
           minWidth: isIcon ? 36 : undefined,
-          transition: "all 0.18s ease-in-out",
+          transition: "all 0.2s cubic-bezier(0.2, 0, 0, 1)",
           ...getVariantStyles(),
         },
         ...(Array.isArray(sx) ? sx : sx ? [sx] : []),

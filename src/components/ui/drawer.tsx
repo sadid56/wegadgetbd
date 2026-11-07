@@ -33,24 +33,29 @@ export function Drawer({
               bgcolor: tokens.bgPanel,
               color: tokens.textPrimary,
               backgroundImage: "none",
+              boxShadow: tokens.elevation3,
               ...(chosenAnchor === "bottom"
                 ? {
-                    borderTopLeftRadius: `${tokens.radiusLg}px`,
-                    borderTopRightRadius: `${tokens.radiusLg}px`,
+                    borderTopLeftRadius: `${tokens.radiusXxl}px`,
+                    borderTopRightRadius: `${tokens.radiusXxl}px`,
                     borderTop: `1px solid ${tokens.borderDefault}`,
                     maxHeight: "85vh",
                   }
                 : chosenAnchor === "top"
                 ? {
-                    borderBottomLeftRadius: `${tokens.radiusLg}px`,
-                    borderBottomRightRadius: `${tokens.radiusLg}px`,
+                    borderBottomLeftRadius: `${tokens.radiusXxl}px`,
+                    borderBottomRightRadius: `${tokens.radiusXxl}px`,
                     borderBottom: `1px solid ${tokens.borderDefault}`,
                   }
                 : chosenAnchor === "left"
                 ? {
+                    borderTopRightRadius: `${tokens.radiusXl}px`,
+                    borderBottomRightRadius: `${tokens.radiusXl}px`,
                     borderRight: `1px solid ${tokens.borderDefault}`,
                   }
                 : {
+                    borderTopLeftRadius: `${tokens.radiusXl}px`,
+                    borderBottomLeftRadius: `${tokens.radiusXl}px`,
                     borderLeft: `1px solid ${tokens.borderDefault}`,
                   }),
             },

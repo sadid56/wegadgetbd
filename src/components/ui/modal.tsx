@@ -40,13 +40,13 @@ export function Modal({
           ...paperProps,
           sx: [
             {
-              borderRadius: `${tokens.radiusLg}px`,
-              p: 1.5,
+              borderRadius: `${tokens.radiusXxl}px`,
+              p: 2,
               bgcolor: tokens.bgPanel,
               color: tokens.textPrimary,
               backgroundImage: "none",
               border: `1px solid ${tokens.borderDefault}`,
-              boxShadow: tokens.shadowElevated,
+              boxShadow: tokens.elevation3,
               position: "relative",
             },
             ...(Array.isArray(paperProps.sx) ? paperProps.sx : paperProps.sx ? [paperProps.sx] : []),

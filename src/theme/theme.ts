@@ -4,15 +4,24 @@ export const APP_FONT_FAMILY = "var(--font-app), 'Inter', -apple-system, BlinkMa
 
 export const tokens = {
   fontFamily: APP_FONT_FAMILY,
-  // Surfaces & Backgrounds - Clean, crisp e-commerce canvas with deep dark obsidian surfaces
-  bgCanvas: "#F7F8FA", // Balanced modern cool off-white canvas
-  bgPanel: "#ffffff", // Pure crisp white panels & cards
-  bgInput: "#ffffff", // Pure white form controls
-  bgElevated: "#ffffff", // Elevated menus, popovers, modals
-  bgSubtle: "#eef1f4", // Soft muted hover states & tags
-  bgOverlay: "rgba(16, 24, 32, 0.75)",
-  bgBackdrop: "rgba(16, 24, 32, 0.5)",
-  bgBlack: "#0b1016",
+
+  // =========================================================================
+  // MATERIAL YOU 3 (M3) TONAL SURFACES & CONTAINERS
+  // =========================================================================
+  bgCanvas: "#F8FAF9", // M3 Surface - clean, calm modern tone with subtle neutral tint
+  bgSurface: "#F8FAF9",
+  bgPanel: "#ffffff", // M3 Surface Container Lowest - crisp, pure clean card face
+  bgInput: "#ffffff",
+  bgElevated: "#ffffff",
+  bgSubtle: "#EEF3F2", // M3 Surface Container Low / Muted hover state
+  bgSurfaceContainerLowest: "#ffffff",
+  bgSurfaceContainerLow: "#F2F5F4",
+  bgSurfaceContainer: "#ECEFEF",
+  bgSurfaceContainerHigh: "#E6EAE9",
+  bgSurfaceContainerHighest: "#E0E4E3",
+  bgOverlay: "rgba(17, 24, 23, 0.70)",
+  bgBackdrop: "rgba(17, 24, 23, 0.45)",
+  bgBlack: "#0B1110",
 
   // Dark obsidian & deep midnight surfaces (Hero, banners, footer)
   bgDark: "#101820", // Brand Midnight (#101820)
@@ -20,89 +29,127 @@ export const tokens = {
   bgDarkElevated: "#1f2c3a", // Elevated midnight card
   bgDarkSubtle: "rgba(255, 255, 255, 0.05)",
 
-  // Borders - Crisp modern lines
-  borderDefault: "#e5e8eb", // Balanced clean border
-  borderSubtle: "#f0f2f5", // Subtle border
-  borderElevated: "#d3d8de", // Elevated border
-  borderHover: "#9ca3af", // Border hover
-  borderActive: "#00BFA6", // Brand Teal (#00BFA6)
-  borderDisabled: "#f0f2f5",
+  // =========================================================================
+  // MATERIAL YOU 3 (M3) OUTLINES & BORDERS
+  // =========================================================================
+  outline: "#6F7978",
+  outlineVariant: "#DDE3E2",
+  borderDefault: "#E2E7E6", // M3 Outline Variant - subtle, crisp, modern
+  borderSubtle: "#EDF2F1",
+  borderElevated: "#CFD6D5",
+  borderHover: "#8E9897",
+  borderActive: "#00BFA6", // Brand Teal Seed (#00BFA6)
+  borderDisabled: "#EDF2F1",
   borderDark: "rgba(255, 255, 255, 0.08)",
   borderDarkSubtle: "rgba(0, 191, 166, 0.22)",
 
-  // Primary / Brand (Teal Brand Theme - #00BFA6)
-  primary: "#00BFA6", // Brand Teal
-  primaryHover: "#00a892", // Deep Teal Hover
-  primaryLight: "#e6f9f6", // Teal soft soothing tint
-  primarySubtle: "rgba(0, 191, 166, 0.10)",
+  // =========================================================================
+  // MATERIAL YOU 3 (M3) PRIMARY & TONAL ROLES
+  // =========================================================================
+  primary: "#00BFA6", // Brand Seed Teal
+  primaryDark: "#008A77",
+  primaryHover: "#00A892",
+  primaryContainer: "#CCF6EE", // M3 Primary Container - soothing tonal pill background
+  onPrimaryContainer: "#003831", // M3 On-Primary Container text
+  primaryLight: "#E6FAF6",
+  primarySubtle: "rgba(0, 191, 166, 0.12)",
   primaryDisabled: "rgba(0, 191, 166, 0.35)",
-  primaryBorder: "rgba(0, 191, 166, 0.25)",
+  primaryBorder: "rgba(0, 191, 166, 0.28)",
+  onPrimary: "#ffffff",
 
-  // Secondary / Accent (Amber Glow Highlight - #FFB547)
-  accent: "#FFB547", // Brand Accent
-  accentHover: "#f5a631", // Deep Amber Hover
-  accentLight: "#fff8ec", // Warm soft amber tint
-  accentSubtle: "rgba(255, 181, 71, 0.15)",
+  // =========================================================================
+  // MATERIAL YOU 3 (M3) SECONDARY & TERTIARY / ACCENT
+  // =========================================================================
+  secondary: "#3B5A54",
+  secondaryContainer: "#D5E7E3",
+  onSecondaryContainer: "#07201C",
+  accent: "#FFB547", // Brand Accent / Tertiary Warm Amber
+  accentHover: "#F5A631",
+  accentLight: "#FFF7EB",
+  accentSubtle: "rgba(255, 181, 71, 0.16)",
+  tertiaryContainer: "#FFE5C2",
+  onTertiaryContainer: "#341E00",
 
   // Badge specific tags
   badgeNew: "#00BFA6",
   badgeNewSubtle: "rgba(0, 191, 166, 0.12)",
   badgeSale: "#FFB547",
-  badgeSaleSubtle: "rgba(255, 181, 71, 0.15)",
-  badgeGaming: "#8b5cf6",
+  badgeSaleSubtle: "rgba(255, 181, 71, 0.16)",
+  badgeGaming: "#8B5CF6",
   badgeGamingSubtle: "rgba(139, 92, 246, 0.12)",
 
-  // Typography Colors - High readability, professional contrast
-  textPrimary: "#101820", // Brand Midnight (#101820)
-  textSecondary: "#475569", // Slate 600
-  textMuted: "#64748b", // Slate 500
-  textDisabled: "#94a3b8", // Slate 400
+  // =========================================================================
+  // MATERIAL YOU 3 (M3) TYPOGRAPHY / ON-SURFACE COLORS
+  // =========================================================================
+  textPrimary: "#111817", // M3 High-contrast Neutral-10
+  textSecondary: "#424D4C", // M3 Neutral Variant 30
+  textMuted: "#6B7776", // M3 Neutral Variant 50
+  textDisabled: "#9EA7A6",
   textWhite: "#ffffff",
   textDarkMuted: "#94a3b8",
 
-  // Status: Success
+  // Status Colors
   success: "#10b981",
   successText: "#059669",
-  successSubtle: "rgba(16, 185, 129, 0.10)",
-  successBorder: "rgba(16, 185, 129, 0.25)",
+  successContainer: "#D1FAE5",
+  onSuccessContainer: "#064E3B",
+  successSubtle: "rgba(16, 185, 129, 0.12)",
+  successBorder: "rgba(16, 185, 129, 0.28)",
 
-  // Status: Warning
   warning: "#f59e0b",
   warningHover: "#d97706",
-  warningSubtle: "rgba(245, 158, 11, 0.10)",
-  warningBorder: "rgba(245, 158, 11, 0.25)",
+  warningContainer: "#FEF3C7",
+  onWarningContainer: "#78350F",
+  warningSubtle: "rgba(245, 158, 11, 0.12)",
+  warningBorder: "rgba(245, 158, 11, 0.28)",
 
-  // Status: Error / Danger
   error: "#ef4444",
-  errorSubtle: "rgba(239, 68, 68, 0.10)",
+  errorContainer: "#FEE2E2",
+  onErrorContainer: "#7F1D1D",
+  errorSubtle: "rgba(239, 68, 68, 0.12)",
   danger: "#ef4444",
   dangerHover: "#dc2626",
-  dangerSubtle: "rgba(239, 68, 68, 0.10)",
-  dangerBorder: "rgba(239, 68, 68, 0.25)",
+  dangerSubtle: "rgba(239, 68, 68, 0.12)",
+  dangerBorder: "rgba(239, 68, 68, 0.28)",
 
-  // Status: Info
   info: "#0ea5e9",
   infoHover: "#0284c7",
-  infoSubtle: "rgba(14, 165, 233, 0.10)",
-  infoBorder: "rgba(14, 165, 233, 0.25)",
+  infoContainer: "#E0F2FE",
+  onInfoContainer: "#0C4A6E",
+  infoSubtle: "rgba(14, 165, 233, 0.12)",
+  infoBorder: "rgba(14, 165, 233, 0.28)",
 
-  // Shadows - Soft modern elevations
-  shadowSm: "0 1px 2px 0 rgba(0, 0, 0, 0.05)",
-  shadowMd: "0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05)",
-  shadowLg: "0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04)",
-  shadowElevated: "0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.03)",
-  shadowPopover: "0 12px 28px -4px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.08)",
-  shadowDrawerRight: "-10px 0 30px rgba(15, 23, 42, 0.08)",
-  shadowDrawerLeft: "10px 0 30px rgba(15, 23, 42, 0.08)",
-  shadowPrimary: "0 4px 14px rgba(0, 191, 166, 0.25)",
-  shadowPrimaryHover: "0 6px 20px rgba(0, 191, 166, 0.35)",
+  // =========================================================================
+  // MATERIAL YOU 3 (M3) ELEVATION & SHADOWS
+  // =========================================================================
+  elevation0: "none",
+  elevation1: "0 1px 3px 1px rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.07)",
+  elevation2: "0 2px 6px 2px rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.07)",
+  elevation3: "0 4px 8px 3px rgba(0, 0, 0, 0.06), 0 1px 3px 0 rgba(0, 0, 0, 0.08)",
+  elevation4: "0 6px 10px 4px rgba(0, 0, 0, 0.06), 0 2px 3px 0 rgba(0, 0, 0, 0.09)",
+  elevation5: "0 8px 12px 6px rgba(0, 0, 0, 0.07), 0 4px 4px 0 rgba(0, 0, 0, 0.10)",
 
-  // Border Radii
-  radiusSm: 6,
-  radiusMd: 10,
-  radiusLg: 14,
-  radiusXl: 20,
-  radiusPill: 9999,
+  shadowSm: "0 1px 3px 1px rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.07)",
+  shadowMd: "0 2px 6px 2px rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.07)",
+  shadowLg: "0 4px 8px 3px rgba(0, 0, 0, 0.06), 0 1px 3px 0 rgba(0, 0, 0, 0.08)",
+  shadowElevated: "0 6px 12px 4px rgba(0, 0, 0, 0.06), 0 2px 4px 0 rgba(0, 0, 0, 0.08)",
+  shadowPopover: "0 10px 24px -2px rgba(17, 24, 23, 0.10), 0 4px 10px -2px rgba(17, 24, 23, 0.06)",
+  shadowDrawerRight: "-8px 0 24px rgba(17, 24, 23, 0.07)",
+  shadowDrawerLeft: "8px 0 24px rgba(17, 24, 23, 0.07)",
+  shadowPrimary: "0 4px 16px rgba(0, 191, 166, 0.28)",
+  shadowPrimaryHover: "0 6px 22px rgba(0, 191, 166, 0.38)",
+
+  // =========================================================================
+  // MATERIAL YOU 3 (M3) SHAPE TOKENS (CORNER RADII)
+  // =========================================================================
+  radiusXs: 4, // M3 Extra Small
+  radiusSm: 8, // M3 Small (Tooltips, Inner chips)
+  radiusMd: 12, // M3 Medium (Inputs, Small cards)
+  radiusLg: 16, // M3 Large (Standard Cards, Menus, Popovers)
+  radiusXl: 24, // M3 Extra Large (Feature cards, Drawers)
+  radiusXxl: 28, // M3 Dialogs & Sheets
+  radiusPill: 9999, // M3 Full / Pill (Buttons, Search bars, Badges)
+  radiusFull: 9999,
 };
 
 export const theme = createTheme({
@@ -157,7 +204,7 @@ export const theme = createTheme({
     button: { textTransform: "none", fontWeight: 600 },
   },
   shape: {
-    borderRadius: tokens.radiusMd,
+    borderRadius: tokens.radiusLg,
   },
   components: {
     MuiCssBaseline: {
@@ -181,6 +228,8 @@ export const theme = createTheme({
           backgroundImage: "none !important",
           backgroundColor: tokens.bgPanel,
           color: tokens.textPrimary,
+          borderRadius: tokens.radiusLg,
+          boxShadow: tokens.elevation1,
         },
       },
     },
@@ -190,6 +239,8 @@ export const theme = createTheme({
           backgroundImage: "none !important",
           backgroundColor: tokens.bgPanel,
           borderRight: `1px solid ${tokens.borderDefault}`,
+          borderTopRightRadius: tokens.radiusXl,
+          borderBottomRightRadius: tokens.radiusXl,
         },
       },
     },
@@ -199,8 +250,20 @@ export const theme = createTheme({
           backgroundImage: "none !important",
           backgroundColor: tokens.bgPanel,
           border: `1px solid ${tokens.borderDefault}`,
-          borderRadius: tokens.radiusLg,
-          boxShadow: tokens.shadowSm,
+          borderRadius: tokens.radiusXl,
+          boxShadow: tokens.elevation1,
+        },
+      },
+    },
+    MuiDialog: {
+      styleOverrides: {
+        paper: {
+          backgroundImage: "none !important",
+          backgroundColor: tokens.bgPanel,
+          borderRadius: `${tokens.radiusXxl}px !important`,
+          boxShadow: `${tokens.elevation3} !important`,
+          border: `1px solid ${tokens.borderDefault}`,
+          padding: "8px",
         },
       },
     },
@@ -235,12 +298,13 @@ export const theme = createTheme({
         root: {
           fontSize: 13.5,
           fontWeight: 500,
-          borderRadius: tokens.radiusSm,
-          padding: "8px 10px",
+          borderRadius: tokens.radiusPill,
+          padding: "8px 14px",
           margin: "2px 0",
           gap: "12px",
           color: tokens.textPrimary,
           textDecoration: "none",
+          transition: "all 0.15s ease",
           "& svg": {
             fontSize: 19,
             color: tokens.textSecondary,
@@ -250,14 +314,38 @@ export const theme = createTheme({
             backgroundColor: tokens.bgSubtle,
           },
           "&.Mui-selected": {
-            backgroundColor: `${tokens.primarySubtle} !important`,
-            color: `${tokens.primary} !important`,
+            backgroundColor: `${tokens.primaryContainer} !important`,
+            color: `${tokens.onPrimaryContainer} !important`,
             fontWeight: 600,
             "& svg": {
-              color: tokens.primary,
+              color: tokens.onPrimaryContainer,
             },
             "&:hover": {
-              backgroundColor: `${tokens.primarySubtle} !important`,
+              backgroundColor: `${tokens.primaryContainer} !important`,
+            },
+          },
+        },
+      },
+    },
+    MuiListItemButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: tokens.radiusPill, // Authentic M3 Navigation item highlight
+          margin: "2px 8px",
+          padding: "8px 16px",
+          transition: "all 0.2s cubic-bezier(0.2, 0, 0, 1)",
+          "&:hover": {
+            backgroundColor: tokens.bgSubtle,
+          },
+          "&.Mui-selected": {
+            backgroundColor: `${tokens.primaryContainer} !important`,
+            color: `${tokens.onPrimaryContainer} !important`,
+            fontWeight: 700,
+            "& .MuiListItemIcon-root": {
+              color: tokens.onPrimaryContainer,
+            },
+            "&:hover": {
+              backgroundColor: `${tokens.primaryContainer} !important`,
             },
           },
         },
@@ -266,12 +354,13 @@ export const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: tokens.radiusMd,
+          borderRadius: tokens.radiusPill, // Authentic Material You Pill Button
           textTransform: "none",
           fontWeight: 600,
           boxShadow: "none",
+          transition: "all 0.2s cubic-bezier(0.2, 0, 0, 1)",
           "&:hover": {
-            boxShadow: "none",
+            boxShadow: tokens.elevation1,
           },
         },
       },
@@ -279,8 +368,9 @@ export const theme = createTheme({
     MuiChip: {
       styleOverrides: {
         root: {
-          borderRadius: tokens.radiusSm,
+          borderRadius: tokens.radiusPill, // M3 Pill chip
           fontWeight: 500,
+          border: `1px solid ${tokens.borderDefault}`,
         },
       },
     },
@@ -291,12 +381,14 @@ export const theme = createTheme({
           borderRadius: tokens.radiusMd,
           "& .MuiOutlinedInput-notchedOutline": {
             borderColor: tokens.borderDefault,
+            transition: "border-color 0.15s ease",
           },
           "&:hover .MuiOutlinedInput-notchedOutline": {
             borderColor: tokens.borderHover,
           },
           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
             borderColor: tokens.primary,
+            borderWidth: "2px",
           },
         },
       },

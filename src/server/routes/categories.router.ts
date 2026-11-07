@@ -57,7 +57,7 @@ export const categoriesRouter = {
     })
     .input(createCategoryInputSchema)
     .output(categorySchema)
-    .handler(async ({ input, context }) => new CreateCategoryUseCase(context.db).execute(input)),
+    .handler(async ({ input, context }) => new CreateCategoryUseCase(context.db, context.user.id).execute(input)),
 
   update: adminProcedure
     .route({
@@ -68,7 +68,7 @@ export const categoriesRouter = {
     })
     .input(updateCategoryInputSchema)
     .output(categorySchema)
-    .handler(async ({ input, context }) => new UpdateCategoryUseCase(context.db).execute(input)),
+    .handler(async ({ input, context }) => new UpdateCategoryUseCase(context.db, context.user.id).execute(input)),
 
   delete: adminProcedure
     .route({
@@ -79,6 +79,6 @@ export const categoriesRouter = {
     })
     .input(z.object({ id: z.string() }))
     .output(categorySchema)
-    .handler(async ({ input, context }) => new DeleteCategoryUseCase(context.db).execute(input.id)),
+    .handler(async ({ input, context }) => new DeleteCategoryUseCase(context.db, context.user.id).execute(input.id)),
 };
 

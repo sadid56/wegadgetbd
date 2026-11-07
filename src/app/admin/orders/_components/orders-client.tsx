@@ -262,9 +262,9 @@ export function OrdersClient() {
         open={!!deleteId}
         onClose={() => setDeleteId(null)}
         onConfirm={handleDelete}
-        title='Delete Order?'
-        description='This action will permanently delete this order record from the database. It cannot be undone.'
-        confirmText='Delete'
+        title='Move Order to Trash?'
+        description='This will move the order to Trash. You can restore it anytime or delete it permanently from the Trash.'
+        confirmText='Move to Trash'
         confirmVariant='destructive'
       />
     </Box>

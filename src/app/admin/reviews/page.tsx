@@ -245,9 +245,9 @@ export default function AdminReviewsPage() {
         open={!!reviewToDelete}
         onClose={() => setReviewToDelete(null)}
         onConfirm={confirmDelete}
-        title='Are you absolutely sure?'
-        description='This action cannot be undone. This will permanently delete the review.'
-        confirmText='Delete'
+        title='Move Review to Trash?'
+        description='This will move the review to Trash. You can restore it anytime or delete it permanently from the Trash.'
+        confirmText='Move to Trash'
         confirmVariant='destructive'
       />
     </Box>

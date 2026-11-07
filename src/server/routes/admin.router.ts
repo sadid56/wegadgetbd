@@ -13,6 +13,9 @@ import {
   adminReviewSchema,
   createAdminReviewInputSchema,
   updateAdminReviewInputSchema,
+  listTrashInputSchema,
+  listTrashOutputSchema,
+  trashActionInputSchema,
 } from "@/server/schemas/admin.schema";
 
 import { GetDashboardStatsUseCase } from "@/server/use-case/admin/dashboard/get-stats";
@@ -26,6 +29,9 @@ import { ListReviewsUseCase } from "@/server/use-case/admin/reviews/list-reviews
 import { CreateReviewUseCase } from "@/server/use-case/admin/reviews/create-reviews";
 import { UpdateReviewUseCase } from "@/server/use-case/admin/reviews/update-review";
 import { DeleteReviewUseCase } from "@/server/use-case/admin/reviews/delete-review";
+import { ListTrashUseCase } from "@/server/use-case/admin/trash/list-trash";
+import { RestoreTrashUseCase } from "@/server/use-case/admin/trash/restore-trash";
+import { PermanentDeleteTrashUseCase } from "@/server/use-case/admin/trash/permanent-delete-trash";
 
 export const adminRouter = {
   dashboard: {
@@ -161,5 +167,44 @@ export const adminRouter = {
       .input(z.object({ id: z.string() }))
       .output(z.object({ success: z.boolean() }))
       .handler(async ({ input, context }) => new DeleteReviewUseCase(context.db).execute(input.id)),
+  },
+
+  trash: {
+    list: adminProcedure
+      .route({
+        method: "GET",
+        path: "/admin/trash",
+        summary: "List all items in the trash",
+        tags: ["Admin Trash"],
+      })
+      .input(listTrashInputSchema)
+      .output(listTrashOutputSchema)
+      .handler(async ({ input, context }) => new ListTrashUseCase(context.db).execute(input)),
+
+    restore: adminProcedure
+      .route({
+        method: "POST",
+        path: "/admin/trash/restore",
+        summary: "Restore an item from trash",
+        tags: ["Admin Trash"],
+      })
+      .input(trashActionInputSchema)
+      .output(z.object({ success: z.boolean(), id: z.string(), itemType: z.string() }))
+      .handler(async ({ input, context }) =>
+        new RestoreTrashUseCase(context.db, context.user.id).execute(input),
+      ),
+
+    permanentDelete: adminProcedure
+      .route({
+        method: "DELETE",
+        path: "/admin/trash/permanent",
+        summary: "Permanently delete an item and its storage files",
+        tags: ["Admin Trash"],
+      })
+      .input(trashActionInputSchema)
+      .output(z.object({ success: z.boolean(), id: z.string(), itemType: z.string(), deletedFilesCount: z.number().optional() }))
+      .handler(async ({ input, context }) =>
+        new PermanentDeleteTrashUseCase(context.db, context.user.id).execute(input),
+      ),
   },
 };

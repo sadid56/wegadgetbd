@@ -98,9 +98,9 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
             ...(card
               ? {
                   bgcolor: tokens.bgPanel,
-                  borderRadius: "20px",
+                  borderRadius: `${tokens.radiusXl}px`,
                   border: `1px solid ${tokens.borderDefault}`,
-                  boxShadow: "0 2px 10px rgba(15, 23, 42, 0.03)",
+                  boxShadow: tokens.elevation1,
                   py: { xs: 8, md: 10 },
                   px: 3,
                 }

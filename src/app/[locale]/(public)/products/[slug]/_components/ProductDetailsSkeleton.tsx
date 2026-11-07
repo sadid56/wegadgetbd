@@ -1,12 +1,12 @@
 import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
+import { SectionContainer } from "@/components/common/SectionContainer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { tokens } from "@/theme/theme";
 
 export function ProductDetailsSkeleton() {
   return (
-    <Box sx={{ bgcolor: tokens.bgCanvas, minHeight: "100vh", py: { xs: 2.5, md: 5 } }}>
-      <Container maxWidth="lg">
+    <Box sx={{ bgcolor: tokens.bgCanvas, minHeight: "100vh" }}>
+      <SectionContainer sx={{ py: { xs: 2.5, md: 5 } }}>
         {/* Breadcrumb Skeleton */}
         <Box sx={{ display: "flex", gap: 1, mb: 3, alignItems: "center" }}>
           <Skeleton variant="rounded" width={48} height={18} />
@@ -128,7 +128,7 @@ export function ProductDetailsSkeleton() {
             <Skeleton variant="rounded" width="75%" height={20} />
           </Box>
         </Box>
-      </Container>
+      </SectionContainer>
     </Box>
   );
 }

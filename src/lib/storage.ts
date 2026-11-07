@@ -1,6 +1,7 @@
-import { supabase } from "@/lib/supabase";
+import { supabase, supabaseAdmin } from "@/lib/supabase";
 
 export const BUCKET_NAME = "we-gadgets";
+const getStorageClient = () => (supabaseAdmin || supabase).storage.from(BUCKET_NAME);
 const storage = supabase.storage.from(BUCKET_NAME);
 
 export const ASSETS_URL = process.env.NEXT_PUBLIC_ASSETS_URL || "https://bftjqobykjnrtaaqzokb.supabase.co";
@@ -109,13 +110,15 @@ export async function uploadFileToStorage({ file, folder }: UploadOptions) {
 }
 
 export async function deleteFileFromStorage(keyOrUrl: string): Promise<void> {
-  const { error } = await storage.remove([getStorageKeyFromUrl(keyOrUrl)]);
+  const client = getStorageClient();
+  const { error } = await client.remove([getStorageKeyFromUrl(keyOrUrl)]);
   if (error) throw error;
 }
 
 export async function deleteMultipleFilesFromStorage(keysOrUrls: string[]): Promise<void> {
   if (keysOrUrls.length === 0) return;
-  const { error } = await storage.remove(keysOrUrls.map((k) => getStorageKeyFromUrl(k)));
+  const client = getStorageClient();
+  const { error } = await client.remove(keysOrUrls.map((k) => getStorageKeyFromUrl(k)));
   if (error) throw error;
 }
 

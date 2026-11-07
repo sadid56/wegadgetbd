@@ -1,4 +1,4 @@
-import { count, desc, asc, gte, eq, sql } from "drizzle-orm";
+import { and, count, desc, asc, gte, eq, sql } from "drizzle-orm";
 import { user, product, sale, payment, order } from "@/db/schema";
 import type { Context } from "@/server/context";
 
@@ -55,11 +55,14 @@ export class GetDashboardStatsUseCase {
       [{ totalProfit }],
     ] = await Promise.all([
       this.db.select({ totalUsers: count() }).from(user),
-      this.db.select({ totalProducts: count() }).from(product),
-      this.db.select({ activeProducts: count() }).from(product).where(eq(product.status, "ACTIVE")),
-      this.db.select({ pendingProducts: count() }).from(product).where(eq(product.status, "PENDING")),
-      this.db.select({ totalOrders: count() }).from(order),
-      this.db.select({ totalRevenue: sql<string>`COALESCE(SUM(${order.totalAmount}), 0)` }).from(order),
+      this.db.select({ totalProducts: count() }).from(product).where(eq(product.isDeleted, false)),
+      this.db.select({ activeProducts: count() }).from(product).where(and(eq(product.status, "ACTIVE"), eq(product.isDeleted, false))),
+      this.db.select({ pendingProducts: count() }).from(product).where(and(eq(product.status, "PENDING"), eq(product.isDeleted, false))),
+      this.db.select({ totalOrders: count() }).from(order).where(eq(order.isDeleted, false)),
+      this.db
+        .select({ totalRevenue: sql<string>`COALESCE(SUM(${order.totalAmount}), 0)` })
+        .from(order)
+        .where(and(eq(order.status, "COMPLETED"), eq(order.isDeleted, false))),
       this.db.select({ totalProfit: sql<string>`COALESCE(SUM(${sale.profit}), 0)` }).from(sale),
     ]);
 
@@ -75,7 +78,11 @@ export class GetDashboardStatsUseCase {
   }
 
   private fetchProductsByStatus() {
-    return this.db.select({ status: product.status, count: count() }).from(product).groupBy(product.status);
+    return this.db
+      .select({ status: product.status, count: count() })
+      .from(product)
+      .where(eq(product.isDeleted, false))
+      .groupBy(product.status);
   }
 
   private fetchSales(since: Date) {

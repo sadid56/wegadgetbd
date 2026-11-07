@@ -68,13 +68,13 @@ export const InputBase = React.forwardRef<HTMLDivElement, InputBaseProps>(functi
           minHeight: isSmall ? 36 : 40,
           px: isPlain ? 0 : 1.5,
           py: 0.5,
-          borderRadius: isPlain ? 0 : `${tokens.radiusMd}px`,
+          borderRadius: isPlain ? 0 : `${tokens.radiusLg}px`,
           border: isPlain ? "none" : "1px solid",
           borderColor: isPlain ? "transparent" : tokens.borderDefault,
           bgcolor: isPlain ? "transparent" : tokens.bgInput,
           color: tokens.textPrimary,
           fontSize: "0.875rem",
-          transition: "all 0.15s ease",
+          transition: "all 0.2s cubic-bezier(0.2, 0, 0, 1)",
           "&:hover": {
             borderColor: isPlain ? "transparent" : tokens.borderHover,
           },
@@ -124,16 +124,19 @@ export const TextField = React.forwardRef<HTMLDivElement, TextFieldProps>(functi
           "& .MuiOutlinedInput-root": {
             bgcolor: tokens.bgInput,
             color: tokens.textPrimary,
-            borderRadius: `${tokens.radiusMd}px`,
+            borderRadius: `${tokens.radiusLg}px`,
             fontSize: "0.875rem",
+            transition: "all 0.2s cubic-bezier(0.2, 0, 0, 1)",
             "& fieldset": {
               borderColor: tokens.borderDefault,
+              transition: "border-color 0.15s ease",
             },
             "&:hover fieldset": {
               borderColor: tokens.borderHover,
             },
             "&.Mui-focused fieldset": {
               borderColor: tokens.primary,
+              borderWidth: "2px",
             },
           },
           "& .MuiInputBase-input, & textarea": {

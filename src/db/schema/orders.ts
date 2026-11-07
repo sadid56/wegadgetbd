@@ -1,6 +1,7 @@
 import {
   pgTable,
   text,
+  boolean,
   timestamp,
   numeric,
   jsonb,
@@ -46,6 +47,8 @@ export const order = pgTable(
     userId: text("userId").references(() => user.id),
     notes: text("notes"),
     whatsappMessage: text("whatsappMessage"),
+    isDeleted: boolean("isDeleted").default(false).notNull(),
+    deletedAt: timestamp("deletedAt", { mode: "date" }),
     createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
     updatedAt: timestamp("updatedAt", { mode: "date" })
       .notNull()

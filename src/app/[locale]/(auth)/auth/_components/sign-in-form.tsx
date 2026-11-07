@@ -9,6 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
 import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import MailOutlinedIcon from "@mui/icons-material/MailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import VisibilityOutlined from "@mui/icons-material/VisibilityOutlined";
@@ -17,7 +18,7 @@ import VisibilityOffOutlined from "@mui/icons-material/VisibilityOffOutlined";
 import { IconButton } from "@/components/ui/icon-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { useToast } from "@/context/toast-context";
 import { signInAction } from "@/server/actions/auth.action";
 import { supabase } from "@/lib/supabase";
@@ -32,12 +33,13 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const cardSx = {
-  p: { xs: 3, sm: 4 },
+  p: { xs: 3, sm: 4.25 },
   borderRadius: `${tokens.radiusLg}px`,
   bgcolor: tokens.bgPanel,
   border: `1px solid ${tokens.borderDefault}`,
-  boxShadow: tokens.shadowMd,
+  boxShadow: "0 12px 36px -4px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.03)",
   position: "relative",
+  width: "100%",
 };
 
 
@@ -94,87 +96,87 @@ export function SignInForm() {
 
   return (
     <Card sx={cardSx}>
-      <CardHeader sx={{ mb: 3, textAlign: "center" }}>
-        <CardTitle sx={{ fontSize: 24, fontWeight: 800, letterSpacing: "-0.02em", color: tokens.textPrimary }}>{t("signInTitle")}</CardTitle>
-        <CardDescription sx={{ fontSize: 13.5, color: tokens.textSecondary, mt: 0.5 }}>
+      <Box sx={{ mb: 3.5, textAlign: "center" }}>
+        <Typography component="h1" sx={{ fontSize: { xs: 22, sm: 25 }, fontWeight: 800, letterSpacing: "-0.02em", color: tokens.textPrimary }}>
+          {t("signInTitle")}
+        </Typography>
+        <Typography sx={{ fontSize: 13.5, color: tokens.textSecondary, mt: 0.75 }}>
           {t("signInSubtitle")}
-        </CardDescription>
-      </CardHeader>
+        </Typography>
+      </Box>
 
-      <CardContent sx={{ p: 0 }}>
-        <SocialAuth mode='signin' next={next} disabled={isLoading} onLoadingChange={setIsSocialLoading} dividerLabel={t("or")} />
+      <SocialAuth mode='signin' next={next} disabled={isLoading} onLoadingChange={setIsSocialLoading} dividerLabel={t("or")} />
 
-        <Box component='form' onSubmit={handleSubmit(onSubmit)} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-          <Input
-            id='email'
-            type='email'
-            label={t("email")}
-            placeholder={t("emailPlaceholder")}
-            fullWidth
-            disabled={isAnyLoading}
-            startIcon={<MailOutlinedIcon sx={{ fontSize: 18, color: tokens.textMuted }} />}
-            error={!!errors.email}
-            helperText={errors.email?.message}
-            {...register("email")}
-          />
+      <Box component='form' onSubmit={handleSubmit(onSubmit)} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <Input
+          id='email'
+          type='email'
+          label={t("email")}
+          placeholder={t("emailPlaceholder")}
+          fullWidth
+          disabled={isAnyLoading}
+          startIcon={<MailOutlinedIcon sx={{ fontSize: 18, color: tokens.textMuted }} />}
+          error={!!errors.email}
+          helperText={errors.email?.message}
+          {...register("email")}
+        />
 
-          <Input
-            id='password'
-            type={showPassword ? "text" : "password"}
-            label={t("password")}
-            placeholder={t("passwordPlaceholder")}
-            fullWidth
-            disabled={isAnyLoading}
-            startIcon={<LockOutlinedIcon sx={{ fontSize: 18, color: tokens.textMuted }} />}
-            endIcon={
-              <IconButton
-                size='small'
-                onClick={() => setShowPassword((prev) => !prev)}
-                edge='end'
-                disabled={isAnyLoading}
-                sx={{ color: tokens.textMuted, "&:hover": { color: tokens.textPrimary } }}
-              >
-                {showPassword ? <VisibilityOffOutlined sx={{ fontSize: 18 }} /> : <VisibilityOutlined sx={{ fontSize: 18 }} />}
-              </IconButton>
-            }
-            error={!!errors.password}
-            helperText={errors.password?.message}
-            {...register("password")}
-          />
+        <Input
+          id='password'
+          type={showPassword ? "text" : "password"}
+          label={t("password")}
+          placeholder={t("passwordPlaceholder")}
+          fullWidth
+          disabled={isAnyLoading}
+          startIcon={<LockOutlinedIcon sx={{ fontSize: 18, color: tokens.textMuted }} />}
+          endIcon={
+            <IconButton
+              size='small'
+              onClick={() => setShowPassword((prev) => !prev)}
+              edge='end'
+              disabled={isAnyLoading}
+              sx={{ color: tokens.textMuted, "&:hover": { color: tokens.textPrimary } }}
+            >
+              {showPassword ? <VisibilityOffOutlined sx={{ fontSize: 18 }} /> : <VisibilityOutlined sx={{ fontSize: 18 }} />}
+            </IconButton>
+          }
+          error={!!errors.password}
+          helperText={errors.password?.message}
+          {...register("password")}
+        />
 
-          <Button type='submit' variant='primary' fullWidth loading={isLoading} disabled={isAnyLoading} size='large'>
-            {t("signIn")}
-          </Button>
-        </Box>
+        <Button type='submit' variant='primary' fullWidth loading={isLoading} disabled={isAnyLoading} size='large'>
+          {t("signIn")}
+        </Button>
+      </Box>
 
+      <Box
+        sx={{
+          mt: 3,
+          pt: 2.5,
+          borderTop: `1px solid ${tokens.borderSubtle}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 0.6,
+          fontSize: 13.5,
+          color: tokens.textSecondary,
+        }}
+      >
+        <Box component='span'>{t("dontHaveAccount")}</Box>
         <Box
+          component={Link}
+          href='/auth/sign-up'
           sx={{
-            mt: 3,
-            pt: 2.5,
-            borderTop: `1px solid ${tokens.borderSubtle}`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 0.6,
-            fontSize: 13.5,
-            color: tokens.textSecondary,
+            color: tokens.primary,
+            fontWeight: 700,
+            textDecoration: "none",
+            "&:hover": { color: tokens.primaryHover, textDecoration: "underline" },
           }}
         >
-          <Box component='span'>{t("dontHaveAccount")}</Box>
-          <Box
-            component={Link}
-            href='/auth/sign-up'
-            sx={{
-              color: tokens.primary,
-              fontWeight: 700,
-              textDecoration: "none",
-              "&:hover": { color: tokens.primaryHover, textDecoration: "underline" },
-            }}
-          >
-            {t("createAccount")}
-          </Box>
+          {t("createAccount")}
         </Box>
-      </CardContent>
+      </Box>
     </Card>
   );
 }

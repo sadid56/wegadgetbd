@@ -1,19 +1,19 @@
 "use client";
 
-import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
+import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
-import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import StarIcon from "@mui/icons-material/Star";
+import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
+import { useLocale, useTranslations } from "next-intl";
 
-import { tokens } from "@/theme/theme";
 import { IconButton } from "@/components/ui/icon-button";
 import { useCart } from "@/hooks/useCart";
+import { formatPrice } from "@/lib/i18n-utils";
 import { getAssetUrl } from "@/lib/storage";
-import { formatPrice, toBengaliNumber } from "@/lib/i18n-utils";
+import { tokens } from "@/theme/theme";
 
 export interface ProductCardItem {
   id: string | number;
@@ -57,29 +57,43 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
   const isInCart = cart.some((item) => String(item.id) === String(product.id));
 
   const title = product.title || product.name || "Product";
-  const brand = product.brand || product.category?.name || product.tag || "GADGET";
+  const brand =
+    product.brand || product.category?.name || product.tag || "GADGET";
   const badge = product.badge || product.tag;
-  const dotColor = DOT_COLORS[product.badgeVariant || product.tagVariant || "default"] || tokens.primary;
-  const rawImage = product.image || product.thumbnail || product.images?.[0] || "";
-  const image = (rawImage ? getAssetUrl(rawImage) : null) || "/images/default.png";
+  const dotColor =
+    DOT_COLORS[product.badgeVariant || product.tagVariant || "default"] ||
+    tokens.primary;
+  const rawImage =
+    product.image || product.thumbnail || product.images?.[0] || "";
+  const image =
+    (rawImage ? getAssetUrl(rawImage) : null) || "/images/default.png";
   const href = product.link || `/products/${product.slug || product.id}`;
   const price = Number(product.salePrice || product.price || 0);
-  const originalPrice = product.originalPrice ? Number(product.originalPrice) : undefined;
+  const originalPrice = product.originalPrice
+    ? Number(product.originalPrice)
+    : undefined;
+
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Navigate to details page if not clicking a button
+    router.push(href);
+  };
 
   return (
     <Box
+      onClick={handleCardClick}
       sx={{
+        cursor: "pointer",
         bgcolor: tokens.bgPanel,
-        borderRadius: "20px",
+        borderRadius: `${tokens.radiusXl}px`,
         border: `1px solid ${tokens.borderDefault}`,
-        boxShadow: "0 2px 8px rgba(15, 23, 42, 0.04)",
+        boxShadow: tokens.elevation1,
         p: 1.5,
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
         height: "100%",
         "&:hover .product-thumb": {
-          transform: "scale(1.05)",
+          transform: "scale(1.06)",
         },
       }}
     >
@@ -89,12 +103,16 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
           position: "relative",
           width: "100%",
           height: { xs: 155, sm: 185, md: 200 },
-          borderRadius: "14px",
+          borderRadius: `${tokens.radiusLg}px`,
           bgcolor: tokens.bgCanvas,
           overflow: "hidden",
         }}
       >
-        <Box component={Link} href={href} sx={{ display: "block", width: "100%", height: "100%" }}>
+        <Box
+          component={Link}
+          href={href}
+          sx={{ display: "block", width: "100%", height: "100%" }}
+        >
           <Box
             component="img"
             className="product-thumb"
@@ -130,8 +148,21 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
               py: 0.35,
             }}
           >
-            <Box sx={{ width: 6, height: 6, borderRadius: "50%", bgcolor: dotColor }} />
-            <Typography sx={{ fontSize: 10.5, fontWeight: 700, color: tokens.textPrimary }}>
+            <Box
+              sx={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                bgcolor: dotColor,
+              }}
+            />
+            <Typography
+              sx={{
+                fontSize: 10.5,
+                fontWeight: 700,
+                color: tokens.textPrimary,
+              }}
+            >
               {badge}
             </Typography>
           </Box>
@@ -159,8 +190,24 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
       </Box>
 
       {/* Details */}
-      <Box sx={{ flex: 1, display: "flex", flexDirection: "column", px: 0.5, pt: 1.75, pb: 0.25 }}>
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.6 }}>
+      <Box
+        sx={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          px: 0.5,
+          pt: 1.75,
+          pb: 0.25,
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 0.6,
+          }}
+        >
           <Typography
             sx={{
               fontSize: 10.5,
@@ -175,7 +222,13 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
 
           <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.4 }}>
             <StarIcon sx={{ color: tokens.warning, fontSize: 13 }} />
-            <Typography sx={{ fontSize: 11.5, fontWeight: 700, color: tokens.textPrimary }}>
+            <Typography
+              sx={{
+                fontSize: 11.5,
+                fontWeight: 700,
+                color: tokens.textPrimary,
+              }}
+            >
               {product.rating ?? "4.8"}
             </Typography>
             <Typography sx={{ fontSize: 11, color: tokens.textMuted }}>
@@ -215,11 +268,25 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
           }}
         >
           <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
-            <Typography sx={{ fontSize: { xs: 15.5, sm: 17.5 }, fontWeight: 800, color: tokens.textPrimary }}>
-              {price ? formatPrice(price, locale) : product.readTime || t("viewDetails")}
+            <Typography
+              sx={{
+                fontSize: { xs: 15.5, sm: 17.5 },
+                fontWeight: 800,
+                color: tokens.textPrimary,
+              }}
+            >
+              {price
+                ? formatPrice(price, locale)
+                : product.readTime || t("viewDetails")}
             </Typography>
             {originalPrice && (
-              <Typography sx={{ fontSize: 11.5, color: tokens.textDisabled, textDecoration: "line-through" }}>
+              <Typography
+                sx={{
+                  fontSize: 11.5,
+                  color: tokens.textDisabled,
+                  textDecoration: "line-through",
+                }}
+              >
                 {formatPrice(originalPrice, locale)}
               </Typography>
             )}
@@ -238,22 +305,34 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
                 addItem({
                   id: String(product.id),
                   title: title || product.name || "Product",
-                  price: originalPrice && originalPrice > price ? originalPrice : price,
-                  discountPrice: originalPrice && originalPrice > price ? price : (product.salePrice ?? null),
+                  price:
+                    originalPrice && originalPrice > price
+                      ? originalPrice
+                      : price,
+                  discountPrice:
+                    originalPrice && originalPrice > price
+                      ? price
+                      : (product.salePrice ?? null),
                   images: image ? [image] : product.images || [],
                   slug: product.slug || String(product.id),
                 });
               }
             }}
             sx={{
-              bgcolor: tokens.bgDark,
-              color: tokens.textWhite,
-              width: 34,
-              height: 34,
-              borderRadius: "10px",
-              "&:hover": { bgcolor: tokens.bgDark, color: tokens.textWhite },
+              bgcolor: isInCart ? tokens.primary : tokens.bgDark,
+              color: "#ffffff !important",
+              width: 36,
+              height: 36,
+              borderRadius: `${tokens.radiusPill}px`,
+              "&:hover": {
+                bgcolor: isInCart ? tokens.primary : tokens.bgDark,
+                color: "#ffffff !important",
+              },
+              "& .MuiSvgIcon-root": {
+                color: "#ffffff !important",
+              },
             }}
-            aria-label={isInCart ? t("cart") : t("addToCart")}
+            aria-label={isInCart ? t("inCartAlready") : t("addToCart")}
           >
             {isInCart ? (
               <CheckRoundedIcon sx={{ fontSize: 16 }} />

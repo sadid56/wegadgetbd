@@ -21,11 +21,10 @@ export const IconButton = React.forwardRef<HTMLButtonElement, IconButtonProps>(f
       sx={[
         {
           color: tokens.textSecondary,
-          borderRadius: `${tokens.radiusMd}px`,
-          transition: "all 0.2s ease",
+          borderRadius: `${tokens.radiusPill}px`,
+          transition: "all 0.2s cubic-bezier(0.2, 0, 0, 1)",
           "&:hover": {
             bgcolor: tokens.bgSubtle,
-            color: tokens.textPrimary,
           },
           "&.Mui-disabled": {
             color: tokens.textDisabled,

@@ -51,13 +51,13 @@ export function AlertDialog({
           ...paperProps,
           sx: [
             {
-              borderRadius: `${tokens.radiusLg}px`,
-              p: 1,
+              borderRadius: `${tokens.radiusXxl}px`,
+              p: 1.5,
               bgcolor: tokens.bgPanel,
               color: tokens.textPrimary,
               backgroundImage: "none",
               border: `1px solid ${tokens.borderDefault}`,
-              boxShadow: tokens.shadowElevated,
+              boxShadow: tokens.elevation3,
             },
             ...(Array.isArray(paperProps.sx)
               ? paperProps.sx

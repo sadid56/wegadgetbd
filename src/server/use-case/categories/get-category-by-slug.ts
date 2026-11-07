@@ -1,4 +1,4 @@
-import { eq, count } from "drizzle-orm";
+import { and, eq, count } from "drizzle-orm";
 import { category, product } from "@/db/schema";
 import type { Context } from "@/server/context";
 
@@ -17,8 +17,8 @@ export class GetCategoryBySlugUseCase {
         productCount: count(product.id),
       })
       .from(category)
-      .leftJoin(product, eq(product.categoryId, category.id))
-      .where(eq(category.slug, slug))
+      .leftJoin(product, and(eq(product.categoryId, category.id), eq(product.isDeleted, false)))
+      .where(and(eq(category.slug, slug), eq(category.isDeleted, false)))
       .groupBy(category.id)
       .limit(1);
 

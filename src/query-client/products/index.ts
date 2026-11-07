@@ -80,3 +80,36 @@ export const useProductReviews = (productId: string) =>
     queryFn: () => orpcClient.products.reviews({ productId }),
     enabled: !!productId,
   });
+
+export const useInteractiveReviews = (productId: string, options?: { page?: number; rating?: number }) =>
+  useQuery({
+    queryKey: ["products", productId, "interactive-reviews", options],
+    queryFn: () => orpcClient.products.interactiveReviews({ productId, ...options }),
+    enabled: !!productId,
+  });
+
+export const useCreateReview = (productId: string) =>
+  useAppMutation({
+    mutationFn: (data: Parameters<typeof orpcClient.products.addReview>[0]) =>
+      orpcClient.products.addReview(data),
+    invalidateKeys: [
+      ["products", productId, "interactive-reviews"],
+      ["products", productId, "reviews"],
+      singleProductKeys,
+    ],
+    successMessage: "Review submitted successfully!",
+  });
+
+export const useToggleReviewLike = (productId: string) =>
+  useAppMutation({
+    mutationFn: (data: { reviewId: string }) => orpcClient.products.toggleLikeReview(data),
+    invalidateKeys: [["products", productId, "interactive-reviews"]],
+  });
+
+export const useCreateReviewReply = (productId: string) =>
+  useAppMutation({
+    mutationFn: (data: Parameters<typeof orpcClient.products.replyReview>[0]) =>
+      orpcClient.products.replyReview(data),
+    invalidateKeys: [["products", productId, "interactive-reviews"]],
+    successMessage: "Reply posted successfully!",
+  });

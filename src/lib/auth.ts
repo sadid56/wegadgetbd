@@ -1,9 +1,10 @@
 import { db } from "@/db";
-import { user as userTable, type Role } from "@/db/schema";
+import { user as userTable, session as sessionTable, type Role } from "@/db/schema";
 import { eq, or } from "drizzle-orm";
 import { headers as getHeaders, cookies } from "next/headers";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { supabase, supabaseAdmin } from "@/lib/supabase";
+import { recordSession } from "@/server/lib/session";
 
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -129,11 +130,26 @@ export async function getSession(reqHeaders?: Headers) {
         .catch(() => null);
     }
 
+    // Ensure session is recorded in session table so admin sees active sessions
+    let dbSession = await db.query.session.findFirst({
+      where: eq(sessionTable.token, token),
+    }).catch(() => null);
+
+    if (!dbSession) {
+      dbSession = await recordSession({
+        userId: sbUser.id,
+        token,
+        role,
+        method: "sync",
+        reqHeaders,
+      });
+    }
+
     return {
       session: {
-        id: sbUser.id,
+        id: dbSession?.id ?? sbUser.id,
         userId: sbUser.id,
-        expiresAt: new Date(Date.now() + SESSION_TTL_MS),
+        expiresAt: dbSession?.expiresAt ?? new Date(Date.now() + SESSION_TTL_MS),
         token,
       },
       user: {

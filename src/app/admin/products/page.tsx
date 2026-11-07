@@ -282,9 +282,9 @@ export default function AdminProductsPage() {
         open={!!productToDelete}
         onClose={() => setProductToDelete(null)}
         onConfirm={confirmDelete}
-        title='Are you absolutely sure?'
-        description='This action cannot be undone. This will permanently delete the product from the database.'
-        confirmText='Delete'
+        title='Move Product to Trash?'
+        description='This will move the product to Trash. You can restore it anytime or delete it permanently from the Trash.'
+        confirmText='Move to Trash'
         confirmVariant='destructive'
       />
     </Box>

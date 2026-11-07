@@ -147,6 +147,12 @@ export function Dropdown({
         open={open}
         onClose={handleClose}
         disableScrollLock
+        autoFocus={false}
+        disableAutoFocusItem
+        disableAutoFocus
+        disableEnforceFocus
+        disableRestoreFocus
+        hideBackdrop={isHover}
         anchorOrigin={{
           vertical: "bottom",
           horizontal,
@@ -156,6 +162,9 @@ export function Dropdown({
           horizontal,
         }}
         slotProps={{
+          list: {
+            autoFocus: false,
+          },
           root: isHover
             ? {
                 sx: { pointerEvents: "none" },
@@ -166,11 +175,11 @@ export function Dropdown({
               {
                 pointerEvents: "auto",
                 minWidth: 160,
-                borderRadius: `${tokens.radiusMd}px`,
+                borderRadius: `${tokens.radiusLg}px`,
                 border: `1px solid ${tokens.borderDefault}`,
                 bgcolor: tokens.bgElevated,
                 boxShadow: tokens.shadowPopover,
-                p: 0.5,
+                p: 0.75,
               },
               ...(Array.isArray(menuSx) ? menuSx : menuSx ? [menuSx] : []),
             ],
@@ -242,10 +251,12 @@ export function Dropdown({
                 sx={{
                   fontSize: 13,
                   fontWeight: 500,
-                  borderRadius: `${tokens.radiusSm}px`,
+                  borderRadius: `${tokens.radiusPill}px`,
                   py: 0.8,
-                  px: 1.5,
+                  px: 1.75,
+                  my: 0.25,
                   gap: 1.25,
+                  transition: "all 0.15s ease",
                   color: isDanger ? tokens.danger : tokens.textPrimary,
                   "&:hover": {
                     bgcolor: isDanger ? tokens.dangerSubtle : tokens.bgSubtle,
@@ -298,6 +309,12 @@ export function Dropdown({
           open={Boolean(subAnchorEl && activeSubItem?.children?.length)}
           onClose={handleClose}
           disableScrollLock
+          autoFocus={false}
+          disableAutoFocusItem
+          disableAutoFocus
+          disableEnforceFocus
+          disableRestoreFocus
+          hideBackdrop={isHover}
           anchorOrigin={{
             vertical: "top",
             horizontal: isRight ? "left" : "right",
@@ -307,6 +324,9 @@ export function Dropdown({
             horizontal: isRight ? "right" : "left",
           }}
           slotProps={{
+            list: {
+              autoFocus: false,
+            },
             root: isHover
               ? {
                   sx: { pointerEvents: "none" },
@@ -317,11 +337,11 @@ export function Dropdown({
                 {
                   pointerEvents: "auto",
                   minWidth: 170,
-                  borderRadius: `${tokens.radiusMd}px`,
+                  borderRadius: `${tokens.radiusLg}px`,
                   border: `1px solid ${tokens.borderDefault}`,
                   bgcolor: tokens.bgElevated,
                   boxShadow: tokens.shadowPopover,
-                  p: 0.5,
+                  p: 0.75,
                 },
                 ...(Array.isArray(menuSx) ? menuSx : menuSx ? [menuSx] : []),
               ],
@@ -353,10 +373,12 @@ export function Dropdown({
                   sx={{
                     fontSize: 13,
                     fontWeight: 500,
-                    borderRadius: `${tokens.radiusSm}px`,
+                    borderRadius: `${tokens.radiusPill}px`,
                     py: 0.8,
-                    px: 1.5,
+                    px: 1.75,
+                    my: 0.25,
                     gap: 1.25,
+                    transition: "all 0.15s ease",
                     color: isDanger ? tokens.danger : tokens.textPrimary,
                     "&:hover": {
                       bgcolor: isDanger ? tokens.dangerSubtle : tokens.bgSubtle,

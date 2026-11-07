@@ -24,7 +24,8 @@ function Pagination({ count, page, onChange, sx, children, ...props }: Paginatio
               color: tokens.textSecondary,
               borderColor: tokens.borderDefault,
               fontWeight: 600,
-              borderRadius: `${tokens.radiusMd}px`,
+              borderRadius: `${tokens.radiusPill}px`,
+              transition: "all 0.15s ease",
               "&:hover": {
                 bgcolor: tokens.bgSubtle,
                 color: tokens.textPrimary,
@@ -33,6 +34,7 @@ function Pagination({ count, page, onChange, sx, children, ...props }: Paginatio
                 bgcolor: `${tokens.primary} !important`,
                 color: `${tokens.textWhite} !important`,
                 borderColor: `${tokens.primary} !important`,
+                boxShadow: tokens.elevation1,
               },
             },
           },

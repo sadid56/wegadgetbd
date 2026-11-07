@@ -7,7 +7,7 @@ export class ListProductReviewsUseCase {
 
   async execute(productId: string) {
     const reviews = await this.db.query.customerReview.findMany({
-      where: and(eq(customerReview.productId, productId), eq(customerReview.status, "APPROVED")),
+      where: and(eq(customerReview.productId, productId), eq(customerReview.status, "APPROVED"), eq(customerReview.isDeleted, false)),
       orderBy: [desc(customerReview.createdAt)],
     });
 

@@ -1,7 +1,7 @@
 import React, { type ComponentType, type ReactNode } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { tokens } from "@/theme/theme";
 
 export interface StatsCardProps {
@@ -29,50 +29,53 @@ export function StatsCard({
 
   return (
     <Card
-      sx={{
-        p: { xs: 2.25, sm: 2.5 },
-        ...sx,
-      }}
+      sx={[
+        {
+          p: { xs: 2.25, sm: 2.5 },
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+        },
+        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+      ]}
     >
-      <CardContent sx={{ p: 0, "&:last-child": { pb: 0 } }}>
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
-          <Typography
-            sx={{
-              fontWeight: 600,
-              fontSize: "0.875rem",
-              color: tokens.textSecondary,
-            }}
-          >
-            {title}
-          </Typography>
-          {renderIcon()}
-        </Box>
-
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.25 }}>
         <Typography
-          variant='h4'
           sx={{
-            fontWeight: 700,
-            fontSize: { xs: "1.65rem", sm: "1.85rem" },
-            color: tokens.textPrimary,
-            lineHeight: 1.2,
+            fontWeight: 600,
+            fontSize: "0.875rem",
+            color: tokens.textSecondary,
           }}
         >
-          {value}
+          {title}
         </Typography>
+        {renderIcon()}
+      </Box>
 
-        {description && (
-          <Typography
-            sx={{
-              color: tokens.textSecondary,
-              fontSize: "0.75rem",
-              mt: 0.5,
-              display: "block",
-            }}
-          >
-            {description}
-          </Typography>
-        )}
-      </CardContent>
+      <Typography
+        variant='h4'
+        sx={{
+          fontWeight: 700,
+          fontSize: { xs: "1.65rem", sm: "1.85rem" },
+          color: tokens.textPrimary,
+          lineHeight: 1.2,
+        }}
+      >
+        {value}
+      </Typography>
+
+      {description && (
+        <Typography
+          sx={{
+            color: tokens.textSecondary,
+            fontSize: "0.75rem",
+            mt: 0.75,
+            display: "block",
+          }}
+        >
+          {description}
+        </Typography>
+      )}
     </Card>
   );
 }

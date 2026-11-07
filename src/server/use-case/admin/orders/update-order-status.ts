@@ -23,10 +23,12 @@ export class UpdateOrderStatusUseCase {
 
     await writeAudit(this.dbInstance, {
       actorId: this.actorId,
-      action: "UPDATE",
-      targetType: "ORDER",
-      targetId: id,
-      metadata: { status },
+      action: "STATUS_CHANGE",
+      metadata: {
+        orderId: id,
+        status,
+        customerName: updated.customerName,
+      },
     });
 
     return { success: true as const, data: updated };

@@ -1,4 +1,4 @@
-import { and, or, ilike, desc, count } from "drizzle-orm";
+import { and, or, eq, ilike, desc, count } from "drizzle-orm";
 import { product } from "@/db/schema";
 import type { Context } from "@/server/context";
 import { formatProduct } from "./_shared";
@@ -31,11 +31,11 @@ export class AdminListProductsUseCase {
   }
 
   private buildWhereClause(search?: string) {
-    const conditions = [];
+    const conditions = [eq(product.isDeleted, false)];
     if (search) {
-      conditions.push(or(ilike(product.title, `%${search}%`), ilike(product.description, `%${search}%`))!);
+      conditions.push(or(ilike(product.title, `%${search}%`), ilike(product.markdown_description, `%${search}%`))!);
     }
-    return conditions.length ? and(...conditions) : undefined;
+    return and(...conditions);
   }
 
   private fetchProducts(whereClause: ReturnType<typeof and>, limit: number, offset: number) {
