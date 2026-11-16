@@ -36,7 +36,7 @@ export function CheckoutForm({ register, errors, locationValue, setValue }: Chec
         bgcolor: tokens.bgPanel,
         borderRadius: "12px",
         p: { xs: 2.5, sm: 3 },
-        border: `1px solid ${tokens.borderDefault}`,
+        border: "none",
       }}
     >
       <Typography

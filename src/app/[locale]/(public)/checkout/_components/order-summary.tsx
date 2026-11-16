@@ -52,7 +52,7 @@ export function OrderSummary({
         bgcolor: tokens.bgPanel,
         borderRadius: "12px",
         p: { xs: 2, sm: 2.5 },
-        border: `1px solid ${tokens.borderDefault}`,
+        border: "none",
         position: { md: "sticky" },
         top: { md: 24 },
       }}

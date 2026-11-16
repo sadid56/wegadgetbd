@@ -23,8 +23,8 @@ function TestimonialSkeleton() {
       sx={{
         bgcolor: tokens.bgPanel,
         borderRadius: "20px",
-        border: `1px solid ${tokens.borderDefault}`,
-        boxShadow: "0 4px 20px -2px rgba(15, 23, 42, 0.04)",
+        border: "none",
+        boxShadow: "none",
         p: { xs: 2.5, sm: 3 },
         display: "flex",
         flexDirection: "column",
@@ -182,8 +182,8 @@ export function TestimonialsSection() {
               sx={{
                 bgcolor: tokens.bgPanel,
                 borderRadius: "20px",
-                border: `1px solid ${tokens.borderDefault}`,
-                boxShadow: "0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02)",
+                border: "none",
+                boxShadow: "none",
                 p: { xs: 2.5, sm: 3 },
                 display: "flex",
                 flexDirection: "column",

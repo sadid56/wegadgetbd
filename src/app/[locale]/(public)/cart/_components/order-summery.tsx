@@ -24,7 +24,7 @@ export default function OrderSummary({ totalPrice, totalCount, savings }: OrderS
     <Box
       sx={{
         bgcolor: tokens.bgPanel,
-        border: `1px solid ${tokens.borderDefault}`,
+        border: "none",
         borderRadius: "12px",
         p: 3,
         position: { lg: "sticky" },

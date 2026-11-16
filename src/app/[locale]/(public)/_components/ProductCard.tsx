@@ -85,8 +85,8 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
         cursor: "pointer",
         bgcolor: tokens.bgPanel,
         borderRadius: `${tokens.radiusXl}px`,
-        border: `1px solid ${tokens.borderDefault}`,
-        boxShadow: tokens.elevation1,
+        border: "none",
+        boxShadow: "none",
         p: 1.5,
         display: "flex",
         flexDirection: "column",
@@ -104,7 +104,7 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
           width: "100%",
           height: { xs: 155, sm: 185, md: 200 },
           borderRadius: `${tokens.radiusLg}px`,
-          bgcolor: tokens.bgCanvas,
+          bgcolor: "#F8FAFC",
           overflow: "hidden",
         }}
       >

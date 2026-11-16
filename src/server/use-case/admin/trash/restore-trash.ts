@@ -3,6 +3,7 @@ import { product, category, customerReview, order } from "@/db/schema";
 import type { Context } from "@/server/context";
 import { cacheService, CACHE_KEYS } from "@/server/services/cache";
 import { writeAudit } from "@/server/lib/orm";
+import { revalidateProductPaths } from "@/server/lib/revalidate";
 import type { TrashItemType } from "@/server/schemas/admin.schema";
 import { ORPCError } from "@orpc/server";
 
@@ -26,6 +27,7 @@ export class RestoreTrashUseCase {
         if (updated) {
           restored = true;
           itemTitle = updated.title;
+          revalidateProductPaths([updated.slug]);
         }
         break;
       }

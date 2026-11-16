@@ -5,6 +5,7 @@ import type { Context } from "@/server/context";
 import type { UpdateProductInput } from "@/server/schemas/products.schema";
 import { formatProduct } from "./_shared";
 import { writeAudit } from "@/server/lib/orm";
+import { revalidateProductPaths } from "@/server/lib/revalidate";
 
 type UpdateData = UpdateProductInput["data"];
 
@@ -22,11 +23,17 @@ export class UpdateProductUseCase {
   ) {}
 
   async execute({ id, data }: UpdateProductInput) {
+    const existing = data.slug
+      ? await this.db.query.product.findFirst({ where: eq(product.id, id), columns: { slug: true } })
+      : null;
+
     const payload = this.buildUpdatePayload(data);
     await this.persistUpdate(id, payload);
 
     const updated = await this.findUpdated(id);
     await this.recordAudit(id, data, updated?.title);
+
+    revalidateProductPaths([existing?.slug, updated?.slug]);
 
     return formatProduct(updated);
   }

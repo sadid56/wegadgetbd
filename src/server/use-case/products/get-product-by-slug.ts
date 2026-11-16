@@ -1,5 +1,5 @@
-import { eq, and, or } from "drizzle-orm";
-import { product } from "@/db/schema";
+import { eq, and, or, count } from "drizzle-orm";
+import { product, customerReview } from "@/db/schema";
 import type { Context } from "@/server/context";
 import { formatProduct } from "./_shared";
 
@@ -12,7 +12,23 @@ export class GetProductBySlugUseCase {
       with: { category: true },
     });
 
-    return formatProduct(foundProduct);
+    if (!foundProduct) return null;
+
+    const [reviewStat] = await this.db
+      .select({ total: count() })
+      .from(customerReview)
+      .where(
+        and(
+          eq(customerReview.productId, foundProduct.id),
+          eq(customerReview.status, "APPROVED"),
+          eq(customerReview.isDeleted, false)
+        )
+      );
+
+    return {
+      ...formatProduct(foundProduct),
+      reviewsCount: Number(reviewStat?.total ?? 0),
+    };
   }
 }
 

@@ -5,6 +5,7 @@ import type { Context } from "@/server/context";
 import type { CreateProductInput } from "@/server/schemas/products.schema";
 import { formatProduct } from "./_shared";
 import { writeAudit } from "@/server/lib/orm";
+import { revalidateProductPaths } from "@/server/lib/revalidate";
 
 const DEFAULT_STATUS: ProductStatus = "PENDING";
 const DEFAULT_SOLD_COUNT = 360;
@@ -19,6 +20,8 @@ export class CreateProductUseCase {
     const [created] = await this.persistCreate(input);
 
     const [full] = await Promise.all([this.findWithCategory(created.id), this.recordAudit(created.id, created.title)]);
+
+    revalidateProductPaths([created.slug]);
 
     return formatProduct(full);
   }

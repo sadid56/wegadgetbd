@@ -1,234 +1,529 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/image";
-import { useRouter } from "@/i18n/routing";
+import { Link } from "@/i18n/routing";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import SearchIcon from "@mui/icons-material/Search";
-import { tokens } from "@/theme/theme";
-import { IconButton } from "@/components/ui/icon-button";
-import { InputBase } from "@/components/ui/input";
 import { SectionContainer } from "@/components/common/SectionContainer";
 import { getAssetUrl } from "@/lib/storage";
 import { useTranslations } from "next-intl";
-import { HeroSearchModal } from "./HeroSearchModal";
 
-const HERO_BACKGROUNDS = [
+const HERO_SLIDES = [
   getAssetUrl("banners/hero-slide-1.png"),
   getAssetUrl("banners/hero-slide-2.jpg"),
   getAssetUrl("banners/hero-slide-3.jpg"),
   getAssetUrl("banners/hero-slide-4.png"),
 ];
 
-const CROSSFADE_INTERVAL_MS = 4000;
+const SLIDE_INTERVAL_MS = 4500;
 
 export function Hero() {
   const t = useTranslations("home");
-  const router = useRouter();
-  const [searchValue, setSearchValue] = useState("");
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [activeBgIndex, setActiveBgIndex] = useState(0);
+  const [activeSlide, setActiveSlide] = useState(0);
 
   useEffect(() => {
-    if (HERO_BACKGROUNDS.length <= 1) return;
+    if (HERO_SLIDES.length <= 1) return;
     const interval = setInterval(() => {
-      setActiveBgIndex((prev) => (prev + 1) % HERO_BACKGROUNDS.length);
-    }, CROSSFADE_INTERVAL_MS);
+      setActiveSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, SLIDE_INTERVAL_MS);
 
     return () => clearInterval(interval);
   }, []);
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSearchOpen(true);
-  };
 
   return (
     <Box
       component="section"
       sx={{
-        position: "relative",
         width: "100%",
-        minHeight: { xs: 560, sm: 600, md: 560, lg: 640 },
-        display: "flex",
-        alignItems: "center",
-        bgcolor: tokens.bgDark,
-        borderBottomLeftRadius: { xs: 24, md: 36 },
-        borderBottomRightRadius: { xs: 24, md: 36 },
-        overflow: "hidden",
-        pt: { xs: 11, sm: 12, md: 10.5 },
-        pb: { xs: 12, sm: 13, md: 12 },
+        bgcolor: "#F1F5F9",
+        pt: { xs: 10, sm: 11, md: 12 },
+        pb: { xs: 7, sm: 8, md: 9.5 },
       }}
     >
-      <Box sx={{ position: "absolute", inset: 0, zIndex: 1, overflow: "hidden" }}>
-        {HERO_BACKGROUNDS.map((src, index) => (
+      <SectionContainer>
+        {/* ========================================================================= */}
+        {/* BENTO GRID HERO LAYOUT                                                    */}
+        {/* ========================================================================= */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", lg: "1.35fr 1fr" },
+            gap: { xs: 2, sm: 2.25, md: 2.5 },
+            alignItems: "stretch",
+          }}
+        >
+          {/* ===================================================================== */}
+          {/* 1. LEFT MAIN FLAGSHIP HERO CARD (~58% width)                          */}
+          {/* ===================================================================== */}
           <Box
-            key={src}
             sx={{
-              position: "absolute",
-              inset: 0,
-              opacity: index === activeBgIndex ? 1 : 0,
-              transition: "opacity 1.4s ease-in-out",
-              willChange: "opacity",
-              pointerEvents: "none",
+              position: "relative",
+              borderRadius: { xs: "28px", sm: "32px", md: "36px" },
+              bgcolor: "#06181C",
+              border: "1px solid rgba(15, 23, 42, 0.08)",
+              boxShadow: "0 20px 45px -15px rgba(6, 24, 28, 0.22)",
+              p: { xs: 3, sm: 4, md: 4.5, lg: 5 },
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              overflow: "hidden",
+              minHeight: { xs: 420, sm: 460, md: 490 },
             }}
           >
-            <Image
-              src={src}
-              alt={`Hero Banner ${index + 1}`}
-              fill
-              priority={index === 0}
-              unoptimized
-              sizes="100vw"
-              style={{
-                objectFit: "cover",
-                objectPosition: "center right",
-                imageRendering: "-webkit-optimize-contrast",
-              }}
-            />
-          </Box>
-        ))}
-      </Box>
-
-      {/* Subtle Left Ambient Overlay for Text Readability */}
-      <Box
-        sx={{
-          position: "absolute",
-          inset: 0,
-          zIndex: 2,
-          pointerEvents: "none",
-          background: {
-            xs: "linear-gradient(180deg, rgba(4, 20, 24, 0.90) 0%, rgba(4, 20, 24, 0.72) 48%, rgba(4, 20, 24, 0.40) 80%, rgba(4, 20, 24, 0.22) 100%)",
-            md: "linear-gradient(90deg, rgba(4, 20, 24, 0.88) 0%, rgba(4, 20, 24, 0.74) 30%, rgba(4, 20, 24, 0.32) 48%, rgba(4, 20, 24, 0) 62%)",
-          },
-        }}
-      />
-
-      <SectionContainer
-        component="div"
-        sx={{
-          position: "relative",
-          zIndex: 3,
-          display: "flex",
-          alignItems: "center",
-          width: "100%",
-        }}
-      >
-        <Box sx={{ maxWidth: { xs: "100%", md: 540, lg: 600 } }}>
-          <Typography
-            component="h1"
-            sx={{
-              fontWeight: 800,
-              fontSize: { xs: "2rem", sm: "2.4rem", md: "2.9rem", lg: "3.2rem" },
-              lineHeight: { xs: 1.18, md: 1.1 },
-              letterSpacing: "-0.03em",
-              color: tokens.textWhite,
-              mb: { xs: 1.75, md: 2 },
-            }}
-          >
-            {t("heroHeadingPart1")} <br />
-            {t("heroHeadingFor")}{" "}
+            {/* Background Image Carousel */}
             <Box
-              component="span"
               sx={{
-                color: tokens.accent,
-                background: `linear-gradient(120deg, ${tokens.accent} 0%, ${tokens.primaryLight} 100%)`,
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
+                position: "absolute",
+                inset: 0,
+                overflow: "hidden",
+                pointerEvents: "none",
               }}
             >
-              {t("heroHeadingHighlight")}
+              {HERO_SLIDES.map((src, index) => (
+                <Box
+                  key={src}
+                  sx={{
+                    position: "absolute",
+                    inset: 0,
+                    opacity: index === activeSlide ? 1 : 0,
+                    transition: "opacity 0.8s ease-in-out",
+                    willChange: "opacity",
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src={src}
+                    alt={`Hero Slide ${index + 1}`}
+                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                      e.currentTarget.src = "/images/hero/hero-flagship-combo.jpg";
+                    }}
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                      objectPosition: "center right",
+                      display: "block",
+                    }}
+                  />
+                </Box>
+              ))}
             </Box>
-          </Typography>
 
-          <Typography
-            sx={{
-              fontSize: { xs: 13.5, sm: 14.5, md: 15 },
-              lineHeight: 1.6,
-              color: "rgba(255, 255, 255, 0.78)",
-              mb: { xs: 3, sm: 3.5 },
-              maxWidth: 520,
-            }}
-          >
-            {t("heroSubtitle")}
-          </Typography>
-
-          <Box
-            onClick={() => setIsSearchOpen(true)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                setIsSearchOpen(true);
-              }
-            }}
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1.5,
-              bgcolor: "#FFFFFF",
-              border: "1px solid rgba(255, 255, 255, 0.9)",
-              borderRadius: `${tokens.radiusPill}px`,
-              boxShadow: "0 12px 32px -4px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.12)",
-              p: { xs: "5px 7px 5px 16px", sm: "6px 8px 6px 18px" },
-              maxWidth: 500,
-              mb: { xs: 1, md: 0 },
-              cursor: "pointer",
-            }}
-          >
-            <SearchIcon sx={{ color: tokens.primary, fontSize: 21 }} />
-            <InputBase
-              variant="plain"
-              placeholder={t("heroSearchPlaceholder")}
-              readOnly
-              tabIndex={-1}
-              fullWidth
+            {/* Dark Ambient Scrim for Crisp White Text Readability */}
+            <Box
               sx={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 1,
                 pointerEvents: "none",
-                color: "#1E293B",
-                fontSize: 14.5,
-                fontWeight: 500,
-                "& input": {
-                  cursor: "pointer",
-                  "&::placeholder": {
-                    color: "#94A3B8",
-                    opacity: 1,
-                  },
+                background: {
+                  xs: "linear-gradient(180deg, rgba(4, 20, 24, 0.90) 0%, rgba(4, 20, 24, 0.72) 55%, rgba(4, 20, 24, 0.35) 100%)",
+                  md: "linear-gradient(90deg, rgba(4, 20, 24, 0.92) 0%, rgba(4, 20, 24, 0.78) 42%, rgba(4, 20, 24, 0.30) 68%, rgba(4, 20, 24, 0.05) 100%)",
                 },
               }}
             />
-            <IconButton
-              type="button"
-              aria-label="Open search"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsSearchOpen(true);
-              }}
+
+            {/* Left Content Column */}
+            <Box
               sx={{
-                bgcolor: tokens.primary,
-                color: tokens.textWhite,
-                width: 38,
-                height: 38,
-                borderRadius: "50%",
-                flexShrink: 0,
-                boxShadow: "0 2px 8px rgba(0, 191, 166, 0.35)",
+                flex: 1,
+                zIndex: 2,
+                position: "relative",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                height: "100%",
+                maxWidth: { sm: 340, md: 380, lg: 410 },
               }}
             >
-              <ArrowForwardIcon sx={{ fontSize: 17 }} />
-            </IconButton>
+              {/* Main Heading & CTA */}
+              <Box>
+                {/* Main Heading */}
+                <Typography
+                  component="h1"
+                  sx={{
+                    fontSize: { xs: "2rem", sm: "2.35rem", md: "2.75rem", lg: "3.1rem" },
+                    fontWeight: 900,
+                    lineHeight: { xs: 1.15, md: 1.1 },
+                    letterSpacing: "-0.035em",
+                    color: "#FFFFFF",
+                    mb: 1.75,
+                  }}
+                >
+                  {t("heroHeadingPart1")}
+                  <br />
+                  {t("heroHeadingFor")}{" "}
+                  <Box
+                    component="span"
+                    sx={{
+                      color: "#00E5C7",
+                      display: "inline-block",
+                    }}
+                  >
+                    {t("heroHeadingHighlight")}
+                  </Box>
+                </Typography>
+
+                {/* Subtitle */}
+                <Typography
+                  sx={{
+                    fontSize: { xs: 13.5, sm: 14, md: 14.5 },
+                    lineHeight: 1.6,
+                    color: "rgba(255, 255, 255, 0.82)",
+                    fontWeight: 400,
+                    mb: { xs: 3, sm: 3.5 },
+                    maxWidth: 360,
+                  }}
+                >
+                  {t("heroSubtitle")}
+                </Typography>
+
+                {/* Action Button */}
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <Box
+                    component={Link}
+                    href="/products"
+                    sx={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 1,
+                      bgcolor: "#00BFA6",
+                      color: "#041418",
+                      borderRadius: "9999px",
+                      px: { xs: 2.75, sm: 3.25 },
+                      py: { xs: 1.25, sm: 1.4 },
+                      fontSize: { xs: 13, sm: 14 },
+                      fontWeight: 800,
+                      textDecoration: "none",
+                      boxShadow: "none",
+                    }}
+                  >
+                    {t("heroCta")}
+                    <ArrowForwardIcon sx={{ fontSize: 16 }} />
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
+          </Box>
+
+          {/* ===================================================================== */}
+          {/* 2. RIGHT ASYMMETRICAL BENTO COLUMN (High-Res Problem-Solving Cards)    */}
+          {/* ===================================================================== */}
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateRows: { xs: "auto auto", lg: "1.12fr 1fr" },
+              gap: { xs: 2, sm: 2.25 },
+              height: "100%",
+            }}
+          >
+            {/* ----------------------------------------------------------------- */}
+            {/* Top Wide Bento Card: Smart Lint Shaver (Problem Solver)           */}
+            {/* ----------------------------------------------------------------- */}
+            <Box
+              component={Link}
+              href="/products?search=lint+remover"
+              sx={{
+                position: "relative",
+                borderRadius: { xs: "24px", sm: "28px" },
+                border: "1px solid #DCE6EE",
+                boxShadow: "0 10px 30px -15px rgba(15, 23, 42, 0.08)",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                width: "100%",
+                height: "100%",
+                minHeight: { xs: 200, sm: 220, lg: "unset" },
+                p: { xs: 2.5, sm: 3, md: 3.25 },
+                overflow: "hidden",
+                textDecoration: "none",
+                bgcolor: "#E6F5F1",
+              }}
+            >
+              <Box
+                component="img"
+                src={getAssetUrl("banners/hero-bento-card-1.jpg")}
+                alt="Smart Lint Shaver - Renew Your Clothes"
+                sx={{
+                  position: "absolute",
+                  inset: 0,
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  objectPosition: "85% center",
+                  display: "block",
+                }}
+              />
+
+              {/* Subtle left fade for crisp text contrast */}
+              <Box
+                sx={{
+                  position: "absolute",
+                  inset: 0,
+                  zIndex: 1,
+                  pointerEvents: "none",
+                  background:
+                    "linear-gradient(90deg, rgba(235, 248, 245, 0.90) 0%, rgba(235, 248, 245, 0.65) 42%, rgba(235, 248, 245, 0) 65%)",
+                }}
+              />
+
+              {/* Text content on left */}
+              <Box sx={{ position: "relative", zIndex: 2, maxWidth: { xs: "60%", sm: "50%" } }}>
+                <Typography
+                  sx={{
+                    fontSize: { xs: "1.1rem", sm: "1.25rem", md: "1.38rem" },
+                    fontWeight: 800,
+                    lineHeight: 1.22,
+                    letterSpacing: "-0.02em",
+                    color: "#0F172A",
+                  }}
+                >
+                  {t("bentoLintTitle")}
+                  <Box component="span" sx={{ color: "#009E89", display: "block" }}>
+                    {t("bentoLintHighlight")}
+                  </Box>
+                </Typography>
+
+                <Typography
+                  sx={{
+                    fontSize: { xs: 10.5, sm: 11.5 },
+                    color: "#475569",
+                    fontWeight: 500,
+                    mt: 0.75,
+                    lineHeight: 1.4,
+                    display: { xs: "none", sm: "block" },
+                  }}
+                >
+                  {t("bentoLintSubtitle")}
+                </Typography>
+              </Box>
+
+              <Box
+                sx={{
+                  position: "relative",
+                  zIndex: 2,
+                  width: 32,
+                  height: 32,
+                  borderRadius: "50%",
+                  bgcolor: "#0F172A",
+                  color: "#FFFFFF",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  mt: 1.5,
+                }}
+              >
+                <ArrowForwardIcon sx={{ fontSize: 15 }} />
+              </Box>
+            </Box>
+
+            {/* ----------------------------------------------------------------- */}
+            {/* Bottom Row: 2 Split Square Bento Cards (Smart Living + Audio)     */}
+            {/* ----------------------------------------------------------------- */}
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: { xs: 1.75, sm: 2.25 },
+                height: "100%",
+              }}
+            >
+              {/* Bottom Left Card: Smart Living 360 AI Camera */}
+              <Box
+                component={Link}
+                href="/products?category=smart-home"
+                sx={{
+                  position: "relative",
+                  borderRadius: { xs: "22px", sm: "26px" },
+                  border: "1px solid #DCE6EE",
+                  boxShadow: "0 10px 30px -15px rgba(15, 23, 42, 0.08)",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  width: "100%",
+                  height: "100%",
+                  minHeight: { xs: 185, sm: 205, lg: "unset" },
+                  p: { xs: 2, sm: 2.25 },
+                  overflow: "hidden",
+                  textDecoration: "none",
+                  bgcolor: "#E6F5F1",
+                }}
+              >
+                <Box
+                  component="img"
+                  src={getAssetUrl("banners/hero-bento-card-2.jpg")}
+                  alt="Smarter Home - 360 AI Security"
+                  sx={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    objectPosition: "90% center",
+                    display: "block",
+                  }}
+                />
+
+                {/* Subtle left fade so text never clashes with camera */}
+                <Box
+                  sx={{
+                    position: "absolute",
+                    inset: 0,
+                    zIndex: 1,
+                    pointerEvents: "none",
+                    background:
+                      "linear-gradient(90deg, rgba(235, 248, 245, 0.92) 0%, rgba(235, 248, 245, 0.70) 42%, rgba(235, 248, 245, 0) 65%)",
+                  }}
+                />
+
+                <Box sx={{ position: "relative", zIndex: 2, maxWidth: "52%" }}>
+                  <Typography
+                    sx={{
+                      fontSize: { xs: "0.95rem", sm: "1.08rem" },
+                      fontWeight: 800,
+                      lineHeight: 1.2,
+                      letterSpacing: "-0.02em",
+                      color: "#0F172A",
+                    }}
+                  >
+                    {t("bentoCameraTitle1")}
+                    <br />
+                    {t("bentoCameraTitle2")}
+                  </Typography>
+
+                  <Typography
+                    sx={{
+                      fontSize: 10,
+                      color: "#475569",
+                      fontWeight: 500,
+                      mt: 0.5,
+                      lineHeight: 1.35,
+                      display: { xs: "none", sm: "block" },
+                    }}
+                  >
+                    {t("bentoCameraSubtitle")}
+                  </Typography>
+                </Box>
+
+                <Box
+                  sx={{
+                    position: "relative",
+                    zIndex: 2,
+                    width: 30,
+                    height: 30,
+                    borderRadius: "50%",
+                    bgcolor: "#0F172A",
+                    color: "#FFFFFF",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    mt: 1,
+                  }}
+                >
+                  <ArrowForwardIcon sx={{ fontSize: 14 }} />
+                </Box>
+              </Box>
+
+              {/* Bottom Right Card: Wireless Earbuds */}
+              <Box
+                component={Link}
+                href="/products?category=audio"
+                sx={{
+                  position: "relative",
+                  borderRadius: { xs: "22px", sm: "26px" },
+                  border: "1px solid #DCE6EE",
+                  boxShadow: "0 10px 30px -15px rgba(15, 23, 42, 0.08)",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  width: "100%",
+                  height: "100%",
+                  minHeight: { xs: 185, sm: 205, lg: "unset" },
+                  p: { xs: 2, sm: 2.25 },
+                  overflow: "hidden",
+                  textDecoration: "none",
+                  bgcolor: "#E6F5F1",
+                }}
+              >
+                <Box
+                  component="img"
+                  src={getAssetUrl("banners/hero-bento-card-3.jpg")}
+                  alt="TWS Earbuds - Pure Sound & Audio"
+                  sx={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                    objectPosition: "90% center",
+                    display: "block",
+                  }}
+                />
+
+                {/* Subtle left fade so text never clashes with earbuds */}
+                <Box
+                  sx={{
+                    position: "absolute",
+                    inset: 0,
+                    zIndex: 1,
+                    pointerEvents: "none",
+                    background:
+                      "linear-gradient(90deg, rgba(235, 248, 245, 0.92) 0%, rgba(235, 248, 245, 0.70) 42%, rgba(235, 248, 245, 0) 65%)",
+                  }}
+                />
+
+                <Box sx={{ position: "relative", zIndex: 2, maxWidth: "52%" }}>
+                  <Typography
+                    sx={{
+                      fontSize: { xs: "0.95rem", sm: "1.08rem" },
+                      fontWeight: 800,
+                      lineHeight: 1.2,
+                      letterSpacing: "-0.02em",
+                      color: "#0F172A",
+                    }}
+                  >
+                    {t("bentoAudioTitle1")}
+                    <br />
+                    {t("bentoAudioTitle2")}
+                  </Typography>
+
+                  <Typography
+                    sx={{
+                      fontSize: 10,
+                      color: "#475569",
+                      fontWeight: 500,
+                      mt: 0.5,
+                      lineHeight: 1.35,
+                      display: { xs: "none", sm: "block" },
+                    }}
+                  >
+                    {t("bentoAudioSubtitle")}
+                  </Typography>
+                </Box>
+
+                <Box
+                  sx={{
+                    position: "relative",
+                    zIndex: 2,
+                    width: 30,
+                    height: 30,
+                    borderRadius: "50%",
+                    bgcolor: "#0F172A",
+                    color: "#FFFFFF",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    mt: 1,
+                  }}
+                >
+                  <ArrowForwardIcon sx={{ fontSize: 14 }} />
+                </Box>
+              </Box>
+            </Box>
           </Box>
         </Box>
       </SectionContainer>
-
-      {/* Expandable Hero Search Modal */}
-      <HeroSearchModal
-        open={isSearchOpen}
-        onClose={() => setIsSearchOpen(false)}
-        initialQuery={searchValue}
-      />
     </Box>
   );
 }

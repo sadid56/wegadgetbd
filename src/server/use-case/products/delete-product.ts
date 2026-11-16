@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { product } from "@/db/schema";
 import type { Context } from "@/server/context";
 import { writeAudit } from "@/server/lib/orm";
+import { revalidateProductPaths } from "@/server/lib/revalidate";
 
 export class DeleteProductUseCase {
   constructor(
@@ -22,6 +23,7 @@ export class DeleteProductUseCase {
         actorId: this.actorId,
         metadata: { productId: id, title: deleted.title, softDelete: true },
       });
+      revalidateProductPaths([deleted.slug]);
     }
 
     return {

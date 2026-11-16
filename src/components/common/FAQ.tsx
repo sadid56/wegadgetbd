@@ -67,11 +67,11 @@ export function FAQ({ className }: FAQProps) {
                 key={index}
                 sx={{
                   borderRadius: `${tokens.radiusLg}px`,
-                  border: `1px solid ${isOpen ? tokens.primaryBorder : tokens.borderDefault}`,
-                  bgcolor: isOpen ? tokens.bgElevated : tokens.bgPanel,
+                  border: "none",
+                  bgcolor: tokens.bgPanel,
                   overflow: "hidden",
-                  transition: "all 0.25s ease",
-                  boxShadow: isOpen ? tokens.shadowMd : "none",
+                  transition: "background-color 0.25s ease",
+                  boxShadow: "none",
                 }}
               >
                 {/* Question */}

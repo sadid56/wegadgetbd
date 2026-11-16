@@ -14,7 +14,6 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { useCart } from "@/hooks/useCart";
 import { useCategories } from "@/query-client/categories";
 import { tokens } from "@/theme/theme";
-import { SectionContainer } from "@/components/common/SectionContainer";
 import { BrandLogo } from "@/components/common/BrandLogo";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
 import { Dropdown } from "@/components/ui/dropdown";
@@ -84,43 +83,51 @@ export function Navbar() {
   return (
     <>
       {/* Spacer for non-home pages so page content isn't covered */}
-      {!isHome && <Box sx={{ height: { xs: 64, md: 72 } }} />}
+      {!isHome && <Box sx={{ height: { xs: 72, sm: 80, md: 88 } }} />}
 
+      {/* Outer Fixed Centered Wrapper */}
       <Box
         ref={headerContainerRef}
-        component='header'
+        component="header"
         sx={{
           position: "fixed",
-          top: 0,
+          top: { xs: 8, sm: 12, md: 16 },
           left: 0,
           right: 0,
-          width: "100%",
           zIndex: 1100,
-          bgcolor: navState === "top" && isHome ? "transparent" : "rgba(16, 24, 32, 0.95)",
-          backdropFilter: navState === "top" && isHome ? "none" : "blur(12px)",
-          WebkitBackdropFilter: navState === "top" && isHome ? "none" : "blur(12px)",
-          borderBottom:
-            navState === "top" && isHome ? "1px solid transparent" : "1px solid rgba(0, 191, 166, 0.22)",
-          boxShadow: "none",
-          transform: navState === "hidden" ? "translateY(-100%)" : "translateY(0)",
-          transition:
-            "transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease",
+          width: "100%",
+          maxWidth: 1440,
+          mx: "auto",
+          px: { xs: 2, sm: 3, md: 4, lg: 5 },
+          pointerEvents: "none",
+          transform: navState === "hidden" ? "translateY(-130%)" : "translateY(0)",
+          transition: "transform 0.35s cubic-bezier(0.16, 1, 0.3, 1)",
           willChange: "transform",
         }}
       >
-        <SectionContainer
-          component='div'
+        {/* Floating Pill Bar */}
+        <Box
           sx={{
-            height: { xs: 64, md: 72 },
+            pointerEvents: "auto",
+            width: "100%",
+            height: { xs: 54, sm: 58, md: 64 },
+            bgcolor: "rgba(255, 255, 255, 0.98)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            borderRadius: "9999px",
+            border: "1px solid #E2E8F0",
+            boxShadow: "0 4px 20px -2px rgba(15, 23, 42, 0.06)",
+            px: { xs: 1.5, sm: 2, md: 2.75 },
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            position: "relative",
+            boxSizing: "border-box",
+            overflow: "hidden",
           }}
         >
           {/* Left: Brand Logo */}
-          <Box sx={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
-            <BrandLogo variant='dark' size='md' href='/' />
+          <Box sx={{ display: "flex", alignItems: "center", flexShrink: 0, mr: { xs: 1, md: 2 } }}>
+            <BrandLogo variant="light" size="md" href="/" />
           </Box>
 
           {/* Center: Gadgets Categories with Dropdown */}
@@ -128,7 +135,10 @@ export function Navbar() {
             sx={{
               display: { xs: "none", lg: "flex" },
               alignItems: "center",
-              gap: { lg: 1.25, xl: 2 },
+              gap: { lg: 0.75, xl: 1.5 },
+              flexShrink: 1,
+              minWidth: 0,
+              overflow: "hidden",
             }}
           >
             {NAV_CATEGORIES.map((category, index) => {
@@ -151,18 +161,19 @@ export function Navbar() {
                         cursor: "pointer",
                         display: "flex",
                         alignItems: "center",
-                        gap: 0.35,
+                        gap: 0.3,
                         fontFamily: "inherit",
-                        fontSize: { lg: "12.5px", xl: "13.5px" },
-                        fontWeight: 500,
-                        color: "rgba(255, 255, 255, 0.85)",
-                        py: 0.75,
-                        px: { lg: 0.5, xl: 0.75 },
-                        borderRadius: "6px",
+                        fontSize: { lg: "12px", xl: "13px" },
+                        fontWeight: 600,
+                        color: "#1E293B",
+                        py: 0.6,
+                        px: { lg: 0.75, xl: 1.1 },
+                        borderRadius: "9999px",
                         whiteSpace: "nowrap",
-                        transition: "color 0.15s ease",
+                        transition: "color 0.15s ease, background-color 0.15s ease",
                         "&:hover": {
-                          color: tokens.textWhite,
+                          color: tokens.primary,
+                          bgcolor: "rgba(0, 191, 166, 0.08)",
                         },
                       }}
                     >
@@ -170,7 +181,7 @@ export function Navbar() {
                       <KeyboardArrowDownRoundedIcon
                         sx={{
                           fontSize: 15,
-                          color: "rgba(255, 255, 255, 0.5)",
+                          color: "#64748B",
                         }}
                       />
                     </Box>
@@ -187,69 +198,82 @@ export function Navbar() {
             })}
           </Box>
 
-          {/* Right: Actions (Language Switcher, User Dropdown, Cart, Mobile Menu) */}
-          <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 0.5, sm: 1.25 }, flexShrink: 0 }}>
+          {/* Right: Actions (Language Switcher, User Profile, Cart, Mobile Menu) */}
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: { xs: 0.75, sm: 1.25 },
+              flexShrink: 0,
+              ml: "auto",
+            }}
+          >
             {/* Language Switcher */}
-            <Box sx={{ display: { xs: "none", sm: "flex" } }}>
+            <Box sx={{ display: { xs: "none", sm: "flex" }, flexShrink: 0 }}>
               <LanguageSwitcher variant="navbar" />
             </Box>
 
-            {/* User Profile */}
-            <NavbarUserDropdown />
+            {/* User Profile (stays securely inside navbar) */}
+            <Box sx={{ flexShrink: 0 }}>
+              <NavbarUserDropdown />
+            </Box>
 
-            {/* Shopping Cart Button */}
-            <IconButton
-              component={Link}
-              href='/cart'
-              aria-label={t("cart")}
-              sx={{
-                color: "rgba(255, 255, 255, 0.85)",
-                p: 1,
-                borderRadius: "50%",
-                bgcolor: "rgba(255, 255, 255, 0.05)",
-                border: "1px solid rgba(255, 255, 255, 0.08)",
-                transition: "all 0.2s ease",
-                "&:hover": {
-                  color: tokens.textWhite,
-                  bgcolor: "rgba(0, 191, 166, 0.15)",
-                  borderColor: "rgba(0, 191, 166, 0.35)",
-                  boxShadow: "0 0 12px rgba(0, 191, 166, 0.3)",
-                },
-              }}
-            >
-              <Badge
-                badgeContent={totalCount}
+            {/* Shopping Cart Button (stays securely inside navbar) */}
+            <Box sx={{ flexShrink: 0 }}>
+              <IconButton
+                component={Link}
+                href="/cart"
+                aria-label={t("cart")}
                 sx={{
-                  "& .MuiBadge-badge": {
-                    bgcolor: tokens.primary,
-                    color: tokens.textWhite,
-                    fontSize: 10,
-                    height: 18,
-                    minWidth: 18,
-                    borderRadius: "999px",
-                    fontWeight: 700,
-                    boxShadow: "0 0 8px rgba(0, 191, 166, 0.6)",
+                  color: "#0F172A",
+                  p: 1,
+                  borderRadius: "50%",
+                  bgcolor: "rgba(15, 23, 42, 0.04)",
+                  border: "1px solid rgba(15, 23, 42, 0.08)",
+                  transition: "all 0.2s ease",
+                  "&:hover": {
+                    color: tokens.primary,
+                    bgcolor: "rgba(0, 191, 166, 0.1)",
+                    borderColor: "rgba(0, 191, 166, 0.25)",
                   },
                 }}
               >
-                <ShoppingBagOutlinedIcon sx={{ fontSize: 20 }} />
-              </Badge>
-            </IconButton>
+                <Badge
+                  badgeContent={totalCount}
+                  sx={{
+                    "& .MuiBadge-badge": {
+                      bgcolor: tokens.primary,
+                      color: tokens.textWhite,
+                      fontSize: 10,
+                      height: 18,
+                      minWidth: 18,
+                      borderRadius: "999px",
+                      fontWeight: 700,
+                    },
+                  }}
+                >
+                  <ShoppingBagOutlinedIcon sx={{ fontSize: 20 }} />
+                </Badge>
+              </IconButton>
+            </Box>
 
             {/* Hamburger Menu Icon (visible on mobile and tablet < 1200px) */}
             <IconButton
               onClick={() => setMobileMenuOpen(true)}
               sx={{
                 display: { xs: "inline-flex", lg: "none" },
-                color: tokens.textWhite,
+                color: "#0F172A",
                 p: 1,
+                borderRadius: "50%",
+                bgcolor: "rgba(15, 23, 42, 0.04)",
+                flexShrink: 0,
               }}
-              aria-label='Open Menu'
+              aria-label="Open Menu"
             >
               <MenuIcon />
             </IconButton>
           </Box>
-        </SectionContainer>
+        </Box>
       </Box>
 
       {/* Mobile Drawer */}

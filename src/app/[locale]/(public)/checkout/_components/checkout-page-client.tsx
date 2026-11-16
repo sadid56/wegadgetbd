@@ -97,7 +97,7 @@ function ConfirmDialog({ open, onCancel, onConfirm, img, title, count, totalAmou
             display: "flex",
             alignItems: "center",
             gap: 1.5,
-            border: `1px solid ${tokens.borderDefault}`,
+            border: "none",
           }}
         >
           {img ? (
@@ -111,7 +111,7 @@ function ConfirmDialog({ open, onCancel, onConfirm, img, title, count, totalAmou
                 borderRadius: "6px",
                 objectFit: "contain",
                 bgcolor: tokens.bgPanel,
-                border: `1px solid ${tokens.borderDefault}`,
+                border: "none",
                 p: 0.5,
                 flexShrink: 0,
               }}
@@ -499,7 +499,7 @@ Delivery: ৳${deliveryCharge}
               bgcolor: tokens.bgCanvas,
               borderRadius: "8px",
               p: 1.5,
-              border: `1px solid ${tokens.borderDefault}`,
+              border: "none",
               display: "flex",
               flexDirection: "column",
               gap: 0.75,

@@ -65,13 +65,21 @@ export function NavbarUserDropdown() {
         component={Link}
         href="/auth/sign-in"
         sx={{
-          color: "rgba(255, 255, 255, 0.85)",
+          color: "#0F172A",
           p: 1,
-          "&:hover": { color: tokens.textWhite, bgcolor: "rgba(255, 255, 255, 0.08)" },
+          borderRadius: "50%",
+          bgcolor: "rgba(15, 23, 42, 0.04)",
+          border: "1px solid rgba(15, 23, 42, 0.06)",
+          transition: "all 0.2s ease",
+          "&:hover": {
+            color: tokens.primary,
+            bgcolor: "rgba(0, 191, 166, 0.1)",
+            borderColor: "rgba(0, 191, 166, 0.25)",
+          },
         }}
         aria-label={t("login")}
       >
-        <PersonOutlineOutlinedIcon sx={{ fontSize: 22 }} />
+        <PersonOutlineOutlinedIcon sx={{ fontSize: 20 }} />
       </IconButton>
     );
   }

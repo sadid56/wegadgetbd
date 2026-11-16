@@ -71,7 +71,7 @@ export function ProductReviews({ productId, rating: initialRating, reviewsCount 
 
   const reviews = data?.reviews || [];
   const totalReviews = data?.total ?? reviewsCount;
-  const avgRating = data?.averageRating ?? Number(initialRating || 5);
+  const avgRating = totalReviews === 0 ? 0 : (data?.averageRating ?? Number(initialRating || 0));
   const ratingCounts = data?.ratingCounts || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
   const formatNumber = (n: number) => (locale === "bn" ? formatBnNumber(n) : n.toString());
@@ -158,11 +158,10 @@ export function ProductReviews({ productId, rating: initialRating, reviewsCount 
           alignItems: "center",
           gap: { xs: 3, md: 4 },
           p: { xs: 2.5, sm: 3.5 },
-          bgcolor: tokens.bgPanel,
-          border: "1px solid",
-          borderColor: tokens.borderDefault,
+          bgcolor: tokens.bgCanvas,
+          border: "none",
           borderRadius: `${tokens.radiusXl}px`,
-          boxShadow: tokens.elevation1,
+          boxShadow: "none",
         }}
       >
         {/* Overall Score */}
@@ -274,13 +273,12 @@ export function ProductReviews({ productId, rating: initialRating, reviewsCount 
           sx={{
             p: { xs: 2.5, sm: 3.5 },
             bgcolor: tokens.bgCanvas,
-            border: "1px solid",
-            borderColor: tokens.primary,
+            border: "none",
             borderRadius: "16px",
             display: "flex",
             flexDirection: "column",
             gap: 2.5,
-            boxShadow: "0 6px 24px rgba(0,0,0,0.06)",
+            boxShadow: "none",
           }}
         >
           <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 700, color: "text.primary" }}>
@@ -501,15 +499,12 @@ function ReviewItemCard({
       sx={{
         p: { xs: 2, sm: 3 },
         bgcolor: tokens.bgCanvas,
-        border: "1px solid",
-        borderColor: tokens.borderSubtle,
+        border: "none",
         borderRadius: `${tokens.radiusLg}px`,
-        boxShadow: tokens.elevation1,
+        boxShadow: "none",
         display: "flex",
         flexDirection: "column",
         gap: 2,
-        transition: "border-color 150ms, box-shadow 150ms",
-        "&:hover": { borderColor: tokens.borderDefault, boxShadow: tokens.elevation2 },
       }}
     >
       {/* Header: User Avatar + Name + Rating + Date */}

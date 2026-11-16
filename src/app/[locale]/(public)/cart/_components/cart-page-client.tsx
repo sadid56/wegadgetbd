@@ -114,7 +114,7 @@ export default function CartPage() {
             <Box
               sx={{
                 bgcolor: tokens.bgPanel,
-                border: `1px solid ${tokens.borderDefault}`,
+                border: "none",
                 borderRadius: "12px",
                 overflow: "hidden",
               }}
@@ -126,8 +126,8 @@ export default function CartPage() {
                   alignItems: "center",
                   px: 2.5,
                   py: 1.5,
-                  bgcolor: tokens.bgCanvas,
-                  borderBottom: `1px solid ${tokens.borderDefault}`,
+                  bgcolor: "#F8FAFC",
+                  borderBottom: `1px solid ${tokens.borderSubtle}`,
                   fontSize: 11,
                   fontWeight: 700,
                   color: tokens.textMuted,
@@ -163,7 +163,7 @@ export default function CartPage() {
             <Box
               sx={{
                 bgcolor: tokens.bgPanel,
-                border: `1px solid ${tokens.borderDefault}`,
+                border: "none",
                 borderRadius: "12px",
                 p: 2.5,
               }}

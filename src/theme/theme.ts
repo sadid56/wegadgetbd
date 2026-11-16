@@ -8,7 +8,7 @@ export const tokens = {
   // =========================================================================
   // MATERIAL YOU 3 (M3) TONAL SURFACES & CONTAINERS
   // =========================================================================
-  bgCanvas: "#F8FAF9", // M3 Surface - clean, calm modern tone with subtle neutral tint
+  bgCanvas: "#F1F5F9", // Soft cool light gray canvas so white cards pop cleanly without borders
   bgSurface: "#F8FAF9",
   bgPanel: "#ffffff", // M3 Surface Container Lowest - crisp, pure clean card face
   bgInput: "#ffffff",

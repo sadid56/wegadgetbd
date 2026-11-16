@@ -8,23 +8,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "*.supabase.co",
-      },
-      {
-        protocol: "https",
         hostname: "bftjqobykjnrtaaqzokb.supabase.co",
-      },
-      {
-        protocol: "https",
-        hostname: "placehold.co",
-      },
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-      },
-      {
-        protocol: "https",
-        hostname: "upload.wikimedia.org",
       },
     ],
   },
@@ -38,6 +22,7 @@ const nextConfig: NextConfig = {
       "date-fns",
       "@tanstack/react-query",
       "@uiw/react-md-editor",
+      "react-zoom-pan-pinch",
     ],
   },
   devIndicators: false,

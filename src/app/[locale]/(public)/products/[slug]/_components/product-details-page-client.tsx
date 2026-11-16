@@ -1,56 +1,49 @@
 "use client";
 
-import { Link, useRouter } from "@/i18n/routing";
-import NextImage from "next/image";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "next/navigation";
-import Box from "@mui/material/Box";
 import { SectionContainer } from "@/components/common/SectionContainer";
-import Typography from "@mui/material/Typography";
-import Stack from "@mui/material/Stack";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Link, useRouter } from "@/i18n/routing";
+import Box from "@mui/material/Box";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
-import Tooltip from "@mui/material/Tooltip";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import Typography from "@mui/material/Typography";
+import NextImage from "next/image";
+import { useParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { TransformWrapper, TransformComponent, type ReactZoomPanPinchRef } from "react-zoom-pan-pinch";
+import {
+  TransformComponent,
+  TransformWrapper,
+  type ReactZoomPanPinchRef,
+} from "react-zoom-pan-pinch";
 
-import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import PhotoLibraryOutlinedIcon from "@mui/icons-material/PhotoLibraryOutlined";
-import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
-import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
-import ReplayIcon from "@mui/icons-material/Replay";
-import PaymentsOutlinedIcon from "@mui/icons-material/PaymentsOutlined";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import StarIcon from "@mui/icons-material/Star";
-import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
-import ShieldOutlinedIcon from "@mui/icons-material/ShieldOutlined";
-import CheckCircleOutlinedIcon from "@mui/icons-material/CheckCircleOutlined";
-import StorefrontOutlinedIcon from "@mui/icons-material/StorefrontOutlined";
-import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
-import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 
-import { useProduct, useProducts } from "@/query-client/products";
-import { useCart } from "@/hooks/useCart";
-import { toVideoEmbedUrl } from "@/lib/video-links";
 import { useMarkdownComponents } from "@/components/common/MarkdownContent";
+import { useToast } from "@/context/toast-context";
+import { useCart } from "@/hooks/useCart";
+import type { Locale } from "@/i18n/config";
+import { formatPrice, toBengaliNumber } from "@/lib/i18n-utils";
+import { getAssetUrl } from "@/lib/storage";
+import { toVideoEmbedUrl } from "@/lib/video-links";
+import { useProduct, useProducts } from "@/query-client/products";
+import { tokens } from "@/theme/theme";
+import { useLocale, useTranslations } from "next-intl";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ProductCard } from "../../../_components/ProductCard";
-import { getAssetUrl } from "@/lib/storage";
-import { tokens } from "@/theme/theme";
-import { useToast } from "@/context/toast-context";
 import { ProductDetailsSkeleton } from "./ProductDetailsSkeleton";
 import { ProductReviews } from "./ProductReviews";
-import { useTranslations, useLocale } from "next-intl";
-import { formatPrice, toBengaliNumber } from "@/lib/i18n-utils";
-import type { Locale } from "@/i18n/config";
 
 type TabKey = "specs" | "desc" | "packaging" | "video" | "reviews";
 
@@ -75,9 +68,11 @@ const getTabSx = (active: boolean) => ({
   fontSize: { xs: 13, sm: 14 },
   fontWeight: 700,
   color: active ? tokens.primary : tokens.textSecondary,
-  bgcolor: active ? tokens.bgPanel : "transparent",
+  bgcolor: active ? "rgba(0, 191, 166, 0.06)" : "transparent",
   border: 0,
-  borderBottom: active ? `3px solid ${tokens.primary}` : "3px solid transparent",
+  borderBottom: active
+    ? `3px solid ${tokens.primary}`
+    : "3px solid transparent",
   cursor: "pointer",
   whiteSpace: "nowrap" as const,
   transition: "all 150ms",
@@ -116,6 +111,15 @@ export default function ProductDetailsPage() {
   const [mediaMode, setMediaMode] = useState<"photos" | "video">("photos");
 
   const transformRef = useRef<ReactZoomPanPinchRef | null>(null);
+  const tabsSectionRef = useRef<HTMLDivElement | null>(null);
+
+  const handleJumpToReviews = () => {
+    setActiveTab("reviews");
+    tabsSectionRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!transformRef.current || mediaMode !== "photos") return;
@@ -144,8 +148,11 @@ export default function ProductDetailsPage() {
   };
 
   const { data: product, isLoading } = useProduct(slug as string);
-  const { data: relatedData } = useProducts({ category: product?.category?.slug, limit: 5 });
-  const { addItem, cart } = useCart();
+  const { data: relatedData } = useProducts({
+    category: product?.category?.slug,
+    limit: 5,
+  });
+  const { addItem, removeItem, cart } = useCart();
   const markdownComponents = useMarkdownComponents();
 
   const formatNumber = useCallback(
@@ -153,7 +160,7 @@ export default function ProductDetailsPage() {
       if (val === null || val === undefined) return "";
       return locale === "bn" ? toBengaliNumber(val) : val.toString();
     },
-    [locale]
+    [locale],
   );
 
   useEffect(() => {
@@ -165,11 +172,14 @@ export default function ProductDetailsPage() {
 
   const extras = (product ?? {}) as unknown as ProductExtras;
 
-  const images = useMemo(() => (extras.images ?? []).map(getAssetUrl), [extras.images]);
+  const images = useMemo(
+    () => (extras.images ?? []).map(getAssetUrl),
+    [extras.images],
+  );
 
   const videoLinks = useMemo(
     () => (extras.videoLinks ?? []).filter((l) => l && l.trim() !== ""),
-    [extras.videoLinks]
+    [extras.videoLinks],
   );
 
   const pricing = useMemo(() => {
@@ -181,20 +191,26 @@ export default function ProductDetailsPage() {
   }, [extras.price, extras.discountPrice]);
 
   const relatedProducts = useMemo(
-    () => relatedData?.products?.filter((p: any) => p.id !== product?.id).slice(0, 4) ?? [],
-    [relatedData?.products, product?.id]
+    () =>
+      relatedData?.products
+        ?.filter((p: any) => p.id !== product?.id)
+        .slice(0, 4) ?? [],
+    [relatedData?.products, product?.id],
   );
 
   const isInCart = useMemo(
     () => cart.some((i: { id: string }) => i.id === product?.id),
-    [cart, product?.id]
+    [cart, product?.id],
   );
 
   const handleAddToCart = useCallback(() => {
     if (!product) return;
+    if (isInCart) {
+      removeItem(product.id);
+      return;
+    }
     addItem(product, qty);
-    toast.success(t("addedToCartSuccess"));
-  }, [product, qty, addItem, toast, t]);
+  }, [product, isInCart, qty, addItem, removeItem]);
 
   const handleBuyNow = useCallback(() => {
     if (!product) return;
@@ -210,11 +226,17 @@ export default function ProductDetailsPage() {
       if (Array.isArray(extras.specifications)) {
         extras.specifications.forEach((item: any) => {
           if (typeof item === "object" && item?.key && item?.value) {
-            list.push({ key: String(item.key).trim(), value: String(item.value).trim() });
+            list.push({
+              key: String(item.key).trim(),
+              value: String(item.value).trim(),
+            });
           } else if (typeof item === "string") {
             const parts = item.split(":");
             if (parts.length > 1) {
-              list.push({ key: parts[0].trim(), value: parts.slice(1).join(":").trim() });
+              list.push({
+                key: parts[0].trim(),
+                value: parts.slice(1).join(":").trim(),
+              });
             } else {
               list.push({ key: "Feature", value: item });
             }
@@ -245,7 +267,9 @@ export default function ProductDetailsPage() {
 
   const whatsappLink = useMemo(() => {
     if (!product) return "#";
-    const msg = encodeURIComponent(t("whatsappMessage", { title: product.title }));
+    const msg = encodeURIComponent(
+      t("whatsappMessage", { title: product.title }),
+    );
     return `https://wa.me/8801819000000?text=${msg}`;
   }, [product, t]);
 
@@ -265,8 +289,17 @@ export default function ProductDetailsPage() {
           textAlign: "center",
         }}
       >
-        <Inventory2OutlinedIcon sx={{ fontSize: 64, color: tokens.textMuted, mb: 2 }} />
-        <Typography sx={{ fontSize: 20, fontWeight: 700, color: tokens.textPrimary, mb: 1 }}>
+        <Inventory2OutlinedIcon
+          sx={{ fontSize: 64, color: tokens.textMuted, mb: 2 }}
+        />
+        <Typography
+          sx={{
+            fontSize: 20,
+            fontWeight: 700,
+            color: tokens.textPrimary,
+            mb: 1,
+          }}
+        >
           {t("detailsNotFoundTitle")}
         </Typography>
         <Typography sx={{ fontSize: 14, color: tokens.textSecondary, mb: 3 }}>
@@ -279,7 +312,7 @@ export default function ProductDetailsPage() {
     );
   }
 
-  const reviewsCount = extras.reviewsCount || 12;
+  const reviewsCount = extras.reviewsCount ?? 0;
   const soldCount = extras.soldCount || 360;
 
   const tabs: { key: TabKey; label: string }[] = [
@@ -287,9 +320,17 @@ export default function ProductDetailsPage() {
     { key: "desc", label: t("tabDescription") },
     { key: "packaging", label: t("tabPackaging") },
     ...(videoLinks.length > 0
-      ? [{ key: "video" as TabKey, label: t("tabVideo", { count: formatNumber(videoLinks.length) }) }]
+      ? [
+          {
+            key: "video" as TabKey,
+            label: t("tabVideo", { count: formatNumber(videoLinks.length) }),
+          },
+        ]
       : []),
-    { key: "reviews", label: t("tabCustomerReviews", { count: formatNumber(reviewsCount) }) },
+    {
+      key: "reviews",
+      label: t("tabCustomerReviews", { count: formatNumber(reviewsCount) }),
+    },
   ];
 
   return (
@@ -307,7 +348,14 @@ export default function ProductDetailsPage() {
             color: tokens.textMuted,
           }}
         >
-          <Link href="/" style={{ textDecoration: "none", color: tokens.textSecondary, fontWeight: 500 }}>
+          <Link
+            href="/"
+            style={{
+              textDecoration: "none",
+              color: tokens.textSecondary,
+              fontWeight: 500,
+            }}
+          >
             {t("home")}
           </Link>
           <Box component="span">/</Box>
@@ -315,7 +363,11 @@ export default function ProductDetailsPage() {
             <>
               <Link
                 href={`/products?category=${product.category.slug || ""}`}
-                style={{ textDecoration: "none", color: tokens.textSecondary, fontWeight: 500 }}
+                style={{
+                  textDecoration: "none",
+                  color: tokens.textSecondary,
+                  fontWeight: 500,
+                }}
               >
                 {product.category.name}
               </Link>
@@ -325,7 +377,12 @@ export default function ProductDetailsPage() {
           <Typography
             component="span"
             noWrap
-            sx={{ fontSize: 13, color: tokens.textPrimary, fontWeight: 600, maxWidth: { xs: 220, sm: 400 } }}
+            sx={{
+              fontSize: 13,
+              color: tokens.textPrimary,
+              fontWeight: 600,
+              maxWidth: { xs: 220, sm: 400 },
+            }}
           >
             {product.title}
           </Typography>
@@ -337,29 +394,31 @@ export default function ProductDetailsPage() {
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: { xs: "1fr", lg: "1fr 340px" },
+            gridTemplateColumns: { xs: "1fr", lg: "1.15fr 1fr" },
             gap: { xs: 3, lg: 3.5 },
             alignItems: "start",
             mb: 4,
           }}
         >
-          {/* Main Left Section: Gallery (Left) + Core Info (Center) */}
+          {/* Main Left Section: Gallery Card */}
           <Box
             sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", md: "410px 1fr" },
-              gap: { xs: 3, md: 3.5 },
               bgcolor: tokens.bgPanel,
-              border: "1px solid",
-              borderColor: tokens.borderDefault,
+              border: "none",
               borderRadius: `${tokens.radiusXl}px`,
-              boxShadow: tokens.elevation1,
+              boxShadow: "none",
               p: { xs: 2, sm: 3 },
             }}
           >
             {/* 1. Left Gallery Column (Vertical Thumbnails + Main View) */}
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <Box sx={{ display: "flex", gap: 1.5, flexDirection: { xs: "column-reverse", sm: "row" } }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  gap: 1.5,
+                  flexDirection: { xs: "column-reverse", sm: "row" },
+                }}
+              >
                 {/* Vertical Thumbnails on Desktop / Tablet */}
                 {images.length > 1 && mediaMode === "photos" && (
                   <Box
@@ -372,7 +431,10 @@ export default function ProductDetailsPage() {
                       maxHeight: { sm: 400 },
                       pb: { xs: 1, sm: 0 },
                       "&::-webkit-scrollbar": { width: 4, height: 4 },
-                      "&::-webkit-scrollbar-thumb": { bgcolor: tokens.borderDefault, borderRadius: 2 },
+                      "&::-webkit-scrollbar-thumb": {
+                        bgcolor: tokens.borderDefault,
+                        borderRadius: 2,
+                      },
                     }}
                   >
                     {images.map((img, idx) => (
@@ -390,7 +452,10 @@ export default function ProductDetailsPage() {
                           borderRadius: "10px",
                           overflow: "hidden",
                           border: "2px solid",
-                          borderColor: activeImg === idx ? tokens.primary : tokens.borderDefault,
+                          borderColor:
+                            activeImg === idx
+                              ? tokens.primary
+                              : tokens.borderDefault,
                           bgcolor: tokens.bgCanvas,
                           p: 0,
                           cursor: "pointer",
@@ -421,8 +486,6 @@ export default function ProductDetailsPage() {
                     borderRadius: "14px",
                     overflow: "hidden",
                     bgcolor: tokens.bgCanvas,
-                    border: "1px solid",
-                    borderColor: tokens.borderSubtle,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -456,6 +519,7 @@ export default function ProductDetailsPage() {
                             overflow: "hidden",
                           }}
                           contentStyle={{
+                            position: "relative",
                             width: "100%",
                             height: "100%",
                             display: "flex",
@@ -463,14 +527,26 @@ export default function ProductDetailsPage() {
                             justifyContent: "center",
                           }}
                         >
-                          <NextImage
-                            src={images[activeImg]}
-                            alt={product.title}
-                            fill
-                            sizes="(max-width: 768px) 100vw, 450px"
-                            style={{ objectFit: "contain", padding: 12, pointerEvents: "none" }}
-                            priority
-                          />
+                          <Box
+                            sx={{
+                              position: "relative",
+                              width: "100%",
+                              height: "100%",
+                            }}
+                          >
+                            <NextImage
+                              src={images[activeImg]}
+                              alt={product.title}
+                              fill
+                              sizes="(max-width: 768px) 100vw, 560px"
+                              style={{
+                                objectFit: "contain",
+                                padding: 12,
+                                pointerEvents: "none",
+                              }}
+                              priority
+                            />
+                          </Box>
                         </TransformComponent>
                       </TransformWrapper>
 
@@ -495,19 +571,34 @@ export default function ProductDetailsPage() {
                         }}
                       >
                         <ZoomInIcon sx={{ fontSize: 14 }} />
-                        <span>{locale === "bn" ? "জুম করতে হোভার করুন" : "Hover to zoom"}</span>
+                        <span>
+                          {locale === "bn"
+                            ? "জুম করতে হোভার করুন"
+                            : "Hover to zoom"}
+                        </span>
                       </Box>
                     </>
                   ) : (
-                    <Inventory2OutlinedIcon sx={{ fontSize: 72, color: tokens.borderDefault }} />
+                    <Inventory2OutlinedIcon
+                      sx={{ fontSize: 72, color: tokens.borderDefault }}
+                    />
                   )}
 
                   {/* Sale Discount Badge */}
                   {pricing.percent > 0 && mediaMode === "photos" && (
-                    <Box sx={{ position: "absolute", top: 12, left: 12, zIndex: 2 }}>
+                    <Box
+                      sx={{
+                        position: "absolute",
+                        top: 12,
+                        left: 12,
+                        zIndex: 2,
+                      }}
+                    >
                       <Badge
                         variant="sale"
-                        label={t("offPercent", { percent: formatNumber(pricing.percent) })}
+                        label={t("offPercent", {
+                          percent: formatNumber(pricing.percent),
+                        })}
                       />
                     </Box>
                   )}
@@ -538,282 +629,380 @@ export default function ProductDetailsPage() {
                 )}
               </Box>
             </Box>
-
-            {/* 2. Center Column: Title, Ratings, Pricing, Quick Specs & Stepper */}
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              {/* Free Shipping Top Ribbon (Alibaba Style) */}
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  p: 1.25,
-                  px: 2,
-                  borderRadius: "10px",
-                  bgcolor: "rgba(255, 171, 0, 0.12)",
-                  border: "1px solid rgba(255, 171, 0, 0.35)",
-                  color: "#B76E00",
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <LocalShippingOutlinedIcon sx={{ fontSize: 18 }} />
-                  <Typography sx={{ fontSize: 12.5, fontWeight: 700 }}>
-                    {t("freeShippingBanner", { amount: formatNumber("2,000") })}
-                  </Typography>
-                </Box>
-                <ArrowForwardIosIcon sx={{ fontSize: 12 }} />
-              </Box>
-
-              {/* Product Title */}
-              <Typography
-                component="h1"
-                sx={{
-                  fontSize: { xs: "1.35rem", md: "1.7rem" },
-                  fontWeight: 800,
-                  color: tokens.textPrimary,
-                  lineHeight: 1.3,
-                  letterSpacing: "-0.015em",
-                }}
-              >
-                {product.title}
-              </Typography>
-
-              {/* Rating & Trust Badges Row */}
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1.5,
-                  flexWrap: "wrap",
-                  pb: 1.5,
-                  borderBottom: "1px solid",
-                  borderColor: tokens.borderSubtle,
-                }}
-              >
-                <Box
-                  onClick={() => setActiveTab("reviews")}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 0.5,
-                    cursor: "pointer",
-                    "&:hover": { opacity: 0.8 },
-                  }}
-                >
-                  <StarIcon sx={{ fontSize: 18, color: tokens.warning }} />
-                  <Typography sx={{ fontSize: 14, fontWeight: 800, color: tokens.textPrimary }}>
-                    {formatNumber(Number(product.rating || 5).toFixed(1))}
-                  </Typography>
-                  <Typography
-                    sx={{
-                      fontSize: 13,
-                      color: tokens.primary,
-                      textDecoration: "underline",
-                      fontWeight: 600,
-                    }}
-                  >
-                    {t("reviewsCount", { count: formatNumber(reviewsCount) })}
-                  </Typography>
-                </Box>
-
-                <Box component="span" sx={{ color: tokens.borderDefault }}>
-                  |
-                </Box>
-
-                <Badge
-                  variant="success"
-                  size="small"
-                  label={t("badgeAuthentic")}
-                  icon={<CheckCircleOutlinedIcon sx={{ fontSize: "13px !important" }} />}
-                />
-
-                {soldCount ? (
-                  <Typography sx={{ fontSize: 12.5, color: tokens.textSecondary, fontWeight: 500 }}>
-                    {t("deliveredCount", { count: formatNumber(soldCount) })}
-                  </Typography>
-                ) : null}
-              </Box>
-
-              {/* Pricing Block */}
-              <Box
-                sx={{
-                  p: 2,
-                  bgcolor: tokens.bgCanvas,
-                  border: "1px solid",
-                  borderColor: tokens.borderSubtle,
-                  borderRadius: "14px",
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "baseline", gap: 1.5, flexWrap: "wrap" }}>
-                  <Typography
-                    sx={{
-                      fontSize: { xs: "2rem", md: "2.4rem" },
-                      fontWeight: 900,
-                      color: tokens.primary,
-                      lineHeight: 1,
-                    }}
-                  >
-                    {formatPrice(pricing.discounted, locale)}
-                  </Typography>
-                  {pricing.discount > 0 && (
-                    <>
-                      <Typography
-                        sx={{
-                          fontSize: "1.15rem",
-                          fontWeight: 500,
-                          color: tokens.textMuted,
-                          textDecoration: "line-through",
-                        }}
-                      >
-                        {formatPrice(pricing.base, locale)}
-                      </Typography>
-                      <Badge
-                        variant="default"
-                        label={t("saveAmount", { amount: formatNumber(pricing.discount.toLocaleString()) })}
-                      />
-                    </>
-                  )}
-                </Box>
-                <Typography sx={{ fontSize: 12, color: tokens.textMuted, mt: 0.75 }}>
-                  {locale === "bn"
-                    ? "সর্বাধিক বিক্রিত গ্যাজেট • ক্যাশ অন ডেলিভারি প্রযোজ্য"
-                    : "Best seller price • Cash on delivery available"}
-                </Typography>
-              </Box>
-
-              {/* Select Quantity Stepper */}
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  py: 1,
-                  borderTop: "1px solid",
-                  borderColor: tokens.borderSubtle,
-                }}
-              >
-                <Typography sx={{ fontSize: 13.5, fontWeight: 600, color: tokens.textPrimary }}>
-                  {t("selectQuantity")}
-                </Typography>
-                <Box
-                  sx={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    border: "1px solid",
-                    borderColor: tokens.borderDefault,
-                    borderRadius: `${tokens.radiusPill}px`,
-                    bgcolor: tokens.bgCanvas,
-                    overflow: "hidden",
-                  }}
-                >
-                  <Box
-                    component="button"
-                    type="button"
-                    onClick={() => setQty((q) => Math.max(1, q - 1))}
-                    sx={stepperBtnSx}
-                  >
-                    −
-                  </Box>
-                  <Box
-                    sx={{
-                      minWidth: 44,
-                      height: 36,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 15,
-                      fontWeight: 700,
-                      color: tokens.textPrimary,
-                      borderLeft: "1px solid",
-                      borderRight: "1px solid",
-                      borderColor: tokens.borderSubtle,
-                      bgcolor: tokens.bgPanel,
-                    }}
-                  >
-                    {formatNumber(qty)}
-                  </Box>
-                  <Box
-                    component="button"
-                    type="button"
-                    onClick={() => setQty((q) => q + 1)}
-                    sx={stepperBtnSx}
-                  >
-                    +
-                  </Box>
-                </Box>
-              </Box>
-            </Box>
           </Box>
 
           {/* ========================================================================= */}
-          {/* 3. RIGHT COLUMN: Modern Clean Sticky Buy Box                              */}
+          {/* 2. RIGHT COLUMN: Flagship Product Info & Buy Box Card                     */}
           {/* ========================================================================= */}
           <Box
             sx={{
               position: { xs: "static", lg: "sticky" },
               top: 84,
               bgcolor: tokens.bgPanel,
-              border: "1px solid",
-              borderColor: tokens.borderDefault,
+              border: "none",
               borderRadius: `${tokens.radiusXl}px`,
-              p: { xs: 2.5, sm: 3 },
+              p: { xs: 2.5, sm: 3.5 },
               display: "flex",
               flexDirection: "column",
               gap: 2.25,
-              boxShadow: tokens.elevation2,
+              boxShadow: "none",
             }}
           >
-            {/* Price & Stock Header */}
-            <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 1 }}>
-              <Box>
-                <Typography sx={{ fontSize: 11.5, color: tokens.textMuted, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                  {locale === "bn" ? "মোট মূল্য" : "Total Price"}
-                </Typography>
-                <Typography sx={{ fontSize: { xs: "1.75rem", sm: "2.1rem" }, fontWeight: 900, color: tokens.primary, lineHeight: 1.1 }}>
-                  {formatPrice(pricing.discounted * qty, locale)}
-                </Typography>
-                {pricing.discount > 0 && (
-                  <Typography sx={{ fontSize: 12, color: tokens.successText, fontWeight: 700, mt: 0.5 }}>
-                    {locale === "bn"
-                      ? `সাশ্রয়: ৳${formatNumber((pricing.discount * qty).toLocaleString())}`
-                      : `You save: ৳${formatNumber((pricing.discount * qty).toLocaleString())}`}
-                  </Typography>
-                )}
-              </Box>
+            {/* Top Row: Category & Stock Status */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                gap: 1.5,
+                flexWrap: "wrap",
+              }}
+            >
+              {product.category?.name ? (
+                <Link
+                  href={`/products?category=${product.category.slug || ""}`}
+                  style={{
+                    textDecoration: "none",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: tokens.primary,
+                    letterSpacing: "0.03em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {product.category.name}
+                </Link>
+              ) : (
+                <Box />
+              )}
               <Badge
                 variant={product.inStock ? "success" : "destructive"}
-                label={product.inStock ? tCommon("inStock") : tCommon("outOfStock")}
+                label={
+                  product.inStock ? tCommon("inStock") : tCommon("outOfStock")
+                }
               />
             </Box>
 
-            {/* Fast Delivery Info Pill */}
-            <Box
+            {/* Product Title */}
+            <Typography
+              component="h1"
               sx={{
-                p: 1.5,
-                borderRadius: "12px",
-                bgcolor: tokens.bgCanvas,
-                border: "1px solid",
-                borderColor: tokens.borderSubtle,
-                display: "flex",
-                flexDirection: "column",
-                gap: 0.75,
+                fontSize: { xs: "1.45rem", sm: "1.75rem" },
+                fontWeight: 800,
+                color: tokens.textPrimary,
+                lineHeight: 1.25,
+                letterSpacing: "-0.02em",
               }}
             >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 0.25 }}>
-                <LocalShippingOutlinedIcon sx={{ fontSize: 17, color: tokens.primary }} />
-                <Typography sx={{ fontSize: 13, fontWeight: 700, color: tokens.textPrimary }}>
-                  {t("deliveryLogistics")}
+              {product.title}
+            </Typography>
+
+            {/* Rating & Delivered Row */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1.5,
+                flexWrap: "wrap",
+              }}
+            >
+              <Box
+                onClick={handleJumpToReviews}
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  cursor: "pointer",
+                  "&:hover": { opacity: 0.8 },
+                }}
+              >
+                <StarIcon
+                  sx={{
+                    fontSize: 18,
+                    color:
+                      reviewsCount > 0 ? tokens.warning : tokens.borderDefault,
+                  }}
+                />
+                <Typography
+                  sx={{
+                    fontSize: 14,
+                    fontWeight: 800,
+                    color: tokens.textPrimary,
+                  }}
+                >
+                  {formatNumber(
+                    reviewsCount > 0
+                      ? Number(product.rating || 0).toFixed(1)
+                      : "0.0",
+                  )}
+                </Typography>
+                <Typography
+                  sx={{
+                    fontSize: 13,
+                    color: tokens.primary,
+                    textDecoration: "underline",
+                    fontWeight: 600,
+                  }}
+                >
+                  {reviewsCount > 0
+                    ? t("reviewsCount", { count: formatNumber(reviewsCount) })
+                    : locale === "bn"
+                      ? "(কোনো রিভিউ নেই)"
+                      : "(No reviews yet)"}
                 </Typography>
               </Box>
-              <Typography sx={{ fontSize: 12, color: tokens.textSecondary, pl: 0.5 }}>
-                • {t("deliveryDhaka")}
-              </Typography>
-              <Typography sx={{ fontSize: 12, color: tokens.textSecondary, pl: 0.5 }}>
-                • {t("deliveryOutside")}
-              </Typography>
+
+              {soldCount ? (
+                <>
+                  <Box component="span" sx={{ color: tokens.borderDefault }}>
+                    •
+                  </Box>
+                  <Typography
+                    sx={{
+                      fontSize: 12.5,
+                      color: tokens.textSecondary,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {t("deliveredCount", { count: formatNumber(soldCount) })}
+                  </Typography>
+                </>
+              ) : null}
             </Box>
 
-            {/* Action Buttons: Order Now, Add to Cart, Chat Now */}
+            {/* Single Clean Price Surface */}
+            <Box
+              sx={{
+                p: 2,
+                bgcolor: tokens.bgCanvas,
+                borderRadius: "14px",
+              }}
+            >
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "baseline",
+                  gap: 1.5,
+                  flexWrap: "wrap",
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: { xs: "1.85rem", sm: "2.25rem" },
+                    fontWeight: 900,
+                    color: tokens.primary,
+                    lineHeight: 1,
+                  }}
+                >
+                  {formatPrice(pricing.discounted, locale)}
+                </Typography>
+                {pricing.discount > 0 && (
+                  <>
+                    <Typography
+                      sx={{
+                        fontSize: "1.1rem",
+                        fontWeight: 500,
+                        color: tokens.textMuted,
+                        textDecoration: "line-through",
+                      }}
+                    >
+                      {formatPrice(pricing.base, locale)}
+                    </Typography>
+                    <Badge
+                      variant="default"
+                      label={t("saveAmount", {
+                        amount: formatNumber(pricing.discount.toLocaleString()),
+                      })}
+                    />
+                  </>
+                )}
+              </Box>
+              {qty > 1 && (
+                <Typography
+                  sx={{
+                    fontSize: 12.5,
+                    fontWeight: 700,
+                    color: tokens.textPrimary,
+                    mt: 0.85,
+                  }}
+                >
+                  {locale === "bn"
+                    ? `মোট (${formatNumber(qty)}টি): ${formatPrice(pricing.discounted * qty, locale)}`
+                    : `Subtotal (${qty} items): ${formatPrice(pricing.discounted * qty, locale)}`}
+                </Typography>
+              )}
+            </Box>
+
+            {/* Quick Key Attributes / Product Highlights */}
+            {keyAttributes.length > 0 ? (
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontSize: 11.5,
+                      fontWeight: 700,
+                      color: tokens.textMuted,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                    }}
+                  >
+                    {locale === "bn" ? "মূল বৈশিষ্ট্য" : "Key Specifications"}
+                  </Typography>
+                  {keyAttributes.length > 6 && (
+                    <Box
+                      component="button"
+                      type="button"
+                      onClick={() => {
+                        setActiveTab("specs");
+                        tabsSectionRef.current?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "start",
+                        });
+                      }}
+                      sx={{
+                        border: 0,
+                        background: "none",
+                        p: 0,
+                        cursor: "pointer",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: tokens.primary,
+                      }}
+                    >
+                      {locale === "bn" ? "সব দেখুন →" : "All specs →"}
+                    </Box>
+                  )}
+                </Box>
+                <Box
+                  sx={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 1.25,
+                  }}
+                >
+                  {keyAttributes.slice(0, 6).map((attr, i) => (
+                    <Box
+                      key={`${attr.key}-${i}`}
+                      sx={{
+                        p: 1.25,
+                        borderRadius: "12px",
+                        bgcolor: tokens.bgCanvas,
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          fontSize: 11,
+                          color: tokens.textMuted,
+                          fontWeight: 600,
+                          mb: 0.25,
+                        }}
+                      >
+                        {attr.key}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          fontSize: 12.5,
+                          color: tokens.textPrimary,
+                          fontWeight: 700,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {attr.value}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            ) : product.tags && product.tags.length > 0 ? (
+              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
+                {product.tags.slice(0, 6).map((tag: string, i: number) => (
+                  <Box
+                    key={`${tag}-${i}`}
+                    sx={{
+                      px: 1.5,
+                      py: 0.6,
+                      borderRadius: "9999px",
+                      bgcolor: tokens.bgCanvas,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: tokens.textPrimary,
+                    }}
+                  >
+                    {tag}
+                  </Box>
+                ))}
+              </Box>
+            ) : null}
+
+            {/* Quantity Stepper + Add to Cart Row */}
+            <Box
+              sx={{ display: "flex", alignItems: "center", gap: 1.5, pt: 0.5 }}
+            >
+              <Box
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  borderRadius: `${tokens.radiusPill}px`,
+                  bgcolor: tokens.bgCanvas,
+                  overflow: "hidden",
+                  flexShrink: 0,
+                  height: 46,
+                }}
+              >
+                <Box
+                  component="button"
+                  type="button"
+                  onClick={() => setQty((q) => Math.max(1, q - 1))}
+                  sx={{ ...stepperBtnSx, height: 46, width: 40 }}
+                >
+                  −
+                </Box>
+                <Box
+                  sx={{
+                    minWidth: 40,
+                    height: 46,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 15,
+                    fontWeight: 700,
+                    color: tokens.textPrimary,
+                  }}
+                >
+                  {formatNumber(qty)}
+                </Box>
+                <Box
+                  component="button"
+                  type="button"
+                  onClick={() => setQty((q) => q + 1)}
+                  sx={{ ...stepperBtnSx, height: 46, width: 40 }}
+                >
+                  +
+                </Box>
+              </Box>
+
+              <Button
+                fullWidth
+                size="large"
+                variant="outline"
+                onClick={handleAddToCart}
+                disabled={!product.inStock}
+                startIcon={<ShoppingCartIcon sx={{ fontSize: 18 }} />}
+                sx={{ height: 46, fontSize: 14, fontWeight: 700 }}
+              >
+                {isInCart ? t("inCartAlready") : t("addToCart")}
+              </Button>
+            </Box>
+
+            {/* Primary Order Now + WhatsApp */}
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
               <Button
                 fullWidth
@@ -826,22 +1015,10 @@ export default function ProductDetailsPage() {
                   py: 1.5,
                   fontSize: 15,
                   fontWeight: 800,
-                  boxShadow: "0 6px 18px rgba(0, 167, 111, 0.28)",
+                  boxShadow: "none",
                 }}
               >
                 {t("orderNow")}
-              </Button>
-
-              <Button
-                fullWidth
-                size="large"
-                variant="outline"
-                onClick={handleAddToCart}
-                disabled={!product.inStock}
-                startIcon={<ShoppingCartIcon sx={{ fontSize: 18 }} />}
-                sx={{ py: 1.25, fontSize: 14, fontWeight: 700 }}
-              >
-                {isInCart ? t("inCartAlready") : t("addToCart")}
               </Button>
 
               <Button
@@ -851,7 +1028,9 @@ export default function ProductDetailsPage() {
                 href={whatsappLink}
                 target="_blank"
                 rel="noopener noreferrer"
-                startIcon={<WhatsAppIcon sx={{ fontSize: 20, color: "#fff" }} />}
+                startIcon={
+                  <WhatsAppIcon sx={{ fontSize: 20, color: "#fff" }} />
+                }
                 sx={{
                   py: 1.25,
                   fontSize: 14,
@@ -864,31 +1043,6 @@ export default function ProductDetailsPage() {
                 {t("chatNow")}
               </Button>
             </Box>
-
-            {/* Clean Mini Trust Points */}
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 0.75,
-                pt: 1.25,
-                borderTop: "1px dashed",
-                borderColor: tokens.borderSubtle,
-              }}
-            >
-              <Typography sx={{ fontSize: 11.5, color: tokens.textSecondary, display: "flex", alignItems: "center", gap: 0.75 }}>
-                <CheckCircleOutlinedIcon sx={{ fontSize: 14, color: tokens.primary }} />
-                {locale === "bn" ? "ক্যাশ অন ডেলিভারি সুবিধা সারাদেশে" : "Cash on delivery available nationwide"}
-              </Typography>
-              <Typography sx={{ fontSize: 11.5, color: tokens.textSecondary, display: "flex", alignItems: "center", gap: 0.75 }}>
-                <CheckCircleOutlinedIcon sx={{ fontSize: 14, color: tokens.primary }} />
-                {locale === "bn" ? "৭ দিনের সহজ রিপ্লেসমেন্ট গ্যারান্টি" : "7-Day easy replacement guarantee"}
-              </Typography>
-              <Typography sx={{ fontSize: 11.5, color: tokens.textSecondary, display: "flex", alignItems: "center", gap: 0.75 }}>
-                <CheckCircleOutlinedIcon sx={{ fontSize: 14, color: tokens.primary }} />
-                {locale === "bn" ? "১০০% অরিজিনাল ও অথেনটিক গ্যাজেট" : "100% Genuine and authentic gadget"}
-              </Typography>
-            </Box>
           </Box>
         </Box>
 
@@ -896,12 +1050,12 @@ export default function ProductDetailsPage() {
         {/* BELOW THE FOLD: Tabs (Key Attributes Striped Table, Description, Reviews) */}
         {/* ========================================================================= */}
         <Box
+          ref={tabsSectionRef}
           sx={{
             bgcolor: tokens.bgPanel,
-            border: "1px solid",
-            borderColor: tokens.borderDefault,
+            border: "none",
             borderRadius: `${tokens.radiusXl}px`,
-            boxShadow: tokens.elevation1,
+            boxShadow: "none",
             overflow: "hidden",
             mb: { xs: 5, md: 7 },
           }}
@@ -912,8 +1066,8 @@ export default function ProductDetailsPage() {
               display: "flex",
               overflowX: "auto",
               borderBottom: "1px solid",
-              borderColor: tokens.borderDefault,
-              bgcolor: tokens.bgCanvas,
+              borderColor: tokens.borderSubtle,
+              bgcolor: tokens.bgPanel,
               "&::-webkit-scrollbar": { height: 3 },
               "&::-webkit-scrollbar-thumb": { bgcolor: tokens.borderDefault },
             }}
@@ -936,7 +1090,14 @@ export default function ProductDetailsPage() {
             {/* 1. Key Attributes & Specifications Striped Table (Alibaba Style) */}
             {activeTab === "specs" && (
               <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 800, color: tokens.textPrimary }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontSize: 18,
+                    fontWeight: 800,
+                    color: tokens.textPrimary,
+                  }}
+                >
                   {t("keyAttributes")}
                 </Typography>
 
@@ -952,7 +1113,9 @@ export default function ProductDetailsPage() {
                     <Table sx={{ minWidth: 320 }}>
                       <TableBody>
                         {/* Render pairs of 2 attributes per row on desktop (4 cells: label, val, label, val) */}
-                        {Array.from({ length: Math.ceil(keyAttributes.length / 2) }).map((_, rowIndex) => {
+                        {Array.from({
+                          length: Math.ceil(keyAttributes.length / 2),
+                        }).map((_, rowIndex) => {
                           const first = keyAttributes[rowIndex * 2];
                           const second = keyAttributes[rowIndex * 2 + 1];
                           const isEvenRow = rowIndex % 2 === 0;
@@ -961,7 +1124,9 @@ export default function ProductDetailsPage() {
                             <TableRow
                               key={rowIndex}
                               sx={{
-                                bgcolor: isEvenRow ? tokens.bgCanvas : tokens.bgPanel,
+                                bgcolor: isEvenRow
+                                  ? tokens.bgCanvas
+                                  : tokens.bgPanel,
                                 "&:last-child td": { borderBottom: 0 },
                               }}
                             >
@@ -974,7 +1139,9 @@ export default function ProductDetailsPage() {
                                   fontSize: 13,
                                   fontWeight: 600,
                                   color: tokens.textSecondary,
-                                  bgcolor: isEvenRow ? "action.hover" : tokens.bgCanvas,
+                                  bgcolor: isEvenRow
+                                    ? "action.hover"
+                                    : tokens.bgCanvas,
                                   borderRight: "1px solid",
                                   borderColor: tokens.borderSubtle,
                                   textTransform: "capitalize",
@@ -1010,7 +1177,9 @@ export default function ProductDetailsPage() {
                                       fontSize: 13,
                                       fontWeight: 600,
                                       color: tokens.textSecondary,
-                                      bgcolor: isEvenRow ? "action.hover" : tokens.bgCanvas,
+                                      bgcolor: isEvenRow
+                                        ? "action.hover"
+                                        : tokens.bgCanvas,
                                       borderRight: "1px solid",
                                       borderColor: tokens.borderSubtle,
                                       textTransform: "capitalize",
@@ -1034,8 +1203,18 @@ export default function ProductDetailsPage() {
                                 </>
                               ) : (
                                 <>
-                                  <TableCell sx={{ display: { xs: "none", md: "table-cell" }, width: "20%" }} />
-                                  <TableCell sx={{ display: { xs: "none", md: "table-cell" }, width: "30%" }} />
+                                  <TableCell
+                                    sx={{
+                                      display: { xs: "none", md: "table-cell" },
+                                      width: "20%",
+                                    }}
+                                  />
+                                  <TableCell
+                                    sx={{
+                                      display: { xs: "none", md: "table-cell" },
+                                      width: "30%",
+                                    }}
+                                  />
                                 </>
                               )}
                             </TableRow>
@@ -1055,7 +1234,9 @@ export default function ProductDetailsPage() {
                       borderColor: tokens.borderDefault,
                     }}
                   >
-                    <Typography sx={{ color: tokens.textSecondary, fontSize: 14 }}>
+                    <Typography
+                      sx={{ color: tokens.textSecondary, fontSize: 14 }}
+                    >
                       {locale === "bn"
                         ? "এই পণ্যের নির্দিষ্ট টেকনিক্যাল স্পেসিফিকেশন শীঘ্রই যুক্ত করা হবে।"
                         : "Specific technical attributes for this gadget will be added soon."}
@@ -1067,9 +1248,18 @@ export default function ProductDetailsPage() {
 
             {/* 2. Detailed Markdown Description */}
             {activeTab === "desc" && (
-              <Box sx={{ color: tokens.textPrimary, lineHeight: 1.7, fontSize: 14.5 }}>
+              <Box
+                sx={{
+                  color: tokens.textPrimary,
+                  lineHeight: 1.7,
+                  fontSize: 14.5,
+                }}
+              >
                 {product.markdown_description ? (
-                  <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                  <Markdown
+                    remarkPlugins={[remarkGfm]}
+                    components={markdownComponents}
+                  >
                     {product.markdown_description}
                   </Markdown>
                 ) : (
@@ -1083,7 +1273,14 @@ export default function ProductDetailsPage() {
             {/* 3. Packaging & Delivery Details */}
             {activeTab === "packaging" && (
               <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 800, color: tokens.textPrimary }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontSize: 18,
+                    fontWeight: 800,
+                    color: tokens.textPrimary,
+                  }}
+                >
                   {t("packagingDelivery")}
                 </Typography>
 
@@ -1099,22 +1296,46 @@ export default function ProductDetailsPage() {
                       p: 2.5,
                       borderRadius: "14px",
                       bgcolor: tokens.bgCanvas,
-                      border: "1px solid",
-                      borderColor: tokens.borderSubtle,
                     }}
                   >
-                    <Typography sx={{ fontSize: 14, fontWeight: 700, color: tokens.textPrimary, mb: 1 }}>
+                    <Typography
+                      sx={{
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: tokens.textPrimary,
+                        mb: 1,
+                      }}
+                    >
                       📦 {t("packagingDetails")}
                     </Typography>
-                    <Typography sx={{ fontSize: 13.5, color: tokens.textSecondary, lineHeight: 1.6 }}>
+                    <Typography
+                      sx={{
+                        fontSize: 13.5,
+                        color: tokens.textSecondary,
+                        lineHeight: 1.6,
+                      }}
+                    >
                       {packagingInfo.packaging}
                     </Typography>
-                    <Box sx={{ mt: 2, display: "flex", flexDirection: "column", gap: 0.5 }}>
-                      <Typography sx={{ fontSize: 12.5, color: tokens.textMuted }}>
-                        <strong>Dimensions:</strong> {packagingInfo.boxDimensions}
+                    <Box
+                      sx={{
+                        mt: 2,
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 0.5,
+                      }}
+                    >
+                      <Typography
+                        sx={{ fontSize: 12.5, color: tokens.textMuted }}
+                      >
+                        <strong>Dimensions:</strong>{" "}
+                        {packagingInfo.boxDimensions}
                       </Typography>
-                      <Typography sx={{ fontSize: 12.5, color: tokens.textMuted }}>
-                        <strong>Gross Weight:</strong> {packagingInfo.grossWeight}
+                      <Typography
+                        sx={{ fontSize: 12.5, color: tokens.textMuted }}
+                      >
+                        <strong>Gross Weight:</strong>{" "}
+                        {packagingInfo.grossWeight}
                       </Typography>
                     </Box>
                   </Box>
@@ -1124,21 +1345,51 @@ export default function ProductDetailsPage() {
                       p: 2.5,
                       borderRadius: "14px",
                       bgcolor: tokens.bgCanvas,
-                      border: "1px solid",
-                      borderColor: tokens.borderSubtle,
                     }}
                   >
-                    <Typography sx={{ fontSize: 14, fontWeight: 700, color: tokens.textPrimary, mb: 1 }}>
+                    <Typography
+                      sx={{
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: tokens.textPrimary,
+                        mb: 1,
+                      }}
+                    >
                       🚚 {t("deliveryTimeline")}
                     </Typography>
-                    <Typography sx={{ fontSize: 13.5, color: tokens.textSecondary, lineHeight: 1.6 }}>
+                    <Typography
+                      sx={{
+                        fontSize: 13.5,
+                        color: tokens.textSecondary,
+                        lineHeight: 1.6,
+                      }}
+                    >
                       {packagingInfo.couriers}
                     </Typography>
-                    <Box sx={{ mt: 2, display: "flex", flexDirection: "column", gap: 0.75 }}>
-                      <Typography sx={{ fontSize: 12.5, color: tokens.textPrimary, fontWeight: 600 }}>
+                    <Box
+                      sx={{
+                        mt: 2,
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 0.75,
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          fontSize: 12.5,
+                          color: tokens.textPrimary,
+                          fontWeight: 600,
+                        }}
+                      >
                         • {t("deliveryDhaka")}
                       </Typography>
-                      <Typography sx={{ fontSize: 12.5, color: tokens.textPrimary, fontWeight: 600 }}>
+                      <Typography
+                        sx={{
+                          fontSize: 12.5,
+                          color: tokens.textPrimary,
+                          fontWeight: 600,
+                        }}
+                      >
                         • {t("deliveryOutside")}
                       </Typography>
                     </Box>
@@ -1149,7 +1400,13 @@ export default function ProductDetailsPage() {
 
             {/* 4. Video Embeds */}
             {activeTab === "video" && videoLinks.length > 0 && (
-              <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 3 }}>
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" },
+                  gap: 3,
+                }}
+              >
                 {videoLinks.map((link, idx) => (
                   <Box
                     key={idx}
@@ -1188,9 +1445,20 @@ export default function ProductDetailsPage() {
         {/* Related Gadgets Carousel */}
         {relatedProducts.length > 0 && (
           <Box sx={{ mb: 6 }}>
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                mb: 3,
+              }}
+            >
               <Typography
-                sx={{ fontSize: { xs: 18, md: 22 }, fontWeight: 800, color: tokens.textPrimary }}
+                sx={{
+                  fontSize: { xs: 18, md: 22 },
+                  fontWeight: 800,
+                  color: tokens.textPrimary,
+                }}
               >
                 {t("relatedGadgets")}
               </Typography>

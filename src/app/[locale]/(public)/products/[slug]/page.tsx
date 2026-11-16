@@ -16,13 +16,28 @@ type ProductPageProps = {
 
 const siteUrl = getSiteUrl();
 
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  try {
+    const activeProducts = await db.query.product.findMany({
+      where: and(eq(product.status, "ACTIVE"), eq(product.isDeleted, false)),
+      columns: { slug: true },
+    });
+    return activeProducts.map((p) => ({ slug: p.slug }));
+  } catch {
+    return [];
+  }
+}
+
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { locale, slug } = await params;
 
   const foundProduct = await db.query.product.findFirst({
     where: and(
       or(eq(product.slug, slug), eq(product.id, slug)),
-      eq(product.status, "ACTIVE")
+      eq(product.status, "ACTIVE"),
+      eq(product.isDeleted, false)
     ),
     with: {
       category: {
@@ -127,7 +142,8 @@ export default async function ProductDetails({ params }: ProductPageProps) {
   const foundProduct = await db.query.product.findFirst({
     where: and(
       or(eq(product.slug, slug), eq(product.id, slug)),
-      eq(product.status, "ACTIVE")
+      eq(product.status, "ACTIVE"),
+      eq(product.isDeleted, false)
     ),
     with: {
       category: true,

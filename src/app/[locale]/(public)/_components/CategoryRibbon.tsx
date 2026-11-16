@@ -89,7 +89,7 @@ export function CategoryRibbon() {
             bgcolor: tokens.bgPanel,
             borderRadius: { xs: "22px", md: "28px" },
             border: `1px solid ${tokens.borderDefault}`,
-            boxShadow: tokens.shadowLg,
+            boxShadow: "0 4px 20px -2px rgba(15, 23, 42, 0.06)",
             p: { xs: 1.25, sm: "12px 16px" },
             display: "flex",
             alignItems: "center",
