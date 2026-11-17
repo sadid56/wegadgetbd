@@ -3,10 +3,12 @@ import { orpcClient, orpc } from "@/lib/orpc/client";
 import { useQuery } from "@tanstack/react-query";
 
 export type ProductsResponse = Awaited<ReturnType<typeof orpcClient.products.list>>;
+export type AdminProductsResponse = Awaited<ReturnType<typeof orpcClient.products.adminList>>;
 export type SingleProductResponse = Awaited<ReturnType<typeof orpcClient.products.bySlug>>;
 export type TopPicksResponse = Awaited<ReturnType<typeof orpcClient.products.topPicks>>;
 export type LatestArrivalsResponse = Awaited<ReturnType<typeof orpcClient.products.latestArrivals>>;
 export type Product = ProductsResponse["products"][number];
+export type AdminProduct = AdminProductsResponse["products"][number];
 export type TopPickItem = TopPicksResponse[number];
 export type LatestArrivalItem = LatestArrivalsResponse[number];
 
@@ -32,13 +34,20 @@ export const ProductEndpoints = {
   deleteProduct: (id: string) => orpcClient.products.delete({ id }),
 };
 
-export const useTopPicks = (limit: number = 4) =>
-  useQuery(orpc.products.topPicks.queryOptions({ input: { limit } }));
+export const useTopPicks = (limit: number = 4, options?: { enabled?: boolean }) =>
+  useQuery({
+    ...orpc.products.topPicks.queryOptions({ input: { limit } }),
+    enabled: options?.enabled ?? true,
+  });
 
 export const useLatestArrivals = (limit: number = 4) =>
   useQuery(orpc.products.latestArrivals.queryOptions({ input: { limit } }));
 
-export const useProducts = (params?: ListParams) => useQuery(orpc.products.list.queryOptions({ input: params ?? {} }));
+export const useProducts = (params?: ListParams, options?: { enabled?: boolean }) =>
+  useQuery({
+    ...orpc.products.list.queryOptions({ input: params ?? {} }),
+    enabled: options?.enabled ?? true,
+  });
 
 export const useBrands = () => useQuery(orpc.products.brands.queryOptions({ input: {} as any }));
 

@@ -2,7 +2,6 @@ import { eq, and, or, ilike, desc, asc, count, sql, isNotNull } from "drizzle-or
 import { product, category } from "@/db/schema";
 import type { Context } from "@/server/context";
 import type { ListProductsInput } from "@/server/schemas/products.schema";
-import { formatProduct } from "./_shared";
 
 type OrderByClause = ReturnType<typeof asc>[];
 
@@ -32,7 +31,7 @@ export class ListProductsUseCase {
     ]);
 
     return {
-      products: rows.map(formatProduct),
+      products: rows.map((p) => this.mapProduct(p)),
       total: Number(total),
       page,
       limit,
@@ -111,13 +110,54 @@ export class ListProductsUseCase {
     limit: number;
     offset: number;
   }) {
-    return this.db.query.product.findMany({
-      where: categoryFilter,
-      orderBy: orderByClause,
-      limit,
-      offset,
-      with: { category: true },
-    });
+    return this.db
+      .select({
+        id: product.id,
+        title: product.title,
+        slug: product.slug,
+        price: product.price,
+        discountPrice: product.discountPrice,
+        thumbnail: sql<string | null>`${product.images}[1]`,
+        isFeatured: product.isFeatured,
+        inStock: product.inStock,
+        soldCount: product.soldCount,
+        rating: product.rating,
+        categoryName: category.name,
+      })
+      .from(product)
+      .leftJoin(category, eq(product.categoryId, category.id))
+      .where(categoryFilter)
+      .orderBy(...orderByClause)
+      .limit(limit)
+      .offset(offset);
+  }
+
+  private mapProduct(p: {
+    id: string;
+    title: string;
+    slug: string;
+    price: string | number;
+    discountPrice: string | number | null;
+    thumbnail: string | null;
+    isFeatured: boolean | null;
+    inStock: boolean | null;
+    soldCount: number | null;
+    rating: string | number | null;
+    categoryName: string | null;
+  }) {
+    return {
+      id: p.id,
+      title: p.title,
+      slug: p.slug,
+      price: Number(p.price),
+      discountPrice: p.discountPrice != null ? Number(p.discountPrice) : null,
+      thumbnail: p.thumbnail ?? null,
+      brand: p.categoryName || "GADGET",
+      isFeatured: p.isFeatured ?? false,
+      inStock: p.inStock ?? true,
+      soldCount: p.soldCount ?? 360,
+      rating: Number(p.rating ?? 5),
+    };
   }
 
   private fetchProductCount(catSlug: string | undefined, whereClause: ReturnType<typeof and>) {

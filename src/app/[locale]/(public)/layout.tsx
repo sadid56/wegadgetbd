@@ -2,6 +2,7 @@ import Box from "@mui/material/Box";
 import { tokens } from "@/theme/theme";
 import { Navbar } from "@/components/layouts/navbar/navbar";
 import { Footer } from "@/components/layouts/Footer";
+import { FloatingAiChat } from "@/components/common/FloatingAiChat";
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -24,6 +25,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         {children}
       </Box>
       <Footer />
+      <FloatingAiChat />
     </Box>
   );
 }

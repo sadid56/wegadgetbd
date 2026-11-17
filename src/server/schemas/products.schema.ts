@@ -54,7 +54,29 @@ export const listProductsInputSchema = paginationInputSchema.extend({
   sort: z.enum(["newest", "price-asc", "price-desc", "best-selling", "rating", "discount"]).optional(),
 });
 
+export const productListItemSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  slug: z.string(),
+  price: z.number().or(z.string()),
+  discountPrice: z.number().or(z.string()).nullable().optional(),
+  thumbnail: z.string().nullable().optional(),
+  brand: z.string().nullable().optional(),
+  isFeatured: z.boolean().default(false),
+  inStock: z.boolean().default(true),
+  soldCount: z.number().default(0),
+  rating: z.number().default(0),
+});
+
 export const listProductsOutputSchema = z.object({
+  products: z.array(productListItemSchema),
+  total: z.number(),
+  page: z.number(),
+  limit: z.number(),
+  totalPages: z.number(),
+});
+
+export const adminListProductsOutputSchema = z.object({
   products: z.array(productSchema),
   total: z.number(),
   page: z.number(),

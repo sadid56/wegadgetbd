@@ -14,11 +14,14 @@ type OrderSummaryProps = {
   totalPrice: number;
   totalCount: number;
   savings: number;
+  promoCode?: string | null;
+  promoDiscount?: number;
 };
 
-export default function OrderSummary({ totalPrice, totalCount, savings }: OrderSummaryProps) {
+export default function OrderSummary({ totalPrice, totalCount, savings, promoCode, promoDiscount = 0 }: OrderSummaryProps) {
   const t = useTranslations("cart");
   const locale = useLocale();
+  const finalTotal = Math.max(totalPrice - promoDiscount, 0);
 
   return (
     <Box
@@ -65,6 +68,17 @@ export default function OrderSummary({ totalPrice, totalCount, savings }: OrderS
           </Box>
         )}
 
+        {promoCode && promoDiscount > 0 && (
+          <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
+            <Typography sx={{ fontSize: 14, color: tokens.successText, fontWeight: 600 }}>
+              Promo ({promoCode})
+            </Typography>
+            <Typography sx={{ fontSize: 14, fontWeight: 700, color: tokens.successText }}>
+              -{formatPrice(promoDiscount, locale)}
+            </Typography>
+          </Box>
+        )}
+
         <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: 14 }}>
           <Typography sx={{ fontSize: 14, color: tokens.textMuted }}>
             {t("estimatedDelivery")}
@@ -81,7 +95,7 @@ export default function OrderSummary({ totalPrice, totalCount, savings }: OrderS
             {t("total")}
           </Typography>
           <Typography sx={{ fontSize: 24, fontWeight: 900, color: tokens.textPrimary, letterSpacing: "-0.02em" }}>
-            {formatPrice(totalPrice, locale)}
+            {formatPrice(finalTotal, locale)}
           </Typography>
         </Box>
         <Typography sx={{ fontSize: 11, color: tokens.textDisabled, mt: 0.25, textAlign: "right" }}>

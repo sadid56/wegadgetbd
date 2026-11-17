@@ -3,7 +3,6 @@
 import { useState } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import Stack from "@mui/material/Stack";
 import Chip from "@mui/material/Chip";
 import LinearProgress from "@mui/material/LinearProgress";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -178,9 +177,7 @@ export function ProductReviews({ productId, rating: initialRating, reviewsCount 
             >
               {locale === "bn" ? formatBnNumber(avgRating) : avgRating.toFixed(1)}
             </Typography>
-            <Typography sx={{ fontSize: 16, fontWeight: 700, color: tokens.textMuted }}>
-              / 5.0
-            </Typography>
+            <Typography sx={{ fontSize: 16, fontWeight: 700, color: tokens.textMuted }}>/ 5.0</Typography>
           </Box>
 
           <Box sx={{ display: "flex", gap: "3px", my: 1, justifyContent: { xs: "center", md: "flex-start" } }}>
@@ -189,7 +186,7 @@ export function ProductReviews({ productId, rating: initialRating, reviewsCount 
                 key={s}
                 sx={{
                   fontSize: 22,
-                  color: s <= Math.round(avgRating) ? tokens.warning : tokens.borderDefault,
+                  color: s <= Math.round(avgRating) ? tokens.warning : tokens.borderElevated,
                 }}
               />
             ))}
@@ -221,26 +218,22 @@ export function ProductReviews({ productId, rating: initialRating, reviewsCount 
                   "&:hover": { bgcolor: "action.hover" },
                 }}
               >
-                <Typography sx={{ fontSize: 12.5, fontWeight: 600, width: 38, color: "text.primary" }}>
-                  {star} Star
-                </Typography>
+                <Typography sx={{ fontSize: 12.5, fontWeight: 600, width: 38, color: "text.primary" }}>{star} Star</Typography>
                 <LinearProgress
-                  variant="determinate"
+                  variant='determinate'
                   value={pct}
                   sx={{
                     flex: 1,
                     height: 8,
                     borderRadius: 4,
-                    bgcolor: "action.hover",
+                    bgcolor: tokens.borderDefault,
                     "& .MuiLinearProgress-bar": {
                       bgcolor: star >= 4 ? tokens.success : star === 3 ? tokens.warning : tokens.danger,
                       borderRadius: 4,
                     },
                   }}
                 />
-                <Typography sx={{ fontSize: 12, color: "text.secondary", width: 28, textAlign: "right" }}>
-                  {formatNumber(count)}
-                </Typography>
+                <Typography sx={{ fontSize: 12, color: "text.secondary", width: 28, textAlign: "right" }}>{formatNumber(count)}</Typography>
               </Box>
             );
           })}
@@ -248,18 +241,7 @@ export function ProductReviews({ productId, rating: initialRating, reviewsCount 
 
         {/* CTA Button */}
         <Box sx={{ textAlign: "center" }}>
-          <Button
-            variant="primary"
-            onClick={() => setIsWritingReview((prev) => !prev)}
-            sx={{
-              fontWeight: 700,
-              fontSize: 14,
-              px: 3,
-              py: 1.25,
-              borderRadius: "10px",
-              boxShadow: "0 4px 14px rgba(0, 167, 111, 0.25)",
-            }}
-          >
+          <Button variant='primary' onClick={() => setIsWritingReview((prev) => !prev)}>
             {isWritingReview ? "Cancel Review" : "Write a Review"}
           </Button>
         </Box>
@@ -268,7 +250,7 @@ export function ProductReviews({ productId, rating: initialRating, reviewsCount 
       {/* 2. Interactive "Write a Review" Form */}
       {isWritingReview && (
         <Box
-          component="form"
+          component='form'
           onSubmit={handleSubmitReview}
           sx={{
             p: { xs: 2.5, sm: 3.5 },
@@ -281,34 +263,27 @@ export function ProductReviews({ productId, rating: initialRating, reviewsCount 
             boxShadow: "none",
           }}
         >
-          <Typography variant="h6" sx={{ fontSize: 18, fontWeight: 700, color: "text.primary" }}>
+          <Typography variant='h6' sx={{ fontSize: 18, fontWeight: 700, color: "text.primary" }}>
             Share Your Experience with this Product
           </Typography>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Typography sx={{ fontSize: 14, fontWeight: 600, color: "text.secondary" }}>
-              Overall Rating:
-            </Typography>
-            <Rating
-              value={newRating}
-              onChange={(_, val) => setNewRating(val || 5)}
-              size="large"
-              sx={{ color: tokens.warning }}
-            />
+            <Typography sx={{ fontSize: 14, fontWeight: 600, color: "text.secondary" }}>Overall Rating:</Typography>
+            <Rating value={newRating} onChange={(_, val) => setNewRating(val || 5)} size='large' sx={{ color: tokens.warning }} />
           </Box>
 
           <TextField
-            label="Review Headline / Title (Optional)"
-            placeholder="e.g. Excellent build quality and super fast delivery!"
+            label='Review Headline / Title (Optional)'
+            placeholder='e.g. Excellent build quality and super fast delivery!'
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             fullWidth
-            size="small"
+            size='small'
           />
 
           <TextField
-            label="Detailed Review Comment *"
-            placeholder="Tell us what you liked, features, durability, or performance of this product..."
+            label='Detailed Review Comment *'
+            placeholder='Tell us what you liked, features, durability, or performance of this product...'
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
             multiline
@@ -319,9 +294,7 @@ export function ProductReviews({ productId, rating: initialRating, reviewsCount 
 
           {/* Photos Upload */}
           <Box>
-            <Typography sx={{ fontSize: 13, fontWeight: 600, color: "text.secondary", mb: 1 }}>
-              Add Photos (Optional, max 4):
-            </Typography>
+            <Typography sx={{ fontSize: 13, fontWeight: 600, color: "text.secondary", mb: 1 }}>Add Photos (Optional, max 4):</Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
               {newImages.map((img, idx) => (
                 <Box
@@ -337,13 +310,13 @@ export function ProductReviews({ productId, rating: initialRating, reviewsCount 
                   }}
                 >
                   <Box
-                    component="img"
+                    component='img'
                     src={getAssetUrl(img)}
-                    alt="Upload preview"
+                    alt='Upload preview'
                     sx={{ width: "100%", height: "100%", objectFit: "cover" }}
                   />
                   <IconButton
-                    size="small"
+                    size='small'
                     onClick={() => handleRemoveImage(idx)}
                     sx={{
                       position: "absolute",
@@ -362,24 +335,24 @@ export function ProductReviews({ productId, rating: initialRating, reviewsCount 
 
               {newImages.length < 4 && (
                 <Button
-                  variant="outline"
-                  component="label"
+                  variant='outline'
+                  component='label'
                   disabled={isUploadingImage}
                   startIcon={isUploadingImage ? <CircularProgress size={16} /> : <AddPhotoAlternateOutlinedIcon />}
                   sx={{ height: 64, px: 2, borderRadius: "8px", borderStyle: "dashed" }}
                 >
                   {isUploadingImage ? "Uploading..." : "Upload Photo"}
-                  <input type="file" accept="image/*" multiple hidden onChange={handleImageUpload} />
+                  <input type='file' accept='image/*' multiple hidden onChange={handleImageUpload} />
                 </Button>
               )}
             </Box>
           </Box>
 
           <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1.5, mt: 1 }}>
-            <Button variant="outline" type="button" onClick={() => setIsWritingReview(false)}>
+            <Button variant='outline' type='button' onClick={() => setIsWritingReview(false)}>
               Cancel
             </Button>
-            <Button variant="primary" type="submit" disabled={isSubmittingReview}>
+            <Button variant='primary' type='submit' disabled={isSubmittingReview}>
               {isSubmittingReview ? "Submitting..." : "Submit Review"}
             </Button>
           </Box>
@@ -411,7 +384,7 @@ export function ProductReviews({ productId, rating: initialRating, reviewsCount 
       {isLoading ? (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} variant="rounded" height={140} sx={{ borderRadius: "14px" }} />
+            <Skeleton key={i} variant='rounded' height={140} sx={{ borderRadius: "14px" }} />
           ))}
         </Box>
       ) : reviews.length === 0 ? (
@@ -426,9 +399,7 @@ export function ProductReviews({ productId, rating: initialRating, reviewsCount 
           }}
         >
           <ChatBubbleOutlineOutlinedIcon sx={{ fontSize: 40, color: "text.secondary", mb: 1 }} />
-          <Typography sx={{ fontSize: 16, fontWeight: 600, color: "text.primary" }}>
-            No reviews yet for this filter.
-          </Typography>
+          <Typography sx={{ fontSize: 16, fontWeight: 600, color: "text.primary" }}>No reviews yet for this filter.</Typography>
           <Typography sx={{ fontSize: 14, color: "text.secondary", mt: 0.5 }}>
             Be the first to share your thoughts and rate this product!
           </Typography>

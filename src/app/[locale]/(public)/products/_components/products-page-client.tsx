@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useQueryState, parseAsString, parseAsInteger, parseAsBoolean } from "nuqs";
 import { useTranslations } from "next-intl";
 import Box from "@mui/material/Box";
-import Container from "@mui/material/Container";
+import { SectionContainer } from "@/components/common/SectionContainer";
 import { tokens } from "@/theme/theme";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Pagination } from "@/components/ui/pagination";
@@ -35,7 +35,7 @@ const PRODUCT_GRID_SX = {
     lg: "repeat(3, minmax(0, 1fr))",
     xl: "repeat(4, minmax(0, 1fr))",
   },
-  gap: { xs: 1.5, sm: 2, md: 2.5 },
+  gap: { xs: 1.5, sm: 2 },
 } as const;
 
 function ProductSkeleton() {
@@ -309,20 +309,19 @@ function ShopPageContent() {
 
   return (
     <Box sx={{ bgcolor: tokens.bgCanvas, minHeight: "100vh", color: tokens.textPrimary }}>
-      <Container
-        maxWidth='xl'
+      <SectionContainer
+        component='div'
         sx={{
           py: { xs: 2.5, sm: 3, md: 3.5 },
           pb: { xs: 6, md: 10 },
-          px: { xs: 2, sm: 3, lg: 4 },
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "flex-start", gap: { md: 3, lg: 3.5 } }}>
+        <Box sx={{ display: "flex", alignItems: "flex-start", gap: { md: 2.5, lg: 2.5 } }}>
           <Box
             component='aside'
             sx={{
               display: { xs: "none", md: "block" },
-              width: { md: 280, lg: 300 },
+              width: { md: 245, lg: 260 },
               flexShrink: 0,
               position: "sticky",
               top: 84,
@@ -375,7 +374,7 @@ function ShopPageContent() {
             )}
           </Box>
         </Box>
-      </Container>
+      </SectionContainer>
 
       <Drawer
         anchor='left'

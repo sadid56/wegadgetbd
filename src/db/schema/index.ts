@@ -4,6 +4,7 @@
 export * from "./auth";
 export * from "./products";
 export * from "./orders";
+export * from "./promo-codes";
 export * from "./reviews";
 export * from "./finance";
 export * from "./system";

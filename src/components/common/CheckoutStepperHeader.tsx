@@ -38,16 +38,19 @@ export function CheckoutStepperHeader({
     <Box
       component="header"
       sx={{
-        borderBottom: `1px solid ${tokens.borderDefault}`,
-        bgcolor: tokens.bgPanel,
-        py: 1.75,
+        maxWidth: 1200,
+        mx: "auto",
         px: { xs: 2, sm: 3 },
+        pt: { xs: 2, sm: 2.5, md: 3 },
       }}
     >
       <Box
         sx={{
-          maxWidth: 1200,
-          mx: "auto",
+          bgcolor: tokens.bgPanel,
+          border: `1px solid ${tokens.borderDefault}`,
+          borderRadius: "14px",
+          py: 1.5,
+          px: { xs: 2, sm: 2.5 },
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",

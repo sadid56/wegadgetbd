@@ -5,6 +5,7 @@ import {
   productSchema,
   listProductsInputSchema,
   listProductsOutputSchema,
+  adminListProductsOutputSchema,
   topPickProductSchema,
   customerReviewSchema,
   createProductInputSchema,
@@ -174,7 +175,7 @@ export const productsRouter = {
       tags: ["Admin Products"],
     })
     .input(paginationInputSchema.extend({ search: z.string().optional() }).optional())
-    .output(listProductsOutputSchema)
+    .output(adminListProductsOutputSchema)
     .handler(async ({ input, context }) => new AdminListProductsUseCase(context.db).execute(input)),
 
   adminGet: adminProcedure

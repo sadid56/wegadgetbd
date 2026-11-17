@@ -22,6 +22,8 @@ interface OrderSummaryProps {
   deliveryCharge: number;
   discountAmount: number;
   totalAmount: number;
+  promoCode?: string | null;
+  promoDiscount?: number;
   isBuyNow: boolean;
   localQty: number;
   isSubmitting?: boolean;
@@ -36,6 +38,8 @@ export function OrderSummary({
   deliveryCharge,
   discountAmount,
   totalAmount,
+  promoCode,
+  promoDiscount = 0,
   isBuyNow,
   localQty,
   isSubmitting = false,
@@ -315,6 +319,17 @@ export function OrderSummary({
               </Box>
               <Box component='span' sx={{ fontWeight: 600, color: tokens.successText }}>
                 -{formatPrice(discountAmount, locale)}
+              </Box>
+            </Box>
+          )}
+
+          {promoCode && promoDiscount > 0 && (
+            <Box sx={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
+              <Box component='span' sx={{ color: tokens.successText, fontWeight: 600 }}>
+                Promo ({promoCode})
+              </Box>
+              <Box component='span' sx={{ fontWeight: 600, color: tokens.successText }}>
+                -{formatPrice(promoDiscount, locale)}
               </Box>
             </Box>
           )}

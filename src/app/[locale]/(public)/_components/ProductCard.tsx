@@ -63,8 +63,7 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
   const dotColor =
     DOT_COLORS[product.badgeVariant || product.tagVariant || "default"] ||
     tokens.primary;
-  const rawImage =
-    product.image || product.thumbnail || product.images?.[0] || "";
+  const rawImage = product.image || "";
   const image =
     (rawImage ? getAssetUrl(rawImage) : null) || "/images/default.png";
   const href = product.link || `/products/${product.slug || product.id}`;

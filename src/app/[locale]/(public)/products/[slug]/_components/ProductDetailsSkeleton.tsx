@@ -5,127 +5,154 @@ import { tokens } from "@/theme/theme";
 
 export function ProductDetailsSkeleton() {
   return (
-    <Box sx={{ bgcolor: tokens.bgCanvas, minHeight: "100vh" }}>
-      <SectionContainer sx={{ py: { xs: 2.5, md: 5 } }}>
+    <Box sx={{ bgcolor: tokens.bgCanvas, minHeight: "100vh", pb: { xs: 11, md: 6 } }}>
+      <SectionContainer sx={{ py: { xs: 2.5, md: 4 } }}>
         {/* Breadcrumb Skeleton */}
-        <Box sx={{ display: "flex", gap: 1, mb: 3, alignItems: "center" }}>
-          <Skeleton variant="rounded" width={48} height={18} />
-          <Skeleton variant="rounded" width={12} height={18} />
-          <Skeleton variant="rounded" width={72} height={18} />
-          <Skeleton variant="rounded" width={12} height={18} />
-          <Skeleton variant="rounded" width={160} height={18} />
+        <Box sx={{ display: "flex", gap: 1, mb: 2.5, alignItems: "center" }}>
+          <Skeleton variant="rounded" width={44} height={16} />
+          <Skeleton variant="rounded" width={10} height={16} />
+          <Skeleton variant="rounded" width={130} height={16} />
+          <Skeleton variant="rounded" width={10} height={16} />
+          <Skeleton variant="rounded" width={180} height={16} />
         </Box>
 
-        {/* 2-Column Hero Skeleton */}
+        {/* Top Main Grid: 1.15fr Left Gallery + 1fr Right Buy Box */}
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: { xs: "1fr", lg: "1fr 1fr" },
-            gap: { xs: 3, lg: 5 },
-            mb: { xs: 5, md: 7 },
+            gridTemplateColumns: { xs: "1fr", lg: "1.15fr 1fr" },
+            gap: { xs: 3, lg: 3.5 },
             alignItems: "start",
+            mb: 4,
           }}
         >
-          {/* Left Gallery Box Skeleton */}
+          {/* Left Gallery Card Skeleton */}
           <Box
             sx={{
               bgcolor: tokens.bgPanel,
-              border: "1px solid",
-              borderColor: tokens.borderDefault,
-              borderRadius: "20px",
+              border: "none",
+              borderRadius: `${tokens.radiusXl}px`,
               p: { xs: 2, sm: 3 },
             }}
           >
-            <Skeleton
-              variant="rounded"
-              sx={{ width: "100%", aspectRatio: "1 / 1", borderRadius: "14px", height: "auto" }}
-            />
-            <Box sx={{ display: "flex", gap: 1.5, mt: 2.5 }}>
-              {[1, 2, 3, 4].map((i) => (
-                <Skeleton
-                  key={i}
-                  variant="rounded"
-                  width={68}
-                  height={68}
-                  sx={{ borderRadius: "10px", flexShrink: 0 }}
-                />
-              ))}
+            <Box
+              sx={{
+                display: "flex",
+                gap: 1.5,
+                flexDirection: { xs: "column-reverse", sm: "row" },
+              }}
+            >
+              {/* Vertical Thumbnails */}
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: { xs: "row", sm: "column" },
+                  gap: 1.25,
+                }}
+              >
+                {[1, 2, 3].map((i) => (
+                  <Skeleton
+                    key={i}
+                    variant="rounded"
+                    sx={{
+                      width: { xs: 60, sm: 64 },
+                      height: { xs: 60, sm: 64 },
+                      borderRadius: "10px",
+                      flexShrink: 0,
+                    }}
+                  />
+                ))}
+              </Box>
+
+              {/* Main Square Image */}
+              <Skeleton
+                variant="rounded"
+                sx={{
+                  flex: 1,
+                  width: "100%",
+                  aspectRatio: "1 / 1",
+                  borderRadius: "14px",
+                  height: "auto",
+                }}
+              />
             </Box>
           </Box>
 
-          {/* Right Product Hub Skeleton */}
+          {/* Right Product Info & Buy Box Skeleton */}
           <Box
             sx={{
               bgcolor: tokens.bgPanel,
-              border: "1px solid",
-              borderColor: tokens.borderDefault,
-              borderRadius: "20px",
+              border: "none",
+              borderRadius: `${tokens.radiusXl}px`,
               p: { xs: 2.5, sm: 3.5 },
               display: "flex",
               flexDirection: "column",
-              gap: 2.5,
+              gap: 2.25,
             }}
           >
-            {/* Badges row */}
+            {/* Category & Stock Pill */}
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <Skeleton variant="rounded" width={90} height={26} sx={{ borderRadius: "9999px" }} />
-              <Skeleton variant="rounded" width={75} height={26} sx={{ borderRadius: "9999px" }} />
+              <Skeleton variant="rounded" width={170} height={16} />
+              <Skeleton variant="rounded" width={72} height={24} sx={{ borderRadius: "9999px" }} />
             </Box>
 
             {/* Title */}
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-              <Skeleton variant="rounded" width="85%" height={32} />
-              <Skeleton variant="rounded" width="60%" height={32} />
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
+              <Skeleton variant="rounded" width="82%" height={30} />
+              <Skeleton variant="rounded" width="48%" height={30} />
             </Box>
 
-            {/* Ratings row */}
-            <Skeleton variant="rounded" width={180} height={22} />
+            {/* Rating & Sold count */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              <Skeleton variant="rounded" width={110} height={18} />
+              <Skeleton variant="rounded" width={140} height={18} />
+            </Box>
 
-            {/* Price Hub */}
-            <Box sx={{ bgcolor: tokens.bgCanvas, border: "1px solid", borderColor: tokens.borderSubtle, borderRadius: "14px", p: 2 }}>
+            {/* Price Box */}
+            <Box sx={{ bgcolor: tokens.bgCanvas, borderRadius: "12px", p: 2 }}>
               <Skeleton variant="rounded" width={140} height={36} />
             </Box>
 
-            {/* Quantity */}
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <Skeleton variant="rounded" width={120} height={20} />
-              <Skeleton variant="rounded" width={120} height={38} sx={{ borderRadius: "10px" }} />
+            {/* Tag Pills */}
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <Skeleton variant="rounded" width={110} height={24} sx={{ borderRadius: "9999px" }} />
+              <Skeleton variant="rounded" width={125} height={24} sx={{ borderRadius: "9999px" }} />
             </Box>
 
-            {/* CTAs */}
-            <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 1.5, pt: 1 }}>
-              <Skeleton variant="rounded" height={48} sx={{ borderRadius: "12px" }} />
-              <Skeleton variant="rounded" height={48} sx={{ borderRadius: "12px" }} />
+            {/* Quantity + Add to Cart Row */}
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, pt: 0.5 }}>
+              <Skeleton variant="rounded" width={114} height={42} sx={{ borderRadius: "9999px", flexShrink: 0 }} />
+              <Skeleton variant="rounded" height={44} sx={{ flex: 1, borderRadius: "9999px" }} />
             </Box>
 
-            {/* Trust Grid */}
-            <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 1.5, pt: 1.5, borderTop: "1px solid", borderColor: tokens.borderSubtle }}>
-              {[1, 2, 3, 4].map((i) => (
-                <Skeleton key={i} variant="rounded" height={52} sx={{ borderRadius: "10px" }} />
-              ))}
+            {/* Order Now & WhatsApp Pill Buttons */}
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
+              <Skeleton variant="rounded" width="100%" height={46} sx={{ borderRadius: "9999px" }} />
+              <Skeleton variant="rounded" width="100%" height={46} sx={{ borderRadius: "9999px" }} />
             </Box>
           </Box>
         </Box>
 
-        {/* Tabbed Content Skeleton */}
+        {/* Bottom Tabbed Content Skeleton */}
         <Box
           sx={{
             bgcolor: tokens.bgPanel,
-            border: "1px solid",
-            borderColor: tokens.borderDefault,
-            borderRadius: "20px",
+            border: "none",
+            borderRadius: `${tokens.radiusXl}px`,
             overflow: "hidden",
             mb: 6,
           }}
         >
-          <Box sx={{ display: "flex", gap: 2, p: 2, borderBottom: "1px solid", borderColor: tokens.borderDefault, bgcolor: tokens.bgCanvas }}>
-            <Skeleton variant="rounded" width={180} height={32} sx={{ borderRadius: "6px" }} />
-            <Skeleton variant="rounded" width={140} height={32} sx={{ borderRadius: "6px" }} />
+          <Box sx={{ display: "flex", gap: 3, px: 3, py: 2, borderBottom: "1px solid", borderColor: tokens.borderDefault }}>
+            <Skeleton variant="rounded" width={120} height={24} />
+            <Skeleton variant="rounded" width={120} height={24} />
+            <Skeleton variant="rounded" width={100} height={24} />
           </Box>
-          <Box sx={{ p: 4, display: "flex", flexDirection: "column", gap: 1.5 }}>
-            <Skeleton variant="rounded" width="100%" height={20} />
-            <Skeleton variant="rounded" width="92%" height={20} />
-            <Skeleton variant="rounded" width="75%" height={20} />
+          <Box sx={{ p: { xs: 2.5, sm: 3.5 }, display: "flex", flexDirection: "column", gap: 1.5 }}>
+            <Skeleton variant="rounded" width="40%" height={24} />
+            <Skeleton variant="rounded" width="100%" height={18} />
+            <Skeleton variant="rounded" width="94%" height={18} />
+            <Skeleton variant="rounded" width="78%" height={18} />
           </Box>
         </Box>
       </SectionContainer>
@@ -134,4 +161,3 @@ export function ProductDetailsSkeleton() {
 }
 
 export default ProductDetailsSkeleton;
-

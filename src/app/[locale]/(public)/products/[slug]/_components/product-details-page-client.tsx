@@ -14,12 +14,6 @@ import NextImage from "next/image";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import {
-  TransformComponent,
-  TransformWrapper,
-  type ReactZoomPanPinchRef,
-} from "react-zoom-pan-pinch";
-
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import PhotoLibraryOutlinedIcon from "@mui/icons-material/PhotoLibraryOutlined";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
@@ -30,7 +24,6 @@ import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 
 import { useMarkdownComponents } from "@/components/common/MarkdownContent";
-import { useToast } from "@/context/toast-context";
 import { useCart } from "@/hooks/useCart";
 import type { Locale } from "@/i18n/config";
 import { formatPrice, toBengaliNumber } from "@/lib/i18n-utils";
@@ -101,7 +94,6 @@ export default function ProductDetailsPage() {
   const t = useTranslations("products");
   const tCommon = useTranslations("common");
   const locale = useLocale() as Locale;
-  const toast = useToast();
   const { slug } = useParams<{ slug: string }>();
   const router = useRouter();
 
@@ -110,7 +102,8 @@ export default function ProductDetailsPage() {
   const [activeTab, setActiveTab] = useState<TabKey>("specs");
   const [mediaMode, setMediaMode] = useState<"photos" | "video">("photos");
 
-  const transformRef = useRef<ReactZoomPanPinchRef | null>(null);
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [zoomOrigin, setZoomOrigin] = useState({ x: 50, y: 50 });
   const tabsSectionRef = useRef<HTMLDivElement | null>(null);
 
   const handleJumpToReviews = () => {
@@ -121,30 +114,33 @@ export default function ProductDetailsPage() {
     });
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!transformRef.current || mediaMode !== "photos") return;
+  const updateZoomOrigin = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) return;
+    const x = Math.min(Math.max(((e.clientX - rect.left) / rect.width) * 100, 0), 100);
+    const y = Math.min(Math.max(((e.clientY - rect.top) / rect.height) * 100, 0), 100);
+    setZoomOrigin({ x, y });
+  };
 
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (mediaMode !== "photos") return;
+    updateZoomOrigin(e);
+    setIsZoomed(true);
+  };
 
-    const scale = 2.4;
-    const targetX = (rect.width / 2 - x) * (scale - 1);
-    const targetY = (rect.height / 2 - y) * (scale - 1);
-
-    transformRef.current.setTransform(targetX, targetY, scale, 0);
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (mediaMode !== "photos") return;
+    updateZoomOrigin(e);
+    if (!isZoomed) setIsZoomed(true);
   };
 
   const handleMouseLeave = () => {
-    if (transformRef.current && mediaMode === "photos") {
-      transformRef.current.resetTransform(220);
-    }
+    setIsZoomed(false);
   };
 
   const handleSelectImage = (idx: number) => {
     setActiveImg(idx);
-    transformRef.current?.resetTransform(0);
+    setIsZoomed(false);
   };
 
   const { data: product, isLoading } = useProduct(slug as string);
@@ -270,7 +266,7 @@ export default function ProductDetailsPage() {
     const msg = encodeURIComponent(
       t("whatsappMessage", { title: product.title }),
     );
-    return `https://wa.me/8801819000000?text=${msg}`;
+    return `https://wa.me/8801739859756?text=${msg}`;
   }, [product, t]);
 
   if (isLoading) return <ProductDetailsSkeleton />;
@@ -468,7 +464,7 @@ export default function ProductDetailsPage() {
                           alt=""
                           fill
                           sizes="64px"
-                          style={{ objectFit: "contain", padding: 4 }}
+                          style={{ objectFit: "cover" }}
                         />
                       </Box>
                     ))}
@@ -477,6 +473,7 @@ export default function ProductDetailsPage() {
 
                 {/* Main Large Image / Video Player with Hover Zoom */}
                 <Box
+                  onMouseEnter={handleMouseEnter}
                   onMouseMove={handleMouseMove}
                   onMouseLeave={handleMouseLeave}
                   sx={{
@@ -489,6 +486,7 @@ export default function ProductDetailsPage() {
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
+                    cursor: mediaMode === "photos" ? (isZoomed ? "zoom-out" : "zoom-in") : "default",
                   }}
                 >
                   {mediaMode === "video" && videoLinks.length > 0 ? (
@@ -501,54 +499,31 @@ export default function ProductDetailsPage() {
                     />
                   ) : images[activeImg] ? (
                     <>
-                      <TransformWrapper
-                        ref={transformRef}
-                        initialScale={1}
-                        minScale={1}
-                        maxScale={4}
-                        centerOnInit
-                        disabled={mediaMode !== "photos"}
-                        wheel={{ disabled: false, step: 0.15 }}
-                        panning={{ disabled: false }}
+                      <Box
+                        sx={{
+                          position: "relative",
+                          width: "100%",
+                          height: "100%",
+                          transform: isZoomed ? "scale(2.4)" : "scale(1)",
+                          transformOrigin: `${zoomOrigin.x}% ${zoomOrigin.y}%`,
+                          transition: isZoomed
+                            ? "transform 180ms cubic-bezier(0.22, 1, 0.36, 1)"
+                            : "transform 220ms cubic-bezier(0.22, 1, 0.36, 1)",
+                          willChange: "transform, transform-origin",
+                        }}
                       >
-                        <TransformComponent
-                          wrapperStyle={{
-                            width: "100%",
-                            height: "100%",
-                            cursor: "zoom-in",
-                            overflow: "hidden",
+                        <NextImage
+                          src={images[activeImg]}
+                          alt={product.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 560px"
+                          style={{
+                            objectFit: "cover",
+                            pointerEvents: "none",
                           }}
-                          contentStyle={{
-                            position: "relative",
-                            width: "100%",
-                            height: "100%",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              position: "relative",
-                              width: "100%",
-                              height: "100%",
-                            }}
-                          >
-                            <NextImage
-                              src={images[activeImg]}
-                              alt={product.title}
-                              fill
-                              sizes="(max-width: 768px) 100vw, 560px"
-                              style={{
-                                objectFit: "contain",
-                                padding: 12,
-                                pointerEvents: "none",
-                              }}
-                              priority
-                            />
-                          </Box>
-                        </TransformComponent>
-                      </TransformWrapper>
+                          priority
+                        />
+                      </Box>
 
                       {/* Zoom hint badge */}
                       <Box
@@ -556,6 +531,8 @@ export default function ProductDetailsPage() {
                           position: "absolute",
                           bottom: 12,
                           right: 12,
+                          opacity: isZoomed ? 0 : 1,
+                          transition: "opacity 150ms ease",
                           display: "flex",
                           alignItems: "center",
                           gap: 0.5,
@@ -605,18 +582,18 @@ export default function ProductDetailsPage() {
                 </Box>
               </Box>
 
-              {/* Photos / Video Switcher Pills (Alibaba style) */}
-              <Box sx={{ display: "flex", justifyContent: "center", gap: 1.5 }}>
-                <Button
-                  size="small"
-                  variant={mediaMode === "photos" ? "primary" : "outline"}
-                  onClick={() => setMediaMode("photos")}
-                  startIcon={<PhotoLibraryOutlinedIcon sx={{ fontSize: 16 }} />}
-                  sx={{ borderRadius: "20px", px: 2, fontSize: 12 }}
-                >
-                  {t("photos")}
-                </Button>
-                {videoLinks.length > 0 && (
+              {/* Photos / Video Switcher Pills (only shown when product has videos) */}
+              {videoLinks.length > 0 && (
+                <Box sx={{ display: "flex", justifyContent: "center", gap: 1.5 }}>
+                  <Button
+                    size="small"
+                    variant={mediaMode === "photos" ? "primary" : "outline"}
+                    onClick={() => setMediaMode("photos")}
+                    startIcon={<PhotoLibraryOutlinedIcon sx={{ fontSize: 16 }} />}
+                    sx={{ borderRadius: "20px", px: 2, fontSize: 12 }}
+                  >
+                    {t("photos")}
+                  </Button>
                   <Button
                     size="small"
                     variant={mediaMode === "video" ? "primary" : "outline"}
@@ -626,8 +603,8 @@ export default function ProductDetailsPage() {
                   >
                     {t("video")}
                   </Button>
-                )}
-              </Box>
+                </Box>
+              )}
             </Box>
           </Box>
 

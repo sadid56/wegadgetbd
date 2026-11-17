@@ -40,6 +40,7 @@ export const order = pgTable(
     totalAmount: numeric("totalAmount", { precision: 12, scale: 2 }).notNull(),
     shippingCost: numeric("shippingCost", { precision: 12, scale: 2 }).default("0").notNull(),
     discountAmount: numeric("discountAmount", { precision: 12, scale: 2 }).default("0").notNull(),
+    promoCode: text("promoCode"),
     paymentMethod: text("paymentMethod").default("CASH_ON_DELIVERY").notNull(),
     status: orderStatusEnum("status").default("PENDING").notNull(),
     userAgent: text("userAgent"),

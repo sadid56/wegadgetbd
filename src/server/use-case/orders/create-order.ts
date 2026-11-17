@@ -1,8 +1,9 @@
 import { db } from "@/db";
-import { order, product, type OrderStatus } from "@/db/schema";
-import { inArray } from "drizzle-orm";
+import { order, product, promoCode, type OrderStatus } from "@/db/schema";
+import { and, eq, inArray, isNull, lt, or, sql } from "drizzle-orm";
 import type { Context } from "@/server/context";
 import { writeAudit } from "@/server/lib/orm";
+import { evaluatePromoCode } from "@/server/use-case/promo-codes/_shared";
 
 const PHONE_RE = /^\+?[\d\s()-]{7,20}$/;
 const MAX_USER_AGENT = 500;
@@ -25,6 +26,7 @@ export interface CreateOrderInput {
   totalAmount?: number;
   shippingCost?: number;
   discountAmount?: number;
+  promoCode?: string;
   paymentMethod?: string;
   notes?: string;
   whatsappMessage?: string;
@@ -48,10 +50,47 @@ export class CreateOrderUseCase {
     }
 
     try {
-      const shipping = Math.max(input.shippingCost ?? 0, 0);
-      const discount = Math.max(input.discountAmount ?? 0, 0);
-      const computedTotal = Math.max(totalCheck.total + shipping - discount, 0);
-      const finalTotal = input.totalAmount !== undefined ? Math.max(input.totalAmount, 0) : computedTotal;
+      const shipping =
+        input.city === "Dhaka" ? 80 : input.city === "Outside Dhaka" ? 130 : Math.max(input.shippingCost ?? 0, 0);
+      let promoDiscount = 0;
+      let appliedPromoId: string | null = null;
+      let appliedPromoCode: string | null = null;
+
+      if (input.promoCode?.trim()) {
+        const normalizedCode = input.promoCode.trim().toUpperCase();
+        const foundPromo = await this.dbInstance.query.promoCode.findFirst({
+          where: eq(promoCode.code, normalizedCode),
+        });
+        const promoEval = evaluatePromoCode(foundPromo, totalCheck.total);
+        if (!promoEval.valid) {
+          return { success: false as const, error: promoEval.message, message: promoEval.message };
+        }
+        promoDiscount = promoEval.discountAmount;
+        appliedPromoId = promoEval.promo.id;
+        appliedPromoCode = promoEval.promo.code;
+
+        const [claimed] = await this.dbInstance
+          .update(promoCode)
+          .set({ usedCount: sql`${promoCode.usedCount} + 1` })
+          .where(
+            and(
+              eq(promoCode.id, appliedPromoId),
+              or(isNull(promoCode.usageLimit), lt(promoCode.usedCount, promoCode.usageLimit))
+            )
+          )
+          .returning({ id: promoCode.id });
+
+        if (!claimed) {
+          return {
+            success: false as const,
+            error: "This promo code has reached its usage limit.",
+            message: "This promo code has reached its usage limit.",
+          };
+        }
+      }
+
+      const totalDiscount = totalCheck.productDiscount + promoDiscount;
+      const finalTotal = Math.max(totalCheck.total + shipping - promoDiscount, 0);
 
       const [newOrder] = await this.dbInstance
         .insert(order)
@@ -64,7 +103,8 @@ export class CreateOrderUseCase {
           items: input.items,
           totalAmount: String(finalTotal),
           shippingCost: String(shipping),
-          discountAmount: String(discount),
+          discountAmount: String(totalDiscount),
+          promoCode: appliedPromoCode,
           paymentMethod: input.paymentMethod || DEFAULT_PAYMENT,
           notes: input.notes?.trim() || null,
           whatsappMessage: input.whatsappMessage?.trim() || null,
@@ -112,7 +152,9 @@ export class CreateOrderUseCase {
     return null;
   }
 
-  private async computeTotal(items: OrderItem[]): Promise<{ ok: true; total: number } | { ok: false; error: string }> {
+  private async computeTotal(
+    items: OrderItem[]
+  ): Promise<{ ok: true; total: number; productDiscount: number } | { ok: false; error: string }> {
     for (const item of items) {
       if (!item.id || !Number.isInteger(item.qty) || item.qty < 1) {
         return { ok: false, error: "Invalid item or quantity in order" };
@@ -125,24 +167,29 @@ export class CreateOrderUseCase {
       .from(product)
       .where(inArray(product.id, productIds));
 
-    const priceMap = new Map<string, number>();
+    const priceMap = new Map<string, { regular: number; effective: number }>();
     for (const p of products) {
-      const effective = p.discountPrice != null ? Number(p.discountPrice) : Number(p.price);
+      const regular = Number(p.price);
+      const effective = p.discountPrice != null ? Number(p.discountPrice) : regular;
       if (Number.isFinite(effective) && effective >= 0) {
-        priceMap.set(p.id, effective);
+        priceMap.set(p.id, { regular, effective });
       }
     }
 
     let total = 0;
+    let productDiscount = 0;
     for (const item of items) {
-      const unit = priceMap.get(item.id);
-      if (unit === undefined) {
+      const pricing = priceMap.get(item.id);
+      if (pricing === undefined) {
         return { ok: false, error: `Product ${item.id} is no longer available` };
       }
-      total += unit * item.qty;
+      total += pricing.effective * item.qty;
+      if (pricing.regular > pricing.effective) {
+        productDiscount += (pricing.regular - pricing.effective) * item.qty;
+      }
     }
 
-    return { ok: true, total };
+    return { ok: true, total, productDiscount };
   }
 }
 

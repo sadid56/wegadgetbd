@@ -8,6 +8,7 @@ import LayersOutlinedIcon from "@mui/icons-material/LayersOutlined";
 import PeopleOutlinedIcon from "@mui/icons-material/PeopleOutlined";
 import LocalMallOutlinedIcon from "@mui/icons-material/LocalMallOutlined";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
+import LocalOfferOutlinedIcon from "@mui/icons-material/LocalOfferOutlined";
 import HistoryIcon from "@mui/icons-material/History";
 import BarChartOutlinedIcon from "@mui/icons-material/BarChartOutlined";
 import TrendingDownIcon from "@mui/icons-material/TrendingDown";
@@ -49,6 +50,11 @@ export const NAVIGATION: Navigation = [
     segment: "admin/reviews",
     title: "Reviews",
     icon: <StarBorderIcon />,
+  },
+  {
+    segment: "admin/promo-codes",
+    title: "Promo Codes",
+    icon: <LocalOfferOutlinedIcon />,
   },
   {
     kind: "divider",

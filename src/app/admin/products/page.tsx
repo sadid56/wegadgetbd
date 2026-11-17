@@ -22,7 +22,7 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import StarIcon from "@mui/icons-material/Star";
 
-import { useAdminProducts, useDeleteProduct, useUpdateProduct, type Product } from "@/query-client/products";
+import { useAdminProducts, useDeleteProduct, useUpdateProduct, type AdminProduct as Product } from "@/query-client/products";
 import { getAssetUrl } from "@/lib/storage";
 import { tokens } from "@/theme/theme";
 

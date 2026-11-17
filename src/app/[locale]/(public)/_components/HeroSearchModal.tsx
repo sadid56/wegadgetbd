@@ -122,7 +122,7 @@ export function HeroSearchModal({
 
   const handleAddToCart = (e: React.MouseEvent, item: any) => {
     e.stopPropagation();
-    const rawImg = item.image || item.images?.[0] || "";
+    const rawImg = item.image || item.thumbnail || item.images?.[0] || "";
     const imgUrl = rawImg ? getAssetUrl(rawImg) : "";
     const salePrice = Number(item.discountPrice || item.price);
     const origPrice = item.originalPrice
@@ -623,7 +623,7 @@ export function HeroSearchModal({
           <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
             {activeItems.map((item, index) => {
               const anyItem = item as any;
-              const rawImg = anyItem.image || anyItem.images?.[0] || "";
+              const rawImg = anyItem.image || anyItem.thumbnail || anyItem.images?.[0] || "";
               const imgUrl = rawImg ? getAssetUrl(rawImg) : "";
               const price = Number(anyItem.discountPrice || anyItem.price);
               const origPrice = anyItem.originalPrice

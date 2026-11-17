@@ -1,5 +1,6 @@
 "use client";
 
+import type { FormEventHandler } from "react";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { TextField } from "@/components/ui/input";
@@ -14,9 +15,10 @@ interface CheckoutFormProps {
   errors: any;
   locationValue: string;
   setValue: any;
+  onSubmit?: FormEventHandler<HTMLFormElement>;
 }
 
-export function CheckoutForm({ register, errors, locationValue, setValue }: CheckoutFormProps) {
+export function CheckoutForm({ register, errors, locationValue, setValue, onSubmit }: CheckoutFormProps) {
   const t = useTranslations("checkout");
   const locale = useLocale();
 
@@ -25,13 +27,26 @@ export function CheckoutForm({ register, errors, locationValue, setValue }: Chec
     { value: "outside_dhaka", label: t("outsideDhaka"), charge: formatPrice(130, locale), desc: t("outsideDhakaDesc") },
   ] as const;
 
-  const fieldProps = (name: string) => {
+  const fieldProps = (name: string, htmlInputProps?: Record<string, any>) => {
     const { ref, ...rest } = register(name);
-    return { ...rest, inputRef: ref };
+    return {
+      ...rest,
+      error: Boolean(errors?.[name]?.message),
+      slotProps: {
+        htmlInput: {
+          ref,
+          ...htmlInputProps,
+        },
+      },
+    };
   };
 
   return (
     <Box
+      component='form'
+      id='checkout-form'
+      onSubmit={onSubmit}
+      noValidate
       sx={{
         bgcolor: tokens.bgPanel,
         borderRadius: "12px",
@@ -70,14 +85,9 @@ export function CheckoutForm({ register, errors, locationValue, setValue }: Chec
 
         <Field label={t("phoneLabel")} hint={t("phoneHint")} error={errors.phone?.message}>
           <TextField
-            {...fieldProps("phone")}
+            {...fieldProps("phone", { style: { fontSize: 13, letterSpacing: "0.08em" } })}
             placeholder={t("phonePlaceholder")}
             fullWidth
-            slotProps={{
-              htmlInput: {
-                style: { fontSize: 13, letterSpacing: "0.08em" },
-              },
-            }}
           />
         </Field>
 

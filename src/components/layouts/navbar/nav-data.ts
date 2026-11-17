@@ -84,7 +84,7 @@ export const NAV_CATEGORIES: NavCategoryItem[] = [
     id: "audio",
     name: "Audio & Sound",
     nameBn: "অডিও ও সাউন্ড",
-    href: "/products?category=audio",
+    href: "/products?category=audio-sound",
     subCategories: [
       {
         id: "tws-earbuds",
@@ -141,7 +141,7 @@ export const NAV_CATEGORIES: NavCategoryItem[] = [
     id: "smart-home",
     name: "Smart Home & Care",
     nameBn: "স্মার্ট হোম ও কেয়ার",
-    href: "/products?category=smart-home",
+    href: "/products?category=smart-home-security",
     subCategories: [
       {
         id: "motion-sensor-lights",
@@ -199,7 +199,7 @@ export const NAV_CATEGORIES: NavCategoryItem[] = [
     id: "creator-gear",
     name: "Creator & Mobile Gear",
     nameBn: "ক্রিয়েটর ও মোবাইল গিয়ার",
-    href: "/products?category=creator-gear",
+    href: "/products?category=creator-photography-gear",
     subCategories: [
       {
         id: "mobile-filming",
@@ -257,7 +257,7 @@ export const NAV_CATEGORIES: NavCategoryItem[] = [
     id: "tools-diy",
     name: "Tools, Power & EDC",
     nameBn: "টুলস, পাওয়ার ও ইডিসি",
-    href: "/products?category=tools-diy",
+    href: "/products?category=diy-robotics-tech-tools",
     subCategories: [
       {
         id: "power-charging",

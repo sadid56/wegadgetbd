@@ -298,7 +298,7 @@ export function ProductFilterSidebar({
 
           <Select
             size='small'
-            value={activeCategory || "all"}
+            value={categories.some((c) => c.slug === activeCategory) ? activeCategory : "all"}
             onChange={(e) => onSelectCategory(String(e.target.value))}
             IconComponent={KeyboardArrowDownRoundedIcon}
             fullWidth

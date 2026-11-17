@@ -136,7 +136,7 @@ export const Button: React.FC<ButtonProps> = ({
           fontWeight: 600,
           "&:hover": {
             bgcolor: color === "error" ? tokens.dangerSubtle : tokens.bgSubtle,
-            borderColor: color === "error" ? tokens.dangerBorder : tokens.borderHover,
+            borderColor: color === "error" ? tokens.dangerBorder : tokens.borderDefault,
             color: color === "error" ? tokens.danger : tokens.primary,
             outline: "none",
             boxShadow: "none",

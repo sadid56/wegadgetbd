@@ -127,14 +127,16 @@ export function Navbar() {
         >
           {/* Left: Brand Logo */}
           <Box sx={{ display: "flex", alignItems: "center", flexShrink: 0, mr: { xs: 1, md: 2 } }}>
-            <BrandLogo variant="light" size="md" href="/" />
+            <BrandLogo variant="light" size="md" href="/" showText={false} />
           </Box>
 
           {/* Center: Gadgets Categories with Dropdown */}
           <Box
             sx={{
               display: { xs: "none", lg: "flex" },
+              flex: 1,
               alignItems: "center",
+              justifyContent: "center",
               gap: { lg: 0.75, xl: 1.5 },
               flexShrink: 1,
               minWidth: 0,
@@ -205,7 +207,7 @@ export function Navbar() {
               alignItems: "center",
               gap: { xs: 0.75, sm: 1.25 },
               flexShrink: 0,
-              ml: "auto",
+              ml: { xs: "auto", lg: 0 },
             }}
           >
             {/* Language Switcher */}

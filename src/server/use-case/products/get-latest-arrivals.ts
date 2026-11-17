@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { product, category } from "@/db/schema";
 import type { Context } from "@/server/context";
 import type { TopPickProduct } from "@/server/schemas/products.schema";
@@ -15,7 +15,7 @@ export class GetLatestArrivalsUseCase {
         slug: product.slug,
         price: product.price,
         discountPrice: product.discountPrice,
-        images: product.images,
+        thumbnail: sql<string | null>`${product.images}[1]`,
         rating: product.rating,
         soldCount: product.soldCount,
         inStock: product.inStock,
@@ -37,7 +37,7 @@ export class GetLatestArrivalsUseCase {
       slug: string;
       price: string | number;
       discountPrice: string | number | null;
-      images: string[] | null;
+      thumbnail: string | null;
       brand?: string | null;
       rating: string | number | null;
       soldCount: number | null;
@@ -60,7 +60,7 @@ export class GetLatestArrivalsUseCase {
       badgeVariant = "sale";
     }
 
-    const rawImage = Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null;
+    const rawImage = p.thumbnail ?? null;
 
     return {
       id: p.id,

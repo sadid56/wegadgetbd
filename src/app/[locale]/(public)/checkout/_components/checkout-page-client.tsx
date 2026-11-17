@@ -17,6 +17,7 @@ import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
 
 import { useCart } from "@/hooks/useCart";
+import { usePromoCode } from "@/hooks/usePromoCode";
 import { useProduct } from "@/query-client/products";
 import { createOrder } from "@/server/actions/order.action";
 import { authClient } from "@/lib/auth-client";
@@ -192,6 +193,11 @@ function CheckoutPageContent() {
 
   const [isBuyNow] = useState(!!buyNowSlug);
   const [localQty, setLocalQty] = useState(buyNowQty);
+  const activeSubtotal =
+    isBuyNow && buyNowProduct
+      ? Number(buyNowProduct.discountPrice || buyNowProduct.price) * localQty
+      : cartTotal;
+  const { appliedPromo, removePromoCode } = usePromoCode(activeSubtotal);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -218,7 +224,12 @@ function CheckoutPageContent() {
     formState: { errors },
   } = useForm<CheckoutValues>({
     resolver: zodResolver(schema),
-    defaultValues: { location: "inside_dhaka" },
+    defaultValues: {
+      name: "",
+      phone: "",
+      address: "",
+      location: "inside_dhaka",
+    },
   });
 
   const locationValue = watch("location");
@@ -333,11 +344,12 @@ function CheckoutPageContent() {
       ? t("productsCount", { count: formatNumber(productsToOrder.length), items: formatNumber(confirmedCount) })
       : (confirmedProduct?.title ?? "");
 
-  const subtotal = isBuyNow && buyNowProduct ? Number(buyNowProduct.discountPrice || buyNowProduct.price) * localQty : cartTotal;
+  const subtotal = activeSubtotal;
   const originalSubtotal = productsToOrder.reduce((sum, item) => sum + Number(item.price) * (isBuyNow ? localQty : item.qty), 0);
   const discountAmount = Math.max(originalSubtotal - subtotal, 0);
+  const promoDiscount = appliedPromo?.discountAmount ?? 0;
   const deliveryCharge = locationValue === "inside_dhaka" ? 80 : 130;
-  const totalAmount = subtotal + deliveryCharge;
+  const totalAmount = Math.max(subtotal - promoDiscount, 0) + deliveryCharge;
 
   const handleIncreaseQty = (id: string) => {
     if (isBuyNow) {
@@ -403,6 +415,7 @@ Delivery: ৳${deliveryCharge}
         totalAmount,
         shippingCost: deliveryCharge,
         discountAmount,
+        promoCode: appliedPromo?.code,
       });
 
       if (!res.success) {
@@ -417,6 +430,7 @@ Delivery: ৳${deliveryCharge}
       if (!isBuyNow) {
         clearCart();
       }
+      removePromoCode();
 
       reset();
       setIsOrderConfirmed(true);
@@ -430,6 +444,13 @@ Delivery: ৳${deliveryCharge}
   const handleInitialSubmit = (data: CheckoutValues) => {
     setPendingData(data);
     setShowConfirm(true);
+  };
+
+  const handleInvalidSubmit = (formErrors: typeof errors) => {
+    const firstError = Object.values(formErrors)[0];
+    if (firstError?.message) {
+      toast.error(firstError.message);
+    }
   };
 
   return (
@@ -580,6 +601,7 @@ Delivery: ৳${deliveryCharge}
               errors={errors}
               locationValue={locationValue}
               setValue={setValue}
+              onSubmit={handleSubmit(handleInitialSubmit, handleInvalidSubmit)}
             />
           </Box>
 
@@ -591,6 +613,8 @@ Delivery: ৳${deliveryCharge}
               localQty={localQty}
               originalSubtotal={originalSubtotal}
               discountAmount={discountAmount}
+              promoCode={appliedPromo?.code}
+              promoDiscount={promoDiscount}
               deliveryCharge={deliveryCharge}
               totalAmount={totalAmount}
               onIncreaseQty={handleIncreaseQty}
