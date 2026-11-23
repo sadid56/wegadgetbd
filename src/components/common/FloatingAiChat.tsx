@@ -129,6 +129,8 @@ export function FloatingAiChat() {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isStreamingText, setIsStreamingText] = useState(false);
+  const [statusText, setStatusText] = useState<string | null>(null);
   const [hintText, setHintText] = useState<string | null>(null);
   const [hintVisible, setHintVisible] = useState(false);
 
@@ -145,9 +147,9 @@ export function FloatingAiChat() {
 
   useEffect(() => {
     if (isOpen) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      messagesEndRef.current?.scrollIntoView({ behavior: isStreamingText ? "auto" : "smooth" });
     }
-  }, [messages, isLoading, isOpen]);
+  }, [messages, isLoading, isOpen, isStreamingText]);
 
   // Prevent main page scrolling (both html & body) while the drawer is open without adding scrollbar padding
   useEffect(() => {
@@ -175,18 +177,131 @@ export function FloatingAiChat() {
       setMessages((prev) => [...prev, { role: "user", text: trimmed }]);
       setInput("");
       setIsLoading(true);
+      setIsStreamingText(false);
+      setStatusText(null);
 
       try {
         const res = await fetch("/api/ai-assistant", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/x-ndjson, application/json",
+          },
           body: JSON.stringify({
             message: trimmed,
             history: historySnapshot.slice(-6),
+            stream: true,
             ...(productContextToSend ? { productContext: productContextToSend } : {}),
           }),
           signal: AbortSignal.timeout(30000),
         });
+
+        const contentType = res.headers.get("content-type") ?? "";
+        if (contentType.includes("application/x-ndjson") && res.body) {
+          const reader = res.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = "";
+          let hasStarted = false;
+
+          const handleStreamEvent = (rawLine: string) => {
+            if (!rawLine.trim()) return;
+            const evt = JSON.parse(rawLine) as {
+              type?: "status" | "delta" | "done" | "error";
+              text?: string;
+              reply?: string;
+              error?: string;
+              products?: AiProductCardData[];
+              followUps?: string[];
+            };
+
+            if (evt.type === "status" && evt.text) {
+              setStatusText(evt.text);
+              return;
+            }
+
+            if (evt.type === "delta" && evt.text) {
+              const delta = evt.text;
+              if (!hasStarted) {
+                hasStarted = true;
+                setIsStreamingText(true);
+                setMessages((prev) => [...prev, { role: "model", text: delta, products: [], followUps: [] }]);
+              } else {
+                setMessages((prev) => {
+                  if (prev.length === 0) return prev;
+                  const next = [...prev];
+                  const last = next[next.length - 1];
+                  next[next.length - 1] = { ...last, text: last.text + delta };
+                  return next;
+                });
+              }
+              return;
+            }
+
+            if (evt.type === "done") {
+              const finalText = evt.reply || "";
+              const finalProducts = Array.isArray(evt.products) ? evt.products : [];
+              const finalFollowUps = Array.isArray(evt.followUps) ? evt.followUps : [];
+
+              if (!hasStarted) {
+                hasStarted = true;
+                setMessages((prev) => [
+                  ...prev,
+                  {
+                    role: "model",
+                    text: finalText || `I'm having trouble right now. Please contact us on WhatsApp at ${CONTACT_PHONE}.`,
+                    products: finalProducts,
+                    followUps: finalFollowUps,
+                  },
+                ]);
+              } else {
+                setMessages((prev) => {
+                  if (prev.length === 0) return prev;
+                  const next = [...prev];
+                  const last = next[next.length - 1];
+                  next[next.length - 1] = {
+                    ...last,
+                    text: finalText || last.text,
+                    products: finalProducts,
+                    followUps: finalFollowUps,
+                  };
+                  return next;
+                });
+              }
+              return;
+            }
+
+            if (evt.type === "error") {
+              const errMsg = evt.error || `I'm having trouble right now. Please contact us on WhatsApp at ${CONTACT_PHONE}.`;
+              if (!hasStarted) {
+                hasStarted = true;
+                setMessages((prev) => [...prev, { role: "model", text: errMsg }]);
+              } else {
+                setMessages((prev) => {
+                  if (prev.length === 0) return prev;
+                  const next = [...prev];
+                  const last = next[next.length - 1];
+                  next[next.length - 1] = { ...last, text: last.text || errMsg };
+                  return next;
+                });
+              }
+            }
+          };
+
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop() ?? "";
+            for (const line of lines) {
+              handleStreamEvent(line);
+            }
+          }
+          if (buffer.trim()) {
+            handleStreamEvent(buffer);
+          }
+          return;
+        }
 
         const data = (await res.json()) as {
           reply?: string;
@@ -218,6 +333,8 @@ export function FloatingAiChat() {
         ]);
       } finally {
         setIsLoading(false);
+        setIsStreamingText(false);
+        setStatusText(null);
       }
     },
     [isBn],
@@ -759,7 +876,7 @@ export function FloatingAiChat() {
             })
           )}
 
-          {isLoading && (
+          {isLoading && !isStreamingText && (
             <Box
               sx={{
                 alignSelf: "flex-start",
@@ -777,7 +894,7 @@ export function FloatingAiChat() {
               }}
             >
               <CircularProgress size={14} sx={{ color: tokens.primary }} />
-              <span>{isBn ? "গ্যাজেট খোঁজা হচ্ছে..." : "Searching catalog..."}</span>
+              <span>{statusText || (isBn ? "উত্তর তৈরি হচ্ছে..." : "Thinking...")}</span>
             </Box>
           )}
           <div ref={messagesEndRef} />

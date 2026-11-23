@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
-import { GoogleGenAI, Type, type Content, type FunctionDeclaration } from "@google/genai";
+import { GoogleGenAI, ThinkingLevel, Type, type Content, type FunctionDeclaration } from "@google/genai";
 import { and, desc, eq, ilike, inArray, lte, gte, or, sql, isNotNull } from "drizzle-orm";
 import { db } from "@/db";
 import { product, category, order } from "@/db/schema";
 import { CONTACT_PHONE, getWhatsAppUrl } from "@/lib/contact";
 import type { AiProductCardData } from "@/lib/ai-drawer";
+
+export const preferredRegion = ["bom1", "sin1"];
+export const maxDuration = 30;
 
 interface ChatMessage {
   role: "user" | "model";
@@ -22,13 +25,127 @@ interface ResolvedProductContext {
   description: string;
 }
 
+interface CatalogSnapshotItem extends AiProductCardData {
+  rating: number | null;
+  tags: string[];
+}
+
+interface CachedCatalogData {
+  categories: Array<{ name: string; slug: string }>;
+  products: CatalogSnapshotItem[];
+  hasMoreProducts: boolean;
+  bySlug: Map<string, AiProductCardData>;
+  fetchedAt: number;
+}
+
 const MAX_MESSAGE_LENGTH = 1000;
 const MAX_HISTORY_ENTRIES = 6;
 const MAX_HISTORY_TEXT_LENGTH = 1000;
-const MAX_TURNS = 3;
+const MAX_TURNS = 2;
+const CATALOG_SNAPSHOT_LIMIT = 50;
+const CATALOG_CACHE_TTL_MS = 60_000;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 30;
 const MODEL_NAME = process.env.GEMINI_MODEL?.trim() || "gemini-3.5-flash-lite";
+
+let cachedCatalog: CachedCatalogData | null = null;
+let catalogFetchPromise: Promise<CachedCatalogData> | null = null;
+let cachedAiClient: { apiKey: string; client: GoogleGenAI } | null = null;
+
+function getGenAIClient(apiKey: string): GoogleGenAI {
+  if (cachedAiClient && cachedAiClient.apiKey === apiKey) {
+    return cachedAiClient.client;
+  }
+  const client = new GoogleGenAI({ apiKey });
+  cachedAiClient = { apiKey, client };
+  return client;
+}
+
+function getThinkingConfig(model: string) {
+  if (model.includes("2.5")) {
+    return { thinkingBudget: 0 };
+  }
+  if (model.includes("3.") || model.includes("3-")) {
+    return { thinkingLevel: ThinkingLevel.MINIMAL };
+  }
+  return undefined;
+}
+
+async function getCachedCatalogData(): Promise<CachedCatalogData> {
+  const now = Date.now();
+  if (cachedCatalog && now - cachedCatalog.fetchedAt < CATALOG_CACHE_TTL_MS) {
+    return cachedCatalog;
+  }
+  if (catalogFetchPromise) {
+    return catalogFetchPromise;
+  }
+
+  catalogFetchPromise = (async () => {
+    const [categories, rawProducts] = await Promise.all([
+      db.select({ name: category.name, slug: category.slug }).from(category).limit(30),
+      db
+        .select({
+          id: product.id,
+          title: product.title,
+          slug: product.slug,
+          price: product.price,
+          discountPrice: product.discountPrice,
+          images: product.images,
+          inStock: product.inStock,
+          rating: product.rating,
+          tags: product.tags,
+          categoryName: category.name,
+        })
+        .from(product)
+        .leftJoin(category, eq(product.categoryId, category.id))
+        .where(and(eq(product.status, "ACTIVE"), eq(product.isDeleted, false), eq(product.inStock, true)))
+        .orderBy(desc(product.soldCount), desc(product.rating))
+        .limit(CATALOG_SNAPSHOT_LIMIT + 1),
+    ]);
+
+    const hasMoreProducts = rawProducts.length > CATALOG_SNAPSHOT_LIMIT;
+    const products: CatalogSnapshotItem[] = rawProducts.slice(0, CATALOG_SNAPSHOT_LIMIT).map((r) => ({
+      id: r.id,
+      title: r.title,
+      slug: r.slug,
+      price: Number(r.price),
+      discountPrice: r.discountPrice != null ? Number(r.discountPrice) : null,
+      thumbnail: Array.isArray(r.images) && r.images.length > 0 ? r.images[0] : null,
+      inStock: r.inStock ?? true,
+      categoryName: r.categoryName,
+      rating: r.rating != null ? Number(r.rating) : null,
+      tags: Array.isArray(r.tags) ? r.tags : [],
+    }));
+
+    const bySlug = new Map<string, AiProductCardData>();
+    for (const item of products) {
+      bySlug.set(item.slug, {
+        id: item.id,
+        title: item.title,
+        slug: item.slug,
+        price: item.price,
+        discountPrice: item.discountPrice,
+        thumbnail: item.thumbnail,
+        inStock: item.inStock,
+        categoryName: item.categoryName,
+      });
+    }
+
+    const fresh: CachedCatalogData = {
+      categories,
+      products,
+      hasMoreProducts,
+      bySlug,
+      fetchedAt: Date.now(),
+    };
+    cachedCatalog = fresh;
+    return fresh;
+  })().finally(() => {
+    catalogFetchPromise = null;
+  });
+
+  return catalogFetchPromise;
+}
 
 class RateLimiter {
   private readonly buckets = new Map<string, number[]>();
@@ -66,7 +183,7 @@ const TOOL_DECLARATIONS: FunctionDeclaration[] = [
   {
     name: "searchProducts",
     description:
-      "Search live We Gadget BD products by keywords, category slug, price range, discount status, or stock availability. Call this whenever recommending or comparing gadgets.",
+      "Search the full We Gadget BD database when the catalog snapshot lacks matching items or when filtering out-of-stock/extended items.",
     parameters: {
       type: Type.OBJECT,
       properties: {
@@ -101,7 +218,7 @@ const TOOL_DECLARATIONS: FunctionDeclaration[] = [
   {
     name: "compareProducts",
     description:
-      "Compare 2–3 specific products side by side (specifications, price, availability). Use this when the user asks 'which is better', 'what is the difference', or wants to choose between items.",
+      "Compare 2–3 specific products side by side (detailed specifications, price, availability). Use only when the user explicitly asks to compare specs or differences between items.",
     parameters: {
       type: Type.OBJECT,
       properties: {
@@ -142,6 +259,8 @@ function normalizeHistory(input: unknown): ChatMessage[] {
 
 class ShoppingAssistant {
   private readonly collected = new Map<string, AiProductCardData>();
+  private catalogBySlug = new Map<string, AiProductCardData>();
+  private hasMoreProducts = false;
   private systemPrompt = "";
   private hasProductContext = false;
 
@@ -151,13 +270,23 @@ class ShoppingAssistant {
   ) {}
 
   async init(productContextSlug?: string): Promise<this> {
-    const context = await this.loadProductContext(productContextSlug);
-    this.systemPrompt = await this.buildSystemPrompt(context);
+    const [context, catalog] = await Promise.all([
+      this.loadProductContext(productContextSlug),
+      getCachedCatalogData(),
+    ]);
+    this.catalogBySlug = catalog.bySlug;
+    this.hasMoreProducts = catalog.hasMoreProducts;
+    this.systemPrompt = this.buildSystemPrompt(context, catalog);
     this.hasProductContext = Boolean(context);
     return this;
   }
 
-  async reply(input: { message: string; history: ChatMessage[] }): Promise<{ reply: string; products: AiProductCardData[] }> {
+  async streamReply(input: {
+    message: string;
+    history: ChatMessage[];
+    onDelta?: (text: string) => void;
+    onStatus?: (text: string) => void;
+  }): Promise<{ reply: string; products: AiProductCardData[] }> {
     const contents: Content[] = [
       ...input.history.map((m) => ({
         role: m.role === "model" ? ("model" as const) : ("user" as const),
@@ -166,44 +295,74 @@ class ShoppingAssistant {
       { role: "user", parts: [{ text: input.message }] },
     ];
 
+    const activeTools = this.hasMoreProducts
+      ? TOOL_DECLARATIONS
+      : TOOL_DECLARATIONS.filter((t) => t.name !== "searchProducts");
+    const thinkingConfig = getThinkingConfig(this.model);
+
     let finalReply = "";
 
     for (let turn = 0; turn < MAX_TURNS; turn++) {
       const allowTools = turn < MAX_TURNS - 1;
-      const response = await this.ai.models.generateContent({
+      const stream = await this.ai.models.generateContentStream({
         model: this.model,
         contents,
         config: {
           systemInstruction: this.systemPrompt,
-          ...(allowTools ? { tools: [{ functionDeclarations: TOOL_DECLARATIONS }] } : {}),
-          temperature: 0.55,
-          maxOutputTokens: 550,
+          ...(allowTools ? { tools: [{ functionDeclarations: activeTools }] } : {}),
+          ...(thinkingConfig ? { thinkingConfig } : {}),
+          temperature: 0.5,
+          maxOutputTokens: 450,
           abortSignal: AbortSignal.timeout(20_000),
         },
       });
 
-      const calls = response.functionCalls ?? [];
+      const calls: NonNullable<Awaited<ReturnType<typeof this.ai.models.generateContent>>["functionCalls"]> = [];
+      const modelParts: NonNullable<Content["parts"]> = [];
+      let turnText = "";
+
+      for await (const chunk of stream) {
+        if (chunk.functionCalls && chunk.functionCalls.length > 0) {
+          calls.push(...chunk.functionCalls);
+        }
+        const chunkParts = chunk.candidates?.[0]?.content?.parts;
+        if (chunkParts) {
+          modelParts.push(...chunkParts);
+        }
+        if (chunk.text && calls.length === 0) {
+          turnText += chunk.text;
+          input.onDelta?.(chunk.text);
+        }
+      }
+
       if (calls.length === 0) {
-        finalReply = (response.text ?? "").trim();
+        finalReply = turnText.trim();
         break;
       }
 
-      const modelContent = response.candidates?.[0]?.content;
-      if (modelContent) contents.push(modelContent);
-
-      const parts: NonNullable<Content["parts"]> = [];
-      for (const call of calls) {
-        const result = await this.executeToolCall(call.name ?? "", call.args ?? {});
-        if (result) parts.push(result);
+      if (modelParts.length > 0) {
+        contents.push({ role: "model", parts: modelParts });
       }
 
+      input.onStatus?.("Checking live store data...");
+      const results = await Promise.all(
+        calls.map((call) => this.executeToolCall(call.name ?? "", (call.args ?? {}) as Record<string, unknown>)),
+      );
+
+      const parts = results.filter((r): r is NonNullable<typeof r> => r !== null);
       contents.push({ role: "user", parts });
     }
+
+    this.extractMentionedProducts(finalReply);
 
     return {
       reply: finalReply,
       products: Array.from(this.collected.values()).slice(0, 4),
     };
+  }
+
+  async reply(input: { message: string; history: ChatMessage[] }): Promise<{ reply: string; products: AiProductCardData[] }> {
+    return this.streamReply(input);
   }
 
   buildFollowUps(userMessage: string): string[] {
@@ -235,6 +394,19 @@ class ShoppingAssistant {
     return isBn
       ? ["এখন সবচেয়ে বেশি বিক্রি হওয়া গ্যাজেট কোনগুলো?", "১৫০০ টাকার মধ্যে ভালো কিছু দেখাও", "ওয়ারেন্টি আর রিটার্ন পলিসি কী?"]
       : ["What are the best sellers right now?", "Show me good options under ৳1,500", "What's the warranty and return policy?"];
+  }
+
+  private extractMentionedProducts(replyText: string): void {
+    if (!replyText) return;
+    const regex = /\/products\/([a-zA-Z0-9_-]+)/g;
+    for (const match of replyText.matchAll(regex)) {
+      const slug = match[1];
+      const item = this.catalogBySlug.get(slug);
+      if (item && !this.collected.has(item.id)) {
+        this.collected.set(item.id, item);
+      }
+      if (this.collected.size >= 4) break;
+    }
   }
 
   private async executeToolCall(
@@ -349,10 +521,12 @@ class ShoppingAssistant {
 
     const rows = await db
       .select({
+        id: product.id,
         title: product.title,
         slug: product.slug,
         price: product.price,
         discountPrice: product.discountPrice,
+        images: product.images,
         inStock: product.inStock,
         specifications: product.specifications,
         description: product.markdown_description,
@@ -362,6 +536,21 @@ class ShoppingAssistant {
       .leftJoin(category, eq(product.categoryId, category.id))
       .where(and(inArray(product.slug, slugs), eq(product.isDeleted, false)))
       .limit(3);
+
+    for (const r of rows) {
+      if (!this.collected.has(r.id)) {
+        this.collected.set(r.id, {
+          id: r.id,
+          title: r.title,
+          slug: r.slug,
+          price: Number(r.price),
+          discountPrice: r.discountPrice != null ? Number(r.discountPrice) : null,
+          thumbnail: Array.isArray(r.images) && r.images.length > 0 ? r.images[0] : null,
+          inStock: r.inStock ?? true,
+          categoryName: r.categoryName,
+        });
+      }
+    }
 
     return {
       products: rows.map((r) => ({
@@ -464,33 +653,16 @@ class ShoppingAssistant {
     };
   }
 
-  private async buildSystemPrompt(productContext: ResolvedProductContext | null): Promise<string> {
-    const [categories, topCatalog] = await Promise.all([
-      db.select({ name: category.name, slug: category.slug }).from(category).limit(30),
-      db
-        .select({
-          title: product.title,
-          slug: product.slug,
-          price: product.price,
-          discountPrice: product.discountPrice,
-          rating: product.rating,
-          categoryName: category.name,
-        })
-        .from(product)
-        .leftJoin(category, eq(product.categoryId, category.id))
-        .where(and(eq(product.status, "ACTIVE"), eq(product.isDeleted, false), eq(product.inStock, true)))
-        .orderBy(desc(product.soldCount))
-        .limit(25),
-    ]);
-
-    const categoryText = categories.map((c) => `- ${c.name} (slug: ${c.slug})`).join("\n");
-    const catalogSnapshot = topCatalog
+  private buildSystemPrompt(productContext: ResolvedProductContext | null, catalog: CachedCatalogData): string {
+    const categoryText = catalog.categories.map((c) => `- ${c.name} (slug: ${c.slug})`).join("\n");
+    const catalogSnapshot = catalog.products
       .map((p) => {
-        const regular = Number(p.price);
-        const disc = p.discountPrice != null ? Number(p.discountPrice) : null;
-        const effective = disc && disc > 0 && disc < regular ? disc : regular;
-        const rating = p.rating != null ? ` | ★${Number(p.rating).toFixed(1)}` : "";
-        return `- ${p.title} (${p.categoryName || "Gadget"}) | ৳${effective}${rating} | /products/${p.slug}`;
+        const hasDiscount = p.discountPrice != null && p.discountPrice > 0 && p.discountPrice < p.price;
+        const effective = hasDiscount ? p.discountPrice : p.price;
+        const priceStr = hasDiscount ? `৳${effective} (was ৳${p.price})` : `৳${effective}`;
+        const rating = p.rating != null ? ` | ★${p.rating.toFixed(1)}` : "";
+        const tags = p.tags.length > 0 ? ` | tags: ${p.tags.slice(0, 4).join(", ")}` : "";
+        return `- ${p.title} (${p.categoryName || "Gadget"}) | ${priceStr}${rating}${tags} | /products/${p.slug}`;
       })
       .join("\n");
 
@@ -519,6 +691,10 @@ Description: ${productContext.description}
 </product_page_context>`
       : "";
 
+    const searchToolRule = catalog.hasMoreProducts
+      ? "- Only call `searchProducts` if the `In-Stock Catalog Snapshot` below does not contain matching products for the user's request."
+      : "- All active in-stock products are already listed in the `In-Stock Catalog Snapshot` below — answer directly without extra search calls.";
+
     return `You are the AI Shopping Assistant for "We Gadget BD" — Bangladesh's tech & gadget online store. Today is ${today}.
 
 SCOPE — NON-NEGOTIABLE:
@@ -535,14 +711,14 @@ BEHAVIOUR & TONE:
    - Acknowledge their situation in one short warm line.
    - Give a clear, structured answer (short bullets or 2–4 crisp sentences) that actually explains their issue.
    - End with a helpful next step or a gentle offer of further help.
-3. BANGLISH & INTENT: Bangladeshi shoppers often type Banglish, typos, or use-cases (e.g. "gaming er jonno 2000 takar moddhe valo earbuds", "brother ke gift korar moto gadget", "travel gadget"). Understand the intent, budget, and use-case, then call \`searchProducts\` with clean English keywords and appropriate price filters.
+3. BANGLISH & INTENT: Bangladeshi shoppers often type Banglish, typos, or use-cases (e.g. "gaming er jonno 2000 takar moddhe valo earbuds", "brother ke gift korar moto gadget", "travel gadget"). Understand the intent, budget, and use-case directly from the catalog snapshot.
 4. LANGUAGE: Reply in Bengali ONLY if the user writes in Bengali script (বাংলা অক্ষর). For English or Latin-script Banglish, reply in crisp, friendly English.
-5. TOOL USE:
-   - Call \`searchProducts\` for any product recommendation, price, gift, or category question.
-   - Call \`compareProducts\` when the user asks "which is better", "difference between", or wants to compare two/three items.
-   - Call \`lookupOrderStatus\` when the user asks about their order.
-   - After tools return data, explain the result directly — do not call the same tool repeatedly with identical arguments.
-   - If a strict search returns 0 items, retry once with a broader keyword.
+5. TOOL USE & PRODUCT LINKS:
+   - Answer directly WITHOUT calling any tool for recommendations, gift ideas, budget picks, best sellers, store policies, or questions about the current product page whenever the answer is already in the snapshot or \`<product_page_context>\`.
+   - Whenever you recommend or mention a product from the snapshot, ALWAYS format its name as a markdown link using its exact path: \`[Product Title](/products/exact-slug)\` so product cards appear automatically.
+   ${searchToolRule}
+   - Call \`compareProducts\` only when the user explicitly asks to compare detailed specs of 2–3 specific items.
+   - Call \`lookupOrderStatus\` when the user asks about their order status.
 6. STORE FACTS (do not invent anything outside these):
    - Hotline / WhatsApp: ${CONTACT_PHONE} (${whatsappUrl})
    - Payment: Cash on Delivery nationwide, plus bKash and Nagad.
@@ -557,7 +733,7 @@ ${contextBlock}
 Available Categories:
 ${categoryText || "No categories listed."}
 
-Popular In-Stock Catalog Snapshot:
+In-Stock Catalog Snapshot:
 ${catalogSnapshot || "No products listed."}`;
   }
 
@@ -581,6 +757,7 @@ export async function POST(request: Request) {
       message?: string;
       history?: unknown;
       productContext?: { slug?: string } | null;
+      stream?: boolean;
     };
 
     const userMessage = body.message?.trim() ?? "";
@@ -604,14 +781,58 @@ export async function POST(request: Request) {
       });
     }
 
-    const assistant = await new ShoppingAssistant(new GoogleGenAI({ apiKey }), MODEL_NAME).init(body.productContext?.slug);
+    const assistant = await new ShoppingAssistant(getGenAIClient(apiKey), MODEL_NAME).init(body.productContext?.slug);
+    const wantsStream = Boolean(body.stream) || (request.headers.get("accept") ?? "").includes("application/x-ndjson");
 
-    const { reply, products } = await assistant.reply({ message: userMessage, history });
+    if (!wantsStream) {
+      const { reply, products } = await assistant.reply({ message: userMessage, history });
+      return NextResponse.json({
+        reply: reply || `Here is what I found for you! You can also browse [All Products](/products) or message us at ${CONTACT_PHONE}.`,
+        products,
+        followUps: assistant.buildFollowUps(userMessage),
+      });
+    }
 
-    return NextResponse.json({
-      reply: reply || `Here is what I found for you! You can also browse [All Products](/products) or message us at ${CONTACT_PHONE}.`,
-      products,
-      followUps: assistant.buildFollowUps(userMessage),
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        const emit = (payload: Record<string, unknown>) => {
+          controller.enqueue(encoder.encode(`${JSON.stringify(payload)}\n`));
+        };
+
+        try {
+          const { reply, products } = await assistant.streamReply({
+            message: userMessage,
+            history,
+            onStatus: (text) => emit({ type: "status", text }),
+            onDelta: (text) => emit({ type: "delta", text }),
+          });
+
+          emit({
+            type: "done",
+            reply:
+              reply ||
+              `Here is what I found for you! You can also browse [All Products](/products) or message us at ${CONTACT_PHONE}.`,
+            products,
+            followUps: assistant.buildFollowUps(userMessage),
+          });
+        } catch (streamErr) {
+          console.error("AI assistant stream error:", streamErr);
+          emit({
+            type: "error",
+            error: `I'm having trouble right now. Please contact us on WhatsApp at ${CONTACT_PHONE}.`,
+          });
+        } finally {
+          controller.close();
+        }
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "application/x-ndjson; charset=utf-8",
+        "Cache-Control": "no-cache, no-transform",
+      },
     });
   } catch (err) {
     console.error("AI assistant route error:", err);
