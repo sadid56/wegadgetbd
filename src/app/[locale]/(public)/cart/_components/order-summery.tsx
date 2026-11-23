@@ -28,8 +28,8 @@ export default function OrderSummary({ totalPrice, totalCount, savings, promoCod
       sx={{
         bgcolor: tokens.bgPanel,
         border: "none",
-        borderRadius: "12px",
-        p: 3,
+        borderRadius: { xs: "16px", sm: "12px" },
+        p: { xs: 2, sm: 3 },
         position: { lg: "sticky" },
         top: { lg: 88 },
       }}

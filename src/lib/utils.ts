@@ -14,6 +14,17 @@ export function formatBnNumber(value: number | string): string {
   return new Intl.NumberFormat("bn-BD").format(numericValue);
 }
 
+const bdtFormatter = new Intl.NumberFormat("en-BD", {
+  style: "currency",
+  currency: "BDT",
+  maximumFractionDigits: 0,
+});
+
+export function formatBdt(value: number | string): string {
+  const numericValue = typeof value === "string" ? Number(value) : value;
+  return bdtFormatter.format(Number.isFinite(numericValue) ? numericValue : 0);
+}
+
 export function slugify(value: string): string {
   return value
     .toLowerCase()

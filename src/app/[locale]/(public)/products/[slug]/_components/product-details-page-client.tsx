@@ -18,15 +18,14 @@ import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import PhotoLibraryOutlinedIcon from "@mui/icons-material/PhotoLibraryOutlined";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import StarIcon from "@mui/icons-material/Star";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 
 import { useMarkdownComponents } from "@/components/common/MarkdownContent";
-import { useCart } from "@/hooks/useCart";
 import type { Locale } from "@/i18n/config";
 import { formatPrice, toBengaliNumber } from "@/lib/i18n-utils";
+import { getWhatsAppUrl } from "@/lib/contact";
 import { getAssetUrl } from "@/lib/storage";
 import { toVideoEmbedUrl } from "@/lib/video-links";
 import { useProduct, useProducts } from "@/query-client/products";
@@ -35,6 +34,7 @@ import { useLocale, useTranslations } from "next-intl";
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ProductCard } from "../../../_components/ProductCard";
+import { ProductAskAiBox } from "./ProductAskAiBox";
 import { ProductDetailsSkeleton } from "./ProductDetailsSkeleton";
 import { ProductReviews } from "./ProductReviews";
 
@@ -51,8 +51,8 @@ type ProductExtras = {
   model?: string;
   warranty?: string;
   origin?: string;
-  specifications?: any;
-  packagingDelivery?: any;
+  specifications?: unknown;
+  packagingDelivery?: unknown;
 };
 
 const getTabSx = (active: boolean) => ({
@@ -104,7 +104,9 @@ export default function ProductDetailsPage() {
 
   const [isZoomed, setIsZoomed] = useState(false);
   const [zoomOrigin, setZoomOrigin] = useState({ x: 50, y: 50 });
+  const [showStickyBar, setShowStickyBar] = useState(false);
   const tabsSectionRef = useRef<HTMLDivElement | null>(null);
+  const buyBoxCtaRef = useRef<HTMLDivElement | null>(null);
 
   const handleJumpToReviews = () => {
     setActiveTab("reviews");
@@ -148,7 +150,6 @@ export default function ProductDetailsPage() {
     category: product?.category?.slug,
     limit: 5,
   });
-  const { addItem, removeItem, cart } = useCart();
   const markdownComponents = useMarkdownComponents();
 
   const formatNumber = useCallback(
@@ -164,7 +165,29 @@ export default function ProductDetailsPage() {
     setActiveImg(0);
     setActiveTab("specs");
     setMediaMode("photos");
+    setShowStickyBar(false);
   }, [slug]);
+
+  useEffect(() => {
+    const el = buyBoxCtaRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowStickyBar(!entry.isIntersecting && entry.boundingClientRect.top < 120);
+      },
+      { threshold: 0 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [slug, product?.id]);
+
+  useEffect(() => {
+    document.documentElement.style.setProperty("--product-sticky-bar-height", showStickyBar ? "72px" : "0px");
+    return () => {
+      document.documentElement.style.setProperty("--product-sticky-bar-height", "0px");
+    };
+  }, [showStickyBar]);
 
   const extras = (product ?? {}) as unknown as ProductExtras;
 
@@ -187,26 +210,9 @@ export default function ProductDetailsPage() {
   }, [extras.price, extras.discountPrice]);
 
   const relatedProducts = useMemo(
-    () =>
-      relatedData?.products
-        ?.filter((p: any) => p.id !== product?.id)
-        .slice(0, 4) ?? [],
+    () => relatedData?.products?.filter((p) => p.id !== product?.id).slice(0, 4) ?? [],
     [relatedData?.products, product?.id],
   );
-
-  const isInCart = useMemo(
-    () => cart.some((i: { id: string }) => i.id === product?.id),
-    [cart, product?.id],
-  );
-
-  const handleAddToCart = useCallback(() => {
-    if (!product) return;
-    if (isInCart) {
-      removeItem(product.id);
-      return;
-    }
-    addItem(product, qty);
-  }, [product, isInCart, qty, addItem, removeItem]);
 
   const handleBuyNow = useCallback(() => {
     if (!product) return;
@@ -220,11 +226,12 @@ export default function ProductDetailsPage() {
     // Parse specifications JSON (array or key-value object)
     if (extras.specifications) {
       if (Array.isArray(extras.specifications)) {
-        extras.specifications.forEach((item: any) => {
-          if (typeof item === "object" && item?.key && item?.value) {
+        extras.specifications.forEach((item: unknown) => {
+          if (typeof item === "object" && item !== null && "key" in item && "value" in item) {
+            const specObj = item as { key?: unknown; value?: unknown };
             list.push({
-              key: String(item.key).trim(),
-              value: String(item.value).trim(),
+              key: String(specObj.key || "").trim(),
+              value: String(specObj.value || "").trim(),
             });
           } else if (typeof item === "string") {
             const parts = item.split(":");
@@ -252,7 +259,12 @@ export default function ProductDetailsPage() {
 
   // Construct Packaging & Delivery Data
   const packagingInfo = useMemo(() => {
-    const pkg = extras.packagingDelivery || {};
+    const pkg = (extras.packagingDelivery || {}) as {
+      packaging?: string;
+      dimensions?: string;
+      weight?: string;
+      couriers?: string;
+    };
     return {
       packaging: pkg.packaging || t("defaultPackaging"),
       boxDimensions: pkg.dimensions || "21.5 x 15.0 x 6.2 cm",
@@ -263,10 +275,7 @@ export default function ProductDetailsPage() {
 
   const whatsappLink = useMemo(() => {
     if (!product) return "#";
-    const msg = encodeURIComponent(
-      t("whatsappMessage", { title: product.title }),
-    );
-    return `https://wa.me/8801739859756?text=${msg}`;
+    return getWhatsAppUrl(t("whatsappMessage", { title: product.title }));
   }, [product, t]);
 
   if (isLoading) return <ProductDetailsSkeleton />;
@@ -345,7 +354,7 @@ export default function ProductDetailsPage() {
           }}
         >
           <Link
-            href="/"
+            href='/'
             style={{
               textDecoration: "none",
               color: tokens.textSecondary,
@@ -354,7 +363,7 @@ export default function ProductDetailsPage() {
           >
             {t("home")}
           </Link>
-          <Box component="span">/</Box>
+          <Box component='span'>/</Box>
           {product.category?.name && (
             <>
               <Link
@@ -367,11 +376,11 @@ export default function ProductDetailsPage() {
               >
                 {product.category.name}
               </Link>
-              <Box component="span">/</Box>
+              <Box component='span'>/</Box>
             </>
           )}
           <Typography
-            component="span"
+            component='span'
             noWrap
             sx={{
               fontSize: 13,
@@ -390,7 +399,8 @@ export default function ProductDetailsPage() {
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: { xs: "1fr", lg: "1.15fr 1fr" },
+            // gridTemplateColumns: { xs: "1fr", lg: "1.15fr 1fr" },
+            gridTemplateColumns: { xs: "1fr", lg: "1.45fr 1fr" },
             gap: { xs: 3, lg: 3.5 },
             alignItems: "start",
             mb: 4,
@@ -425,7 +435,8 @@ export default function ProductDetailsPage() {
                       overflowY: { sm: "auto" },
                       overflowX: { xs: "auto", sm: "hidden" },
                       maxHeight: { sm: 400 },
-                      pb: { xs: 1, sm: 0 },
+                      p: "4px",
+                      pb: { xs: 1.25, sm: "4px" },
                       "&::-webkit-scrollbar": { width: 4, height: 4 },
                       "&::-webkit-scrollbar-thumb": {
                         bgcolor: tokens.borderDefault,
@@ -433,41 +444,43 @@ export default function ProductDetailsPage() {
                       },
                     }}
                   >
-                    {images.map((img, idx) => (
-                      <Box
-                        key={idx}
-                        component="button"
-                        type="button"
-                        onClick={() => handleSelectImage(idx)}
-                        onMouseEnter={() => handleSelectImage(idx)}
-                        sx={{
-                          position: "relative",
-                          width: { xs: 60, sm: 64 },
-                          height: { xs: 60, sm: 64 },
-                          flexShrink: 0,
-                          borderRadius: "10px",
-                          overflow: "hidden",
-                          border: "2px solid",
-                          borderColor:
-                            activeImg === idx
-                              ? tokens.primary
-                              : tokens.borderDefault,
-                          bgcolor: tokens.bgCanvas,
-                          p: 0,
-                          cursor: "pointer",
-                          transition: "border-color 150ms",
-                          "&:hover": { borderColor: tokens.primaryHover },
-                        }}
-                      >
-                        <NextImage
-                          src={img}
-                          alt=""
-                          fill
-                          sizes="64px"
-                          style={{ objectFit: "cover" }}
-                        />
-                      </Box>
-                    ))}
+                    {images.map((img, idx) => {
+                      const isActive = activeImg === idx;
+                      return (
+                        <Box
+                          key={idx}
+                          component='button'
+                          type='button'
+                          aria-pressed={isActive}
+                          onClick={() => handleSelectImage(idx)}
+                          onMouseEnter={() => handleSelectImage(idx)}
+                          sx={{
+                            position: "relative",
+                            width: { xs: 60, sm: 64 },
+                            height: { xs: 60, sm: 64 },
+                            flexShrink: 0,
+                            borderRadius: "10px",
+                            overflow: "hidden",
+                            border: "2px solid",
+                            borderColor: isActive ? tokens.primary : tokens.borderDefault,
+                            boxShadow: isActive
+                              ? `0 0 0 2px ${tokens.bgPanel}, 0 0 0 4px ${tokens.primary}, 0 4px 10px rgba(0, 191, 166, 0.25)`
+                              : "none",
+                            opacity: isActive ? 1 : 0.75,
+                            bgcolor: tokens.bgCanvas,
+                            p: 0,
+                            cursor: "pointer",
+                            transition: "border-color 150ms, box-shadow 150ms, opacity 150ms",
+                            "&:hover": {
+                              opacity: 1,
+                              borderColor: isActive ? tokens.primary : tokens.primaryHover,
+                            },
+                          }}
+                        >
+                          <NextImage src={img} alt='' fill sizes='64px' style={{ objectFit: "cover" }} />
+                        </Box>
+                      );
+                    })}
                   </Box>
                 )}
 
@@ -491,9 +504,9 @@ export default function ProductDetailsPage() {
                 >
                   {mediaMode === "video" && videoLinks.length > 0 ? (
                     <Box
-                      component="iframe"
+                      component='iframe'
                       src={toVideoEmbedUrl(videoLinks[0])}
-                      title="Product Video"
+                      title='Product Video'
                       allowFullScreen
                       sx={{ width: "100%", height: "100%", border: 0 }}
                     />
@@ -516,7 +529,7 @@ export default function ProductDetailsPage() {
                           src={images[activeImg]}
                           alt={product.title}
                           fill
-                          sizes="(max-width: 768px) 100vw, 560px"
+                          sizes='(max-width: 768px) 100vw, 560px'
                           style={{
                             objectFit: "cover",
                             pointerEvents: "none",
@@ -548,17 +561,11 @@ export default function ProductDetailsPage() {
                         }}
                       >
                         <ZoomInIcon sx={{ fontSize: 14 }} />
-                        <span>
-                          {locale === "bn"
-                            ? "জুম করতে হোভার করুন"
-                            : "Hover to zoom"}
-                        </span>
+                        <span>{locale === "bn" ? "জুম করতে হোভার করুন" : "Hover to zoom"}</span>
                       </Box>
                     </>
                   ) : (
-                    <Inventory2OutlinedIcon
-                      sx={{ fontSize: 72, color: tokens.borderDefault }}
-                    />
+                    <Inventory2OutlinedIcon sx={{ fontSize: 72, color: tokens.borderDefault }} />
                   )}
 
                   {/* Sale Discount Badge */}
@@ -572,10 +579,17 @@ export default function ProductDetailsPage() {
                       }}
                     >
                       <Badge
-                        variant="sale"
+                        variant='sale'
                         label={t("offPercent", {
                           percent: formatNumber(pricing.percent),
                         })}
+                        sx={{
+                          bgcolor: "#F59E0B",
+                          color: "#FFFFFF",
+                          border: "none",
+                          fontWeight: 800,
+                          boxShadow: "0 2px 8px rgba(15, 23, 42, 0.22)",
+                        }}
                       />
                     </Box>
                   )}
@@ -586,7 +600,7 @@ export default function ProductDetailsPage() {
               {videoLinks.length > 0 && (
                 <Box sx={{ display: "flex", justifyContent: "center", gap: 1.5 }}>
                   <Button
-                    size="small"
+                    size='small'
                     variant={mediaMode === "photos" ? "primary" : "outline"}
                     onClick={() => setMediaMode("photos")}
                     startIcon={<PhotoLibraryOutlinedIcon sx={{ fontSize: 16 }} />}
@@ -595,7 +609,7 @@ export default function ProductDetailsPage() {
                     {t("photos")}
                   </Button>
                   <Button
-                    size="small"
+                    size='small'
                     variant={mediaMode === "video" ? "primary" : "outline"}
                     onClick={() => setMediaMode("video")}
                     startIcon={<PlayArrowIcon sx={{ fontSize: 16 }} />}
@@ -654,15 +668,13 @@ export default function ProductDetailsPage() {
               )}
               <Badge
                 variant={product.inStock ? "success" : "destructive"}
-                label={
-                  product.inStock ? tCommon("inStock") : tCommon("outOfStock")
-                }
+                label={product.inStock ? tCommon("inStock") : tCommon("outOfStock")}
               />
             </Box>
 
             {/* Product Title */}
             <Typography
-              component="h1"
+              component='h1'
               sx={{
                 fontSize: { xs: "1.45rem", sm: "1.75rem" },
                 fontWeight: 800,
@@ -696,8 +708,7 @@ export default function ProductDetailsPage() {
                 <StarIcon
                   sx={{
                     fontSize: 18,
-                    color:
-                      reviewsCount > 0 ? tokens.warning : tokens.borderDefault,
+                    color: reviewsCount > 0 ? tokens.warning : tokens.borderDefault,
                   }}
                 />
                 <Typography
@@ -707,11 +718,7 @@ export default function ProductDetailsPage() {
                     color: tokens.textPrimary,
                   }}
                 >
-                  {formatNumber(
-                    reviewsCount > 0
-                      ? Number(product.rating || 0).toFixed(1)
-                      : "0.0",
-                  )}
+                  {formatNumber(reviewsCount > 0 ? Number(product.rating || 0).toFixed(1) : "0.0")}
                 </Typography>
                 <Typography
                   sx={{
@@ -731,7 +738,7 @@ export default function ProductDetailsPage() {
 
               {soldCount ? (
                 <>
-                  <Box component="span" sx={{ color: tokens.borderDefault }}>
+                  <Box component='span' sx={{ color: tokens.borderDefault }}>
                     •
                   </Box>
                   <Typography
@@ -786,7 +793,7 @@ export default function ProductDetailsPage() {
                       {formatPrice(pricing.base, locale)}
                     </Typography>
                     <Badge
-                      variant="default"
+                      variant='default'
                       label={t("saveAmount", {
                         amount: formatNumber(pricing.discount.toLocaleString()),
                       })}
@@ -833,8 +840,8 @@ export default function ProductDetailsPage() {
                   </Typography>
                   {keyAttributes.length > 6 && (
                     <Box
-                      component="button"
-                      type="button"
+                      component='button'
+                      type='button'
                       onClick={() => {
                         setActiveTab("specs");
                         tabsSectionRef.current?.scrollIntoView({
@@ -919,107 +926,112 @@ export default function ProductDetailsPage() {
               </Box>
             ) : null}
 
-            {/* Quantity Stepper + Add to Cart Row */}
-            <Box
-              sx={{ display: "flex", alignItems: "center", gap: 1.5, pt: 0.5 }}
-            >
-              <Box
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  borderRadius: `${tokens.radiusPill}px`,
-                  bgcolor: tokens.bgCanvas,
-                  overflow: "hidden",
-                  flexShrink: 0,
-                  height: 46,
-                }}
-              >
-                <Box
-                  component="button"
-                  type="button"
-                  onClick={() => setQty((q) => Math.max(1, q - 1))}
-                  sx={{ ...stepperBtnSx, height: 46, width: 40 }}
-                >
-                  −
-                </Box>
+            {/* Quantity Stepper + Direct Order Now Row */}
+            <Box ref={buyBoxCtaRef} sx={{ display: "flex", flexDirection: "column", gap: 1, pt: 0.5 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
                 <Box
                   sx={{
-                    minWidth: 40,
-                    height: 46,
-                    display: "flex",
+                    display: "inline-flex",
                     alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 15,
-                    fontWeight: 700,
-                    color: tokens.textPrimary,
+                    borderRadius: `${tokens.radiusPill}px`,
+                    bgcolor: tokens.bgCanvas,
+                    overflow: "hidden",
+                    flexShrink: 0,
+                    height: 40,
                   }}
                 >
-                  {formatNumber(qty)}
+                  <Box
+                    component='button'
+                    type='button'
+                    onClick={() => setQty((q) => Math.max(1, q - 1))}
+                    sx={{ ...stepperBtnSx, height: 40, width: 34 }}
+                  >
+                    −
+                  </Box>
+                  <Box
+                    sx={{
+                      minWidth: 32,
+                      height: 40,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: tokens.textPrimary,
+                    }}
+                  >
+                    {formatNumber(qty)}
+                  </Box>
+                  <Box
+                    component='button'
+                    type='button'
+                    onClick={() => setQty((q) => q + 1)}
+                    sx={{ ...stepperBtnSx, height: 40, width: 34 }}
+                  >
+                    +
+                  </Box>
                 </Box>
-                <Box
-                  component="button"
-                  type="button"
-                  onClick={() => setQty((q) => q + 1)}
-                  sx={{ ...stepperBtnSx, height: 46, width: 40 }}
+
+                <Button
+                  fullWidth
+                  size='medium'
+                  variant='primary'
+                  onClick={handleBuyNow}
+                  disabled={!product.inStock}
+                  startIcon={<ShoppingBagOutlinedIcon sx={{ fontSize: 18 }} />}
+                  sx={{
+                    height: 40,
+                    py: 0,
+                    fontSize: 14,
+                    fontWeight: 700,
+                    boxShadow: "none",
+                  }}
                 >
-                  +
-                </Box>
+                  {t("orderNow")}
+                </Button>
               </Box>
 
               <Button
                 fullWidth
-                size="large"
-                variant="outline"
-                onClick={handleAddToCart}
-                disabled={!product.inStock}
-                startIcon={<ShoppingCartIcon sx={{ fontSize: 18 }} />}
-                sx={{ height: 46, fontSize: 14, fontWeight: 700 }}
-              >
-                {isInCart ? t("inCartAlready") : t("addToCart")}
-              </Button>
-            </Box>
-
-            {/* Primary Order Now + WhatsApp */}
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.25 }}>
-              <Button
-                fullWidth
-                size="large"
-                variant="primary"
-                onClick={handleBuyNow}
-                disabled={!product.inStock}
-                startIcon={<ShoppingBagOutlinedIcon sx={{ fontSize: 20 }} />}
-                sx={{
-                  py: 1.5,
-                  fontSize: 15,
-                  fontWeight: 800,
-                  boxShadow: "none",
-                }}
-              >
-                {t("orderNow")}
-              </Button>
-
-              <Button
-                fullWidth
-                size="large"
-                component="a"
+                size='medium'
+                variant='outline'
+                component='a'
                 href={whatsappLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                startIcon={
-                  <WhatsAppIcon sx={{ fontSize: 20, color: "#fff" }} />
-                }
+                target='_blank'
+                rel='noopener noreferrer'
+                startIcon={<WhatsAppIcon sx={{ fontSize: 18, color: "#16A34A" }} />}
                 sx={{
-                  py: 1.25,
-                  fontSize: 14,
+                  height: 38,
+                  py: 0,
+                  fontSize: 13.5,
                   fontWeight: 700,
-                  bgcolor: "#25D366",
-                  color: "#fff",
-                  "&:hover": { bgcolor: "#20BA5A" },
+                  bgcolor: "rgba(37, 211, 102, 0.08)",
+                  border: "1.5px solid rgba(37, 211, 102, 0.45)",
+                  color: "#15803D",
+                  "&:hover": {
+                    bgcolor: "rgba(37, 211, 102, 0.14)",
+                    borderColor: "#25D366",
+                  },
                 }}
               >
                 {t("chatNow")}
               </Button>
             </Box>
+
+            <ProductAskAiBox
+              productContext={{
+                id: product.id,
+                title: product.title,
+                slug: product.slug,
+                price: pricing.base,
+                discountPrice: pricing.discount > 0 ? pricing.discounted : null,
+                inStock: Boolean(product.inStock),
+                categoryName: product.category?.name,
+                specifications: extras.specifications,
+                packagingDelivery: extras.packagingDelivery,
+                description: product.description || "",
+              }}
+            />
           </Box>
         </Box>
 
@@ -1052,8 +1064,8 @@ export default function ProductDetailsPage() {
             {tabs.map((tab) => (
               <Box
                 key={tab.key}
-                component="button"
-                type="button"
+                component='button'
+                type='button'
                 onClick={() => setActiveTab(tab.key)}
                 sx={getTabSx(activeTab === tab.key)}
               >
@@ -1068,7 +1080,7 @@ export default function ProductDetailsPage() {
             {activeTab === "specs" && (
               <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                 <Typography
-                  variant="h6"
+                  variant='h6'
                   sx={{
                     fontSize: 18,
                     fontWeight: 800,
@@ -1101,9 +1113,7 @@ export default function ProductDetailsPage() {
                             <TableRow
                               key={rowIndex}
                               sx={{
-                                bgcolor: isEvenRow
-                                  ? tokens.bgCanvas
-                                  : tokens.bgPanel,
+                                bgcolor: isEvenRow ? tokens.bgCanvas : tokens.bgPanel,
                                 "&:last-child td": { borderBottom: 0 },
                               }}
                             >
@@ -1116,9 +1126,7 @@ export default function ProductDetailsPage() {
                                   fontSize: 13,
                                   fontWeight: 600,
                                   color: tokens.textSecondary,
-                                  bgcolor: isEvenRow
-                                    ? "action.hover"
-                                    : tokens.bgCanvas,
+                                  bgcolor: isEvenRow ? "action.hover" : tokens.bgCanvas,
                                   borderRight: "1px solid",
                                   borderColor: tokens.borderSubtle,
                                   textTransform: "capitalize",
@@ -1154,9 +1162,7 @@ export default function ProductDetailsPage() {
                                       fontSize: 13,
                                       fontWeight: 600,
                                       color: tokens.textSecondary,
-                                      bgcolor: isEvenRow
-                                        ? "action.hover"
-                                        : tokens.bgCanvas,
+                                      bgcolor: isEvenRow ? "action.hover" : tokens.bgCanvas,
                                       borderRight: "1px solid",
                                       borderColor: tokens.borderSubtle,
                                       textTransform: "capitalize",
@@ -1211,9 +1217,7 @@ export default function ProductDetailsPage() {
                       borderColor: tokens.borderDefault,
                     }}
                   >
-                    <Typography
-                      sx={{ color: tokens.textSecondary, fontSize: 14 }}
-                    >
+                    <Typography sx={{ color: tokens.textSecondary, fontSize: 14 }}>
                       {locale === "bn"
                         ? "এই পণ্যের নির্দিষ্ট টেকনিক্যাল স্পেসিফিকেশন শীঘ্রই যুক্ত করা হবে।"
                         : "Specific technical attributes for this gadget will be added soon."}
@@ -1233,16 +1237,11 @@ export default function ProductDetailsPage() {
                 }}
               >
                 {product.markdown_description ? (
-                  <Markdown
-                    remarkPlugins={[remarkGfm]}
-                    components={markdownComponents}
-                  >
+                  <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                     {product.markdown_description}
                   </Markdown>
                 ) : (
-                  <Typography sx={{ color: tokens.textMuted, fontSize: 14 }}>
-                    {t("noDescAvailable")}
-                  </Typography>
+                  <Typography sx={{ color: tokens.textMuted, fontSize: 14 }}>{t("noDescAvailable")}</Typography>
                 )}
               </Box>
             )}
@@ -1251,7 +1250,7 @@ export default function ProductDetailsPage() {
             {activeTab === "packaging" && (
               <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                 <Typography
-                  variant="h6"
+                  variant='h6'
                   sx={{
                     fontSize: 18,
                     fontWeight: 800,
@@ -1302,17 +1301,11 @@ export default function ProductDetailsPage() {
                         gap: 0.5,
                       }}
                     >
-                      <Typography
-                        sx={{ fontSize: 12.5, color: tokens.textMuted }}
-                      >
-                        <strong>Dimensions:</strong>{" "}
-                        {packagingInfo.boxDimensions}
+                      <Typography sx={{ fontSize: 12.5, color: tokens.textMuted }}>
+                        <strong>Dimensions:</strong> {packagingInfo.boxDimensions}
                       </Typography>
-                      <Typography
-                        sx={{ fontSize: 12.5, color: tokens.textMuted }}
-                      >
-                        <strong>Gross Weight:</strong>{" "}
-                        {packagingInfo.grossWeight}
+                      <Typography sx={{ fontSize: 12.5, color: tokens.textMuted }}>
+                        <strong>Gross Weight:</strong> {packagingInfo.grossWeight}
                       </Typography>
                     </Box>
                   </Box>
@@ -1397,7 +1390,7 @@ export default function ProductDetailsPage() {
                     }}
                   >
                     <Box
-                      component="iframe"
+                      component='iframe'
                       src={toVideoEmbedUrl(link)}
                       title={`Product Video ${idx + 1}`}
                       allowFullScreen
@@ -1409,13 +1402,7 @@ export default function ProductDetailsPage() {
             )}
 
             {/* 5. Interactive Reviews & Threaded Replies (Alibaba Style) */}
-            {activeTab === "reviews" && (
-              <ProductReviews
-                productId={product.id}
-                rating={product.rating}
-                reviewsCount={reviewsCount}
-              />
-            )}
+            {activeTab === "reviews" && <ProductReviews productId={product.id} rating={product.rating} reviewsCount={reviewsCount} />}
           </Box>
         </Box>
 
@@ -1462,13 +1449,114 @@ export default function ProductDetailsPage() {
                 gap: { xs: 2, sm: 2.5 },
               }}
             >
-              {relatedProducts.map((p: any) => (
+              {relatedProducts.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
             </Box>
           </Box>
         )}
       </SectionContainer>
+
+      {/* Compact Sticky Bottom Action Bar when scrolled past Buy Box */}
+      <Box
+        sx={{
+          position: "fixed",
+          left: 0,
+          right: 0,
+          bottom: { xs: "calc(62px + env(safe-area-inset-bottom))", md: 0 },
+          zIndex: 1050,
+          bgcolor: "rgba(255, 255, 255, 0.94)",
+          backdropFilter: "blur(14px)",
+          WebkitBackdropFilter: "blur(14px)",
+          borderTop: `1px solid ${tokens.borderDefault}`,
+          boxShadow: "0 -6px 24px rgba(15, 23, 42, 0.08)",
+          transform: showStickyBar ? "translateY(0)" : "translateY(115%)",
+          opacity: showStickyBar ? 1 : 0,
+          pointerEvents: showStickyBar ? "auto" : "none",
+          transition: "transform 220ms cubic-bezier(0.22, 1, 0.36, 1), opacity 180ms ease",
+        }}
+      >
+        <Box
+          sx={{
+            maxWidth: 1200,
+            mx: "auto",
+            px: { xs: 2, sm: 3 },
+            py: { xs: 1, sm: 1.25 },
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: { xs: 1.5, sm: 2.5 },
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, minWidth: 0, flex: 1 }}>
+            {images[0] && (
+              <Box
+                sx={{
+                  position: "relative",
+                  width: { xs: 36, sm: 42 },
+                  height: { xs: 36, sm: 42 },
+                  borderRadius: "8px",
+                  overflow: "hidden",
+                  bgcolor: tokens.bgCanvas,
+                  border: `1px solid ${tokens.borderSubtle}`,
+                  flexShrink: 0,
+                }}
+              >
+                <NextImage src={images[0]} alt={product.title} fill sizes='42px' style={{ objectFit: "cover" }} />
+              </Box>
+            )}
+            <Box sx={{ minWidth: 0 }}>
+              <Typography
+                sx={{
+                  fontSize: { xs: 13, sm: 14 },
+                  fontWeight: 700,
+                  color: tokens.textPrimary,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {product.title}
+              </Typography>
+              <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.75 }}>
+                <Typography sx={{ fontSize: { xs: 14, sm: 15 }, fontWeight: 800, color: tokens.primary }}>
+                  {formatPrice(pricing.discounted, locale)}
+                </Typography>
+                {pricing.discount > 0 && (
+                  <Typography
+                    sx={{
+                      fontSize: 11.5,
+                      color: tokens.textDisabled,
+                      textDecoration: "line-through",
+                    }}
+                  >
+                    {formatPrice(pricing.base, locale)}
+                  </Typography>
+                )}
+              </Box>
+            </Box>
+          </Box>
+
+          <Button
+            variant='primary'
+            size='medium'
+            onClick={handleBuyNow}
+            disabled={!product.inStock}
+            startIcon={<ShoppingBagOutlinedIcon sx={{ fontSize: 17 }} />}
+            sx={{
+              flexShrink: 0,
+              px: { xs: 2, sm: 3 },
+              py: 1,
+              fontSize: { xs: 13, sm: 14 },
+              fontWeight: 800,
+              boxShadow: "none",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {t("orderNow")}
+          </Button>
+        </Box>
+      </Box>
     </Box>
   );
 }

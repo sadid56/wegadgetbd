@@ -6,6 +6,6 @@
  * - `./schema/orders`: order, orderStatusEnum
  * - `./schema/reviews`: customerReview, reviewStatusEnum
  * - `./schema/finance`: expense, payment, sale, paymentMethodEnum, paymentStatusEnum
- * - `./schema/system`: auditLog, siteSettings, homepageContent, auditActionEnum
+ * - `./schema/system`: siteSettings, homepageContent
  */
 export * from "./schema/index";

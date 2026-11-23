@@ -37,7 +37,7 @@ export function AlertDialog({
   children,
   ...props
 }: AlertDialogProps) {
-  const paperProps = (slotProps?.paper as Record<string, any>) ?? {};
+  const paperProps = (slotProps?.paper as Record<string, unknown>) ?? {};
 
   return (
     <Dialog

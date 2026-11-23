@@ -7,17 +7,17 @@ import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { CircularProgress } from "@/components/ui/spinner";
 import { tokens } from "@/theme/theme";
-import { formatPrice, toBengaliNumber } from "@/lib/i18n-utils";
+import { formatPrice } from "@/lib/i18n-utils";
+import type { CartItem } from "@/hooks/useCart";
 
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
-import { BN } from "./checkout-constants";
 import { getAssetUrl } from "@/lib/storage";
 
 interface OrderSummaryProps {
-  products: any[];
+  products: (CartItem | (Partial<CartItem> & { id: string; price?: number | string }))[];
   originalSubtotal: number;
   deliveryCharge: number;
   discountAmount: number;
@@ -103,7 +103,7 @@ export function OrderSummary({
           },
         }}
       >
-        {products.map((item: any) => {
+        {products.map((item) => {
           const qty = isBuyNow ? localQty : item.qty;
           const price = Number(item.price || 0);
           const salePrice = Number(item.discountPrice || item.price || 0);
@@ -174,7 +174,6 @@ export function OrderSummary({
               >
                 <Typography
                   sx={{
-                    ...BN,
                     fontSize: 13,
                     fontWeight: 600,
                     color: tokens.textPrimary,
@@ -200,11 +199,11 @@ export function OrderSummary({
                         textDecoration: "line-through",
                       }}
                     >
-                      ৳{price * qty}
+                      ৳{price * (qty ?? 1)}
                     </Typography>
                   )}
                   <Typography component='span' sx={{ fontWeight: 700, color: tokens.textPrimary, fontSize: 14 }}>
-                    ৳{salePrice * qty}
+                    ৳{salePrice * (qty ?? 1)}
                   </Typography>
                 </Box>
 

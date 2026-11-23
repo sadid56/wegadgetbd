@@ -11,11 +11,15 @@ export interface SalesFilterParams {
   sellerName?: string;
 }
 
+type CreateSalePayload = Parameters<typeof orpcClient.sales.create>[0];
+type UpdateSalePayload = Parameters<typeof orpcClient.sales.update>[0];
+
 export const SaleEndpoints = {
   getSales: (params: SalesFilterParams = {}) => orpcClient.sales.list(params),
   getSale: (id: string) => orpcClient.sales.get({ id }),
-  createSale: (data: any) => orpcClient.sales.create(data),
-  updateSale: ({ id, data }: { id: string; data: any }) => orpcClient.sales.update({ id, data }),
+  createSale: (data: CreateSalePayload) => orpcClient.sales.create(data),
+  updateSale: ({ id, data }: { id: string; data: UpdateSalePayload["data"] }) =>
+    orpcClient.sales.update({ id, data }),
   deleteSale: (id: string) => orpcClient.sales.delete({ id }),
 };
 

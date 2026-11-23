@@ -61,7 +61,7 @@ export const Button: React.FC<ButtonProps> = ({
   children,
   sx,
   size = "medium",
-  asChild,
+  asChild: _asChild,
   ...rest
 }) => {
   const isDisabled = disabled || loading;

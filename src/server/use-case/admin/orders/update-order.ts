@@ -2,12 +2,11 @@ import { db } from "@/db";
 import { order } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import type { Context } from "@/server/context";
-import { writeAudit } from "@/server/lib/orm";
 
 export class UpdateOrderUseCase {
   constructor(
     private readonly dbInstance: Context["db"] = db,
-    private readonly actorId: string = "admin"
+    private readonly _actorId: string = "admin"
   ) {}
 
   async execute(id: string, data: Record<string, unknown>) {
@@ -27,17 +26,6 @@ export class UpdateOrderUseCase {
     if (!updated) {
       return { success: false as const, error: "Order not found", message: "Order not found" };
     }
-
-    await writeAudit(this.dbInstance, {
-      actorId: this.actorId,
-      action: "STATUS_CHANGE",
-      metadata: {
-        orderId: id,
-        customerName: updated.customerName,
-        changes: Object.keys(payload),
-        ...payload,
-      },
-    });
 
     return { success: true as const, data: updated };
   }

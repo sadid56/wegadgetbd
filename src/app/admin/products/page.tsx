@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import NextLink from "next/link";
-import { useQueryState, parseAsInteger } from "nuqs";
+import { useListQuery } from "@/hooks/use-list-query";
 import Box from "@mui/material/Box";
 
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ import StarIcon from "@mui/icons-material/Star";
 import { useAdminProducts, useDeleteProduct, useUpdateProduct, type AdminProduct as Product } from "@/query-client/products";
 import { getAssetUrl } from "@/lib/storage";
 import { tokens } from "@/theme/theme";
+import { format } from "date-fns";
 
 function StatusChip({ status }: { status: string }) {
   if (status === "ACTIVE") {
@@ -37,9 +38,7 @@ function StatusChip({ status }: { status: string }) {
 }
 
 export default function AdminProductsPage() {
-  const [search, setSearch] = useQueryState("search", { defaultValue: "", shallow: false });
-  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [rowsPerPage, setRowsPerPage] = useQueryState("limit", parseAsInteger.withDefault(10));
+  const { search, page, rowsPerPage, setSearch, setPage, setRowsPerPage } = useListQuery();
 
   const { data, isLoading } = useAdminProducts({
     search: search.trim() || undefined,
@@ -51,10 +50,6 @@ export default function AdminProductsPage() {
   const { mutate: updateProduct } = useUpdateProduct();
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
 
-  const dateTimeFormatter = new Intl.DateTimeFormat("en-BD", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
 
   const confirmDelete = () => {
     if (productToDelete) {
@@ -74,14 +69,11 @@ export default function AdminProductsPage() {
             <Avatar
               src={getAssetUrl(product.images[0])}
               alt={product.title}
-              variant="rounded"
+              variant='rounded'
               sx={{ width: 40, height: 40, borderRadius: "6px" }}
             />
           ) : (
-            <Avatar
-              variant="rounded"
-              sx={{ width: 40, height: 40, borderRadius: "6px", bgcolor: "action.hover" }}
-            >
+            <Avatar variant='rounded' sx={{ width: 40, height: 40, borderRadius: "6px", bgcolor: "action.hover" }}>
               {" "}
             </Avatar>
           ),
@@ -90,8 +82,19 @@ export default function AdminProductsPage() {
         id: "name",
         header: "Name",
         cell: (product) => (
-          <Box>
-            <Box component='span' sx={{ fontWeight: 500, color: "text.primary" }}>
+          <Box sx={{ maxWidth: { xs: 170, sm: 230, md: 280 } }}>
+            <Box
+              component='span'
+              title={product.title}
+              sx={{
+                display: "block",
+                fontWeight: 500,
+                color: "text.primary",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
               {product.title}
             </Box>
             <Box
@@ -100,6 +103,9 @@ export default function AdminProductsPage() {
                 fontSize: 12,
                 color: "text.secondary",
                 mt: 0.25,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
               }}
             >
               {product.slug}
@@ -123,7 +129,19 @@ export default function AdminProductsPage() {
         id: "category",
         header: "Category",
         cell: (product) => (
-          <Box component='span' sx={{ fontSize: 14, color: "text.primary" }}>
+          <Box
+            component='span'
+            title={product.category?.name ?? undefined}
+            sx={{
+              display: "block",
+              maxWidth: { xs: 140, sm: 180 },
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              fontSize: { xs: 13, sm: 14 },
+              color: "text.primary",
+            }}
+          >
             {product.category?.name ?? "—"}
           </Box>
         ),
@@ -198,7 +216,7 @@ export default function AdminProductsPage() {
         header: "Updated",
         cell: (product) => (
           <Box component='span' sx={{ fontSize: 12, color: "text.secondary" }}>
-            {dateTimeFormatter.format(new Date(product.updatedAt))}
+            {format(new Date(product.updatedAt), "dd MMM, yyyy - hh:mm a")}
           </Box>
         ),
       },
@@ -233,8 +251,7 @@ export default function AdminProductsPage() {
         ),
       },
     ],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [dateTimeFormatter],
+    [updateProduct],
   );
 
   return (

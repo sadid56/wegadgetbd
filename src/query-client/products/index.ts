@@ -49,7 +49,7 @@ export const useProducts = (params?: ListParams, options?: { enabled?: boolean }
     enabled: options?.enabled ?? true,
   });
 
-export const useBrands = () => useQuery(orpc.products.brands.queryOptions({ input: {} as any }));
+export const useBrands = () => useQuery(orpc.products.brands.queryOptions({ input: undefined }));
 
 export const useProduct = (slug: string) =>
   useQuery({

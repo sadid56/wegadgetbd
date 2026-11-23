@@ -174,7 +174,7 @@ export interface InputProps extends Omit<MuiTextFieldProps, "variant"> {
   containerSx?: SxProps<Theme>;
 }
 
-export const Input = React.forwardRef<any, InputProps>(function Input(
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(function Input(
   {
     label,
     labelIcon,

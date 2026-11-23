@@ -3,13 +3,12 @@ import { ORPCError } from "@orpc/server";
 import { promoCode } from "@/db/schema";
 import type { Context } from "@/server/context";
 import type { UpdatePromoCodeInput } from "@/server/schemas/promo-codes.schema";
-import { writeAudit } from "@/server/lib/orm";
 import { formatPromoCode } from "./_shared";
 
 export class UpdatePromoCodeUseCase {
   constructor(private readonly db: Context["db"]) {}
 
-  async execute(input: UpdatePromoCodeInput, userId?: string) {
+  async execute(input: UpdatePromoCodeInput, _userId?: string) {
     const existing = await this.db.query.promoCode.findFirst({
       where: eq(promoCode.id, input.id),
     });
@@ -67,13 +66,6 @@ export class UpdatePromoCodeUseCase {
       })
       .where(eq(promoCode.id, input.id))
       .returning();
-
-    await writeAudit(this.db, {
-      actorId: userId,
-      actorType: "ADMIN",
-      action: "UPDATE",
-      metadata: { entity: "PROMO_CODE", id: updated.id, code: updated.code },
-    });
 
     return formatPromoCode(updated);
   }

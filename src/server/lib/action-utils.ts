@@ -1,4 +1,4 @@
-export type ActionSuccess<T = any> = {
+export type ActionSuccess<T = unknown> = {
   success: true;
   data: T;
 };
@@ -9,7 +9,7 @@ export type ActionFailure = {
   message: string;
 };
 
-export type ActionResult<T = any> = ActionSuccess<T> | ActionFailure;
+export type ActionResult<T = unknown> = ActionSuccess<T> | ActionFailure;
 
 export function ok<T = void>(data?: T): ActionSuccess<T> {
   return { success: true, data: data as T };

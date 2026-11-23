@@ -47,7 +47,7 @@ export class GetExpenseSummaryUseCase {
           amount: Number(item.amount),
         })),
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("GetExpenseSummaryUseCase failed:", err);
       return {
         success: false as const,

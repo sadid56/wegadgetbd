@@ -15,7 +15,7 @@ interface Product {
   brand?: string | null;
   createdAt: string | Date;
   images?: string[];
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface NewArrivalsSectionProps {

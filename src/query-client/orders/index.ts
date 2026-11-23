@@ -1,4 +1,4 @@
-import { orpcClient, orpc } from "@/lib/orpc/client";
+import { orpcClient } from "@/lib/orpc/client";
 import { useQuery } from "@tanstack/react-query";
 import { useAppMutation } from "@/hooks/useAppMutation";
 
@@ -11,13 +11,29 @@ export interface OrdersFilterParams {
   endDate?: string;
 }
 
+export interface CreateOrderPayload {
+  customerName: string;
+  phoneNumber: string;
+  address: string;
+  city?: string;
+  area?: string;
+  items: Array<{ id: string; qty: number; [key: string]: unknown }>;
+  totalAmount?: number;
+  shippingCost?: number;
+  discountAmount?: number;
+  paymentMethod?: string;
+  notes?: string;
+  whatsappMessage?: string;
+  userId?: string;
+}
+
 export const OrderEndpoints = {
   getOrders: (params: OrdersFilterParams = {}) => orpcClient.orders.list(params),
   getOrder: (id: string) => orpcClient.orders.get({ id }),
-  createOrder: (data: any) => orpcClient.orders.create(data),
-  updateOrderStatus: ({ id, status }: { id: string; status: any }) =>
+  createOrder: (data: CreateOrderPayload) => orpcClient.orders.create(data),
+  updateOrderStatus: ({ id, status }: { id: string; status: string }) =>
     orpcClient.orders.updateStatus({ id, status }),
-  updateOrder: ({ id, data }: { id: string; data: any }) =>
+  updateOrder: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
     orpcClient.orders.update({ id, data }),
   deleteOrder: (id: string) => orpcClient.orders.delete({ id }),
 };

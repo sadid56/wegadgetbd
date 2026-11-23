@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 
@@ -16,8 +16,10 @@ import {
   TextField,
   CircularProgress,
   DataTable,
+  DatePicker,
   type DataTableColumn,
 } from "@/components/ui";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { DashboardHeader } from "@/components/admin/dashboard-header";
 import { useExpenseSummary, useCreateExpense } from "@/query-client/expenses";
 import { createExpenseInputSchema, type CreateExpenseInput } from "@/server/schemas";
@@ -27,7 +29,7 @@ export default function ExpenseSummaryPage() {
   const { mutateAsync: createExpense, isPending: saving } = useCreateExpense();
 
   const form = useForm<CreateExpenseInput>({
-    resolver: zodResolver(createExpenseInputSchema) as any,
+    resolver: zodResolver(createExpenseInputSchema) as Resolver<CreateExpenseInput>,
     defaultValues: {
       category: "General",
       amount: undefined,
@@ -51,7 +53,8 @@ export default function ExpenseSummaryPage() {
     });
   };
 
-  const columns: DataTableColumn<any>[] = useMemo(
+  type ExpenseRow = Extract<NonNullable<typeof summary>, { success: true }>["recent"][number];
+  const columns: DataTableColumn<ExpenseRow>[] = useMemo(
     () => [
       {
         id: "date",
@@ -96,33 +99,40 @@ export default function ExpenseSummaryPage() {
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: "repeat(3, minmax(0, 1fr))" },
-          gap: 2,
+          gridTemplateColumns: { xs: "repeat(2, minmax(0, 1fr))", md: "repeat(3, minmax(0, 1fr))" },
+          gap: { xs: 1.25, sm: 2 },
         }}
       >
         {[
           { label: "Last 7 Days Expense", value: summary?.last7DaysExpense || 0 },
           { label: "Last 30 Days Expense", value: summary?.last30DaysExpense || 0 },
           { label: "Last 1 Year Expense", value: summary?.lastYearExpense || 0 },
-        ].map((card) => (
-          <Card key={card.label}>
+        ].map((card, idx) => (
+          <Card
+            key={card.label}
+            sx={{
+              p: { xs: 1.75, sm: 2.5 },
+              gridColumn: { xs: idx === 2 ? "1 / -1" : "auto", md: "auto" },
+            }}
+          >
             <Typography
               sx={{
-                fontSize: "0.75rem",
+                fontSize: { xs: "0.68rem", sm: "0.75rem" },
                 textTransform: "uppercase",
                 color: "text.secondary",
-                letterSpacing: "0.05em",
+                letterSpacing: "0.04em",
                 fontWeight: 600,
               }}
+              noWrap
             >
               {card.label}
             </Typography>
             <Typography
               sx={{
-                fontSize: "1.625rem",
+                fontSize: { xs: "1.25rem", sm: "1.625rem" },
                 fontWeight: 800,
                 color: "text.primary",
-                mt: 1,
+                mt: { xs: 0.5, sm: 1 },
                 lineHeight: 1.2,
               }}
             >
@@ -139,50 +149,85 @@ export default function ExpenseSummaryPage() {
           titleTypographyProps={{ sx: { fontSize: "0.95rem", fontWeight: 700 } }}
         />
         <CardContent sx={{ pt: 0 }}>
-          <Box
-            component="form"
-            onSubmit={form.handleSubmit(onSubmit)}
-            sx={{
-              display: "grid",
-              gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(4, minmax(0, 1fr))" },
-              gap: 1.5,
-              alignItems: "flex-start",
-            }}
-          >
-            <TextField
-              type="number"
-              placeholder="Amount *"
-              {...form.register("amount", { valueAsNumber: true })}
-              error={Boolean(form.formState.errors.amount)}
-              helperText={form.formState.errors.amount?.message}
-              slotProps={{ htmlInput: { min: 0, step: "0.01" } }}
-              fullWidth
-            />
-            <TextField
-              type="text"
-              placeholder="Note (optional)"
-              {...form.register("note")}
-              error={Boolean(form.formState.errors.note)}
-              helperText={form.formState.errors.note?.message}
-              fullWidth
-            />
-            <TextField
-              type="date"
-              {...form.register("date")}
-              error={Boolean(form.formState.errors.date)}
-              helperText={form.formState.errors.date?.message}
-              fullWidth
-            />
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={saving}
-              startIcon={saving ? <CircularProgress size={14} sx={{ color: "inherit" }} /> : undefined}
-              sx={{ height: 40 }}
+          <Form {...form}>
+            <Box
+              component='form'
+              onSubmit={form.handleSubmit(onSubmit)}
+              sx={{
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(4, minmax(0, 1fr))" },
+                gap: 1.5,
+                alignItems: "flex-start",
+              }}
             >
-              {saving ? "Saving..." : "Save Expense"}
-            </Button>
-          </Box>
+              <FormField
+                control={form.control}
+                name='amount'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <TextField
+                        size='small'
+                        type='number'
+                        placeholder='Amount *'
+                        slotProps={{ htmlInput: { min: 0, step: "0.01" } }}
+                        fullWidth
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => field.onChange(e.target.value === "" ? undefined : Number(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name='note'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <TextField
+                        size='small'
+                        type='text'
+                        placeholder='Note (optional)'
+                        fullWidth
+                        {...field}
+                        value={field.value ?? ""}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name='date'
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <DatePicker
+                        value={field.value}
+                        onChange={(d) => field.onChange(d ? format(d, "yyyy-MM-dd") : "")}
+                        maxDate={new Date()}
+                        placeholder='Select date'
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button
+                type='submit'
+                variant='primary'
+                disabled={saving}
+                startIcon={saving ? <CircularProgress size={14} sx={{ color: "inherit" }} /> : undefined}
+                sx={{ height: 40, width: { xs: "100%", md: "auto" } }}
+              >
+                {saving ? "Saving..." : "Save Expense"}
+              </Button>
+            </Box>
+          </Form>
         </CardContent>
       </Card>
 

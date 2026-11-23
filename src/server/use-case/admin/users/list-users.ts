@@ -1,4 +1,4 @@
-import { count, desc, ilike, or } from "drizzle-orm";
+import { count, desc, ilike, or, type SQL } from "drizzle-orm";
 import { user } from "@/db/schema";
 import type { Context } from "@/server/context";
 import { buildWhere } from "@/server/lib/orm";
@@ -14,9 +14,9 @@ export class ListUsersUseCase {
   constructor(private readonly db: Context["db"]) {}
 
   async execute({ page, limit, search }: ListUsersInput) {
-    const conditions: any[] = [];
+    const conditions: SQL[] = [];
     if (search) {
-      conditions.push(or(ilike(user.name, `%${search}%`), ilike(user.email, `%${search}%`)));
+      conditions.push(or(ilike(user.name, `%${search}%`), ilike(user.email, `%${search}%`))!);
     }
     const whereClause = buildWhere(conditions);
     const offset = offsetOf(page, limit);
@@ -37,6 +37,6 @@ export class ListUsersUseCase {
       _count: { sessions: u.sessions.length },
     }));
 
-    return { users: users as any, ...paginate(Number(total), limit), page };
+    return { users, ...paginate(Number(total), limit), page };
   }
 }

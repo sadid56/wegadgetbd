@@ -3,12 +3,11 @@ import { category, product } from "@/db/schema";
 import type { Context } from "@/server/context";
 import { ORPCError } from "@orpc/server";
 import { cacheService, CACHE_KEYS } from "@/server/services/cache";
-import { writeAudit } from "@/server/lib/orm";
 
 export class DeleteCategoryUseCase {
   constructor(
     private readonly db: Context["db"],
-    private readonly actorId: string = "admin",
+    private readonly _actorId: string = "admin",
   ) {}
 
   async execute(id: string) {
@@ -38,17 +37,6 @@ export class DeleteCategoryUseCase {
     }
 
     await cacheService.deletePattern(CACHE_KEYS.categoriesPattern);
-
-    await writeAudit(this.db, {
-      action: "UPDATE_SETTINGS",
-      actorId: this.actorId,
-      metadata: {
-        categoryId: id,
-        categoryName: deletedCategory.name,
-        type: "CATEGORY_DELETE",
-        softDelete: true,
-      },
-    });
 
     return deletedCategory;
   }

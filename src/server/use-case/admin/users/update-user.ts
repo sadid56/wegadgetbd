@@ -1,7 +1,6 @@
 import { eq } from "drizzle-orm";
-import { user, type AuditAction, type Role } from "@/db/schema";
+import { user, type Role } from "@/db/schema";
 import type { Context } from "@/server/context";
-import { writeAudit } from "@/server/lib/orm";
 
 export interface UpdateUserInput {
   id: string;
@@ -13,7 +12,7 @@ export interface UpdateUserInput {
 export class UpdateUserUseCase {
   constructor(
     private readonly db: Context["db"],
-    private readonly actorId: string,
+    private readonly _actorId: string,
   ) {}
 
   async execute({ id, banned, role, banReason }: UpdateUserInput) {
@@ -27,14 +26,6 @@ export class UpdateUserUseCase {
       .where(eq(user.id, id))
       .returning();
 
-    const action: AuditAction = banned === undefined ? "STATUS_CHANGE" : banned ? "BLOCK_USER" : "UNBLOCK_USER";
-
-    await writeAudit(this.db, {
-      action,
-      actorId: this.actorId,
-      metadata: { userId: updated.id, userEmail: updated.email, banned, role },
-    });
-
-    return updated as any;
+    return updated;
   }
 }

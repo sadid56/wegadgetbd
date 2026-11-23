@@ -1,5 +1,6 @@
 {
   "title": "সকল পণ্য",
+  "searchPlaceholder": "গ্যাজেট বা এক্সেসরিজ খুঁজুন...",
   "filterProducts": "ফিল্টার পণ্য",
   "category": "ক্যাটাগরি",
   "allProducts": "সকল পণ্য",
@@ -87,7 +88,6 @@
   "model": "মডেল",
   "warranty": "ওয়ারেন্টি",
   "origin": "উৎপাদন দেশ",
-  "brand": "ব্র্যান্ড",
   "photos": "ছবি",
   "video": "ভিডিও",
   "packagingDetails": "প্যাকেজিং বিবরণ",

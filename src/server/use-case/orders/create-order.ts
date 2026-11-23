@@ -2,7 +2,6 @@ import { db } from "@/db";
 import { order, product, promoCode, type OrderStatus } from "@/db/schema";
 import { and, eq, inArray, isNull, lt, or, sql } from "drizzle-orm";
 import type { Context } from "@/server/context";
-import { writeAudit } from "@/server/lib/orm";
 import { evaluatePromoCode } from "@/server/use-case/promo-codes/_shared";
 
 const PHONE_RE = /^\+?[\d\s()-]{7,20}$/;
@@ -115,18 +114,6 @@ export class CreateOrderUseCase {
         })
         .returning();
 
-      await writeAudit(this.dbInstance, {
-        actorId: input.userId,
-        actorType: input.userId ? "USER" : "ADMIN",
-        action: "STATUS_CHANGE",
-        metadata: {
-          orderId: newOrder.id,
-          customerName: newOrder.customerName,
-          total: finalTotal,
-          event: "ORDER_CREATED",
-        },
-      });
-
       return {
         success: true as const,
         data: {
@@ -136,9 +123,9 @@ export class CreateOrderUseCase {
           status: newOrder.status,
         },
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("CreateOrderUseCase failed:", err);
-      const msg = err?.message || "Failed to create order";
+      const msg = err instanceof Error ? err.message : "Failed to create order";
       return { success: false as const, error: msg, message: msg };
     }
   }

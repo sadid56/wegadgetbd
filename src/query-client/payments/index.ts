@@ -8,10 +8,14 @@ export interface PaymentsFilterParams {
   search?: string;
 }
 
+type CreatePaymentPayload = Parameters<typeof orpcClient.payments.create>[0];
+type UpdatePaymentPayload = Parameters<typeof orpcClient.payments.update>[0];
+
 export const PaymentEndpoints = {
   getPayments: (params: PaymentsFilterParams = {}) => orpcClient.payments.list(params),
-  createPayment: (data: any) => orpcClient.payments.create(data),
-  updatePayment: ({ id, data }: { id: string; data: any }) => orpcClient.payments.update({ id, data }),
+  createPayment: (data: CreatePaymentPayload) => orpcClient.payments.create(data),
+  updatePayment: ({ id, data }: { id: string; data: UpdatePaymentPayload["data"] }) =>
+    orpcClient.payments.update({ id, data }),
   deletePayment: (id: string) => orpcClient.payments.delete({ id }),
 };
 

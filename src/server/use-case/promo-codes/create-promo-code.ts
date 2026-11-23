@@ -3,13 +3,12 @@ import { ORPCError } from "@orpc/server";
 import { promoCode } from "@/db/schema";
 import type { Context } from "@/server/context";
 import type { CreatePromoCodeInput } from "@/server/schemas/promo-codes.schema";
-import { writeAudit } from "@/server/lib/orm";
 import { formatPromoCode } from "./_shared";
 
 export class CreatePromoCodeUseCase {
   constructor(private readonly db: Context["db"]) {}
 
-  async execute(input: CreatePromoCodeInput, userId?: string) {
+  async execute(input: CreatePromoCodeInput, _userId?: string) {
     const normalizedCode = input.code.trim().toUpperCase();
 
     if (input.discountType === "PERCENTAGE" && input.discountValue > 100) {
@@ -47,13 +46,6 @@ export class CreatePromoCodeUseCase {
         isActive: input.isActive ?? true,
       })
       .returning();
-
-    await writeAudit(this.db, {
-      actorId: userId,
-      actorType: "ADMIN",
-      action: "CREATE",
-      metadata: { entity: "PROMO_CODE", id: created.id, code: created.code },
-    });
 
     return formatPromoCode(created);
   }

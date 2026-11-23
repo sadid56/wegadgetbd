@@ -1,545 +1,854 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import Markdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { useLocale } from "next-intl";
 import { Link } from "@/i18n/routing";
 import Box from "@mui/material/Box";
+import Drawer from "@mui/material/Drawer";
 import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
+import { CircularProgress } from "@/components/ui/spinner";
 
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import RestartAltRoundedIcon from "@mui/icons-material/RestartAltRounded";
 import CallRoundedIcon from "@mui/icons-material/CallRounded";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
-import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
-import LocalShippingOutlinedIcon from "@mui/icons-material/LocalShippingOutlined";
-import SavingsOutlinedIcon from "@mui/icons-material/SavingsOutlined";
-import SupportAgentRoundedIcon from "@mui/icons-material/SupportAgentRounded";
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
+import HeadphonesRoundedIcon from "@mui/icons-material/HeadphonesRounded";
+import CardGiftcardRoundedIcon from "@mui/icons-material/CardGiftcardRounded";
+import SavingsRoundedIcon from "@mui/icons-material/SavingsRounded";
+import LocalShippingRoundedIcon from "@mui/icons-material/LocalShippingRounded";
+import Inventory2RoundedIcon from "@mui/icons-material/Inventory2Rounded";
+import VerifiedUserRoundedIcon from "@mui/icons-material/VerifiedUserRounded";
+
+import { AiMiniProductCard } from "@/components/common/AiMiniProductCard";
+import {
+  AI_DRAWER_EVENT,
+  type AiProductCardData,
+  type AiProductContext,
+  type OpenAiDrawerDetail,
+} from "@/lib/ai-drawer";
+import { CONTACT_PHONE, getTelUrl, getWhatsAppUrl } from "@/lib/contact";
+import { tokens } from "@/theme/theme";
 
 interface ChatMessage {
   role: "user" | "model";
   text: string;
+  products?: AiProductCardData[];
+  followUps?: string[];
 }
 
-const HELP_PROMPTS = [
+const QUICK_QUESTIONS = [
   {
-    label: "Recommend a gadget",
-    prompt: "Recommend the best popular gadgets available right now.",
-    icon: ShoppingBagOutlinedIcon,
+    icon: HeadphonesRoundedIcon,
+    label: "Gaming earbuds under ৳2,000",
+    sub: "Low latency & deep bass",
+    prompt: "Show the best gaming earbuds under ৳2,000",
   },
   {
-    label: "Delivery & COD info",
-    prompt: "What are the delivery charges and Cash on Delivery policy?",
-    icon: LocalShippingOutlinedIcon,
+    icon: CardGiftcardRoundedIcon,
+    label: "Gift ideas for brother",
+    sub: "Smart & useful tech picks",
+    prompt: "Suggest the best gadgets to gift my brother",
   },
   {
-    label: "Best budget options",
-    prompt: "What are your best budget gadgets under ৳1500?",
-    icon: SavingsOutlinedIcon,
+    icon: SavingsRoundedIcon,
+    label: "Best gadgets under ৳1,500",
+    sub: "Top rated budget gear",
+    prompt: "What are your best budget gadgets under ৳1,500?",
   },
   {
-    label: "Contact support",
-    prompt: "How can I contact We Gadget BD directly for order help?",
-    icon: SupportAgentRoundedIcon,
+    icon: LocalShippingRoundedIcon,
+    label: "Delivery & COD policy",
+    sub: "Charges, warranty & timing",
+    prompt: "What are the delivery charges, warranty, and Cash on Delivery policy?",
   },
 ] as const;
 
-function MiniBotIcon({ size = 34 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 88 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="floatBotHead" x1="16" y1="8" x2="72" y2="70" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#FFFFFF" />
-          <stop offset="100%" stopColor="#DDE2FF" />
-        </linearGradient>
-        <linearGradient id="floatBotEar" x1="0" y1="24" x2="0" y2="56" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#7C5CFF" />
-          <stop offset="100%" stopColor="#5B3DF5" />
-        </linearGradient>
-        <linearGradient id="floatBotVisor" x1="22" y1="26" x2="66" y2="54" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor="#141936" />
-          <stop offset="100%" stopColor="#090D21" />
-        </linearGradient>
-      </defs>
-      <line x1="44" y1="14" x2="44" y2="6" stroke="#7C5CFF" strokeWidth="3" strokeLinecap="round" />
-      <circle cx="44" cy="5" r="4" fill="#6D4AFF" />
-      <rect x="7" y="28" width="11" height="24" rx="5.5" fill="url(#floatBotEar)" />
-      <rect x="70" y="28" width="11" height="24" rx="5.5" fill="url(#floatBotEar)" />
-      <rect x="15" y="14" width="58" height="50" rx="24" fill="url(#floatBotHead)" stroke="#C7D2FE" strokeWidth="1.5" />
-      <rect x="23" y="26" width="42" height="25" rx="12" fill="url(#floatBotVisor)" />
-      <rect x="31" y="34" width="7" height="9" rx="3.5" fill="#67E8F9" />
-      <rect x="50" y="34" width="7" height="9" rx="3.5" fill="#67E8F9" />
-      <path d="M39 45.5C41 47.5 47 47.5 49 45.5" stroke="#67E8F9" strokeWidth="2" strokeLinecap="round" />
-    </svg>
-  );
+function getProductQuickQuestions(isBn: boolean) {
+  return [
+    {
+      icon: Inventory2RoundedIcon,
+      label: isBn ? "বক্সে কী থাকছে ও স্পেকস" : "Box contents & key specs",
+      sub: isBn ? "ফিচার ও বিল্ড কোয়ালিটি" : "Features, build & included items",
+      prompt: isBn
+        ? "এই প্রোডাক্টের বক্সে কী কী থাকছে এবং মূল স্পেসিফিকেশনগুলো কী?"
+        : "What's included in the box and what are the key specifications?",
+    },
+    {
+      icon: AutoAwesomeRoundedIcon,
+      label: isBn ? "আমার ব্যবহারের জন্য সেরা?" : "Is it right for my use?",
+      sub: isBn ? "সুবিধা ও কার জন্য উপযোগী" : "Pros, cons & ideal use cases",
+      prompt: isBn
+        ? "এই প্রোডাক্টটি কাদের জন্য ভালো এবং এর মূল সুবিধা কী?"
+        : "Who is this product best for, and what are its main pros and limitations?",
+    },
+    {
+      icon: VerifiedUserRoundedIcon,
+      label: isBn ? "ওয়ারেন্টি ও অরিজিনালিটি" : "Warranty & authenticity",
+      sub: isBn ? "গ্যারান্টি ও রিপ্লেসমেন্ট পলিসি" : "Original guarantee & replacement",
+      prompt: isBn
+        ? "এই প্রোডাক্টটি কি অরিজিনাল এবং এতে কী ধরনের ওয়ারেন্টি থাকছে?"
+        : "Is this product original and what warranty or replacement policy applies?",
+    },
+    {
+      icon: LocalShippingRoundedIcon,
+      label: isBn ? "ডেলিভারি ও বিকল্প অপশন" : "Delivery & alternatives",
+      sub: isBn ? "চার্জ, সময় ও কাছাকাছি প্রোডাক্ট" : "Shipping time, COD & similar picks",
+      prompt: isBn
+        ? "এটার ডেলিভারি চার্জ ও সময় কতদিন, আর একই বাজেটে ভালো বিকল্প আছে কি?"
+        : "What is the delivery charge and timing, and are there better alternatives around this price?",
+    },
+  ];
 }
 
-function renderMessageWithLinks(text: string) {
-  const linkRegex = /\[([^\]]+)\]\(((?:\/|https?:\/\/)[^\s)]+)\)/g;
-  const parts: React.ReactNode[] = [];
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
+const FLOATING_HINTS_EN = [
+  "How can we help you today?",
+  "Find the best gadget for your budget",
+  "Need gaming earbuds under ৳2,000?",
+  "Ask about warranty & COD delivery",
+  "Looking for a tech gift idea?",
+] as const;
 
-  while ((match = linkRegex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(text.slice(lastIndex, match.index));
-    }
-    const label = match[1];
-    const href = match[2];
-    const isExternal = href.startsWith("http");
-
-    parts.push(
-      isExternal ? (
-        <Box
-          key={`${href}-${match.index}`}
-          component="a"
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          sx={{
-            color: "#5B3DF5",
-            fontWeight: 700,
-            textDecoration: "underline",
-            textUnderlineOffset: "2px",
-          }}
-        >
-          {label}
-        </Box>
-      ) : (
-        <Box
-          key={`${href}-${match.index}`}
-          component={Link}
-          href={href}
-          sx={{
-            color: "#5B3DF5",
-            fontWeight: 700,
-            textDecoration: "underline",
-            textUnderlineOffset: "2px",
-          }}
-        >
-          {label}
-        </Box>
-      )
-    );
-    lastIndex = match.index + match[0].length;
-  }
-
-  if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex));
-  }
-
-  return parts;
-}
+const FLOATING_HINTS_BN = [
+  "আমরা কীভাবে সাহায্য করতে পারি?",
+  "বাজেট অনুযায়ী সেরা গ্যাজেট খুঁজুন",
+  "২,০০০ টাকার মধ্যে গেমিং ইয়ারবাডস?",
+  "ডেলিভারি চার্জ ও ওয়ারেন্টি জানুন",
+  "গিফটের জন্য ইউনিক গ্যাজেট খুঁজছেন?",
+] as const;
 
 export function FloatingAiChat() {
+  const locale = useLocale();
+  const isBn = locale === "bn";
+
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [hintText, setHintText] = useState<string | null>(null);
+  const [hintVisible, setHintVisible] = useState(false);
+
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const messagesRef = useRef<ChatMessage[]>([]);
+  messagesRef.current = messages;
+
+  const [activeProductContext, setActiveProductContext] = useState<AiProductContext | null>(null);
+  const activeProductContextRef = useRef<AiProductContext | null>(null);
+  activeProductContextRef.current = activeProductContext;
+
+  const isLoadingRef = useRef(false);
+  isLoadingRef.current = isLoading;
 
   useEffect(() => {
-    if (!isOpen) return;
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsOpen(false);
-    };
-    document.addEventListener("mousedown", handleOutsideClick);
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    if (isOpen) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, isLoading, isOpen]);
 
-  const sendMessage = async (text: string) => {
-    const trimmed = text.trim();
-    if (!trimmed || isLoading) return;
+  // Prevent main page scrolling (both html & body) while the drawer is open without adding scrollbar padding
+  useEffect(() => {
+    if (!isOpen) return;
+    document.documentElement.classList.add("concierge-open");
+    const prevBodyPadding = document.body.style.paddingRight;
+    document.body.style.paddingRight = "0px";
+    return () => {
+      document.documentElement.classList.remove("concierge-open");
+      document.body.style.paddingRight = prevBodyPadding;
+    };
+  }, [isOpen]);
 
-    setMessages((prev) => [...prev, { role: "user", text: trimmed }]);
-    setInput("");
-    setIsLoading(true);
+  const sendMessage = useCallback(
+    async (textToSend: string, overrideProductContext?: AiProductContext | null) => {
+      const trimmed = textToSend.trim();
+      if (!trimmed || isLoadingRef.current) return;
 
-    try {
-      const res = await fetch("/api/ai-assistant", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: trimmed, history: messages }),
-      });
-      const data = (await res.json()) as { reply?: string };
-      setMessages((prev) => [
-        ...prev,
-        { role: "model", text: data.reply || "Sorry, I couldn't get a response right now." },
-      ]);
-    } catch {
-      setMessages((prev) => [
-        ...prev,
-        { role: "model", text: "Network error! You can also reach us directly at 01739859756." },
-      ]);
-    } finally {
-      setIsLoading(false);
+      const historySnapshot = messagesRef.current.map((m) => ({
+        role: m.role,
+        text: m.text,
+      }));
+      const productContextToSend = overrideProductContext ?? activeProductContextRef.current;
+
+      setMessages((prev) => [...prev, { role: "user", text: trimmed }]);
+      setInput("");
+      setIsLoading(true);
+
+      try {
+        const res = await fetch("/api/ai-assistant", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            message: trimmed,
+            history: historySnapshot.slice(-6),
+            ...(productContextToSend ? { productContext: productContextToSend } : {}),
+          }),
+          signal: AbortSignal.timeout(30000),
+        });
+
+        const data = (await res.json()) as {
+          reply?: string;
+          error?: string;
+          products?: AiProductCardData[];
+          followUps?: string[];
+        };
+
+        const replyText = data.reply || data.error || `I'm having trouble right now. Please contact us on WhatsApp at ${CONTACT_PHONE}.`;
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "model",
+            text: replyText,
+            products: Array.isArray(data.products) ? data.products : [],
+            followUps: Array.isArray(data.followUps) ? data.followUps : [],
+          },
+        ]);
+      } catch {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "model",
+            text: isBn
+              ? `নেটওয়ার্ক সমস্যা হচ্ছে! প্রয়োজনে কল বা হোয়াটসঅ্যাপ করুন: ${CONTACT_PHONE}`
+              : `Network error! You can also call or WhatsApp us at ${CONTACT_PHONE}.`,
+          },
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [isBn],
+  );
+
+  // Listen for Hero AI, Product Ask AI, or external triggers to open the AI Shopping Drawer
+  useEffect(() => {
+    const handleOpenDrawer = (e: Event) => {
+      const custom = e as CustomEvent<OpenAiDrawerDetail>;
+      const nextContext = custom.detail?.productContext;
+      if (nextContext) {
+        activeProductContextRef.current = nextContext;
+        setActiveProductContext(nextContext);
+      }
+      setIsOpen(true);
+      if (custom.detail?.prompt) {
+        sendMessage(custom.detail.prompt, nextContext ?? activeProductContextRef.current);
+      }
+    };
+    window.addEventListener(AI_DRAWER_EVENT, handleOpenDrawer);
+    return () => window.removeEventListener(AI_DRAWER_EVENT, handleOpenDrawer);
+  }, [sendMessage]);
+
+  // Periodic locale-aware floating hint bubble when drawer is closed
+  useEffect(() => {
+    if (isOpen) {
+      setHintVisible(false);
+      return;
     }
+
+    const pool = isBn ? FLOATING_HINTS_BN : FLOATING_HINTS_EN;
+    let showTimer: ReturnType<typeof setTimeout>;
+    let hideTimer: ReturnType<typeof setTimeout>;
+    let lastIndex = -1;
+
+    const scheduleNext = (delayMs: number) => {
+      showTimer = setTimeout(() => {
+        let nextIdx = Math.floor(Math.random() * pool.length);
+        if (nextIdx === lastIndex && pool.length > 1) {
+          nextIdx = (nextIdx + 1) % pool.length;
+        }
+        lastIndex = nextIdx;
+        setHintText(pool[nextIdx]);
+        setHintVisible(true);
+
+        hideTimer = setTimeout(() => {
+          setHintVisible(false);
+          const nextDelay = 9000 + Math.floor(Math.random() * 8000);
+          scheduleNext(nextDelay);
+        }, 5500);
+      }, delayMs);
+    };
+
+    scheduleNext(3500);
+
+    return () => {
+      clearTimeout(showTimer);
+      clearTimeout(hideTimer);
+    };
+  }, [isOpen, isBn]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    sendMessage(input);
   };
 
   return (
-    <Box
-      ref={containerRef}
-      sx={{
-        position: "fixed",
-        bottom: { xs: 16, sm: 22 },
-        right: { xs: 16, sm: 22 },
-        zIndex: 1300,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-end",
-      }}
-    >
-      {/* Smooth Expanding Popup Card */}
-      <Box
-        sx={{
-          width: { xs: "calc(100vw - 32px)", sm: 360 },
-          maxWidth: 360,
-          bgcolor: "#FFFFFF",
-          borderRadius: "22px",
-          border: "1px solid #E2E8F0",
-          boxShadow: "0 24px 60px rgba(15, 23, 42, 0.18)",
-          overflow: "hidden",
-          display: isOpen ? "flex" : "flex",
-          flexDirection: "column",
-          transformOrigin: "bottom right",
-          transform: isOpen ? "scale(1) translateY(0)" : "scale(0.85) translateY(16px)",
-          opacity: isOpen ? 1 : 0,
-          visibility: isOpen ? "visible" : "hidden",
-          pointerEvents: isOpen ? "auto" : "none",
-          mb: isOpen ? 1.5 : 0,
-          position: isOpen ? "relative" : "absolute",
-          bottom: isOpen ? "auto" : 68,
-          right: isOpen ? "auto" : 0,
-          transition:
-            "transform 220ms cubic-bezier(0.22, 1, 0.36, 1), opacity 180ms ease, visibility 220ms ease",
+    <>
+      {/* ── FLOATING LAUNCHER BUTTON (hidden when drawer is open so it never overlaps the send button) ── */}
+      {/* ── FLOATING AI LAUNCHER + PERIODIC HELPFUL HINT (hidden when drawer is open) ── */}
+      {!isOpen && (
+        <Box
+          sx={{
+            position: "fixed",
+            bottom: {
+              xs: "calc(76px + var(--product-sticky-bar-height, 0px))",
+              sm: "calc(76px + var(--product-sticky-bar-height, 0px))",
+              md: "calc(22px + var(--product-sticky-bar-height, 0px))",
+            },
+            right: { xs: 14, sm: 22 },
+            zIndex: 1300,
+            display: "flex",
+            alignItems: "center",
+            gap: 1.25,
+            transition: "bottom 220ms cubic-bezier(0.22, 1, 0.36, 1)",
+          }}
+        >
+          {/* Periodic Random Helpful Prompt Pill */}
+          {hintText && (
+            <Box
+              component='button'
+              type='button'
+              onClick={() => {
+                setHintVisible(false);
+                setIsOpen(true);
+              }}
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 0.75,
+                maxWidth: { xs: 215, sm: 265 },
+                px: 1.5,
+                py: 0.9,
+                borderRadius: "18px 18px 4px 18px",
+                bgcolor: tokens.bgPanel,
+                border: `1px solid ${tokens.primaryBorder}`,
+                boxShadow: "0 8px 24px rgba(15, 23, 42, 0.12)",
+                color: tokens.textPrimary,
+                fontSize: 12,
+                fontWeight: 600,
+                lineHeight: 1.35,
+                textAlign: "left",
+                cursor: "pointer",
+                opacity: hintVisible ? 1 : 0,
+                transform: hintVisible ? "translateX(0)" : "translateX(10px)",
+                pointerEvents: hintVisible ? "auto" : "none",
+                transition: "opacity 240ms ease, transform 240ms ease",
+              }}
+            >
+              <AutoAwesomeRoundedIcon sx={{ fontSize: 15, color: tokens.primary, flexShrink: 0 }} />
+              <span>{hintText}</span>
+            </Box>
+          )}
+
+          {/* Unique Minimal M3 AI Squircle FAB */}
+          <Box
+            component='button'
+            type='button'
+            onClick={() => setIsOpen(true)}
+            aria-label={isBn ? "AI শপিং অ্যাসিস্ট্যান্ট" : "Open AI Assistant"}
+            sx={{
+              position: "relative",
+              width: 50,
+              height: 50,
+              borderRadius: "18px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: `linear-gradient(135deg, ${tokens.bgDark} 0%, #16302B 100%)`,
+              color: "#5EEAD4",
+              border: "1.5px solid rgba(0, 191, 166, 0.45)",
+              boxShadow: "0 8px 24px rgba(0, 191, 166, 0.24), 0 4px 12px rgba(15, 23, 42, 0.18)",
+              cursor: "pointer",
+              flexShrink: 0,
+              transition: "border-color 160ms ease, color 160ms ease",
+              "&:hover": {
+                borderColor: tokens.primary,
+                color: "#FFFFFF",
+              },
+            }}
+          >
+            <AutoAwesomeRoundedIcon sx={{ fontSize: 22 }} />
+            <Box
+              component='span'
+              sx={{
+                position: "absolute",
+                top: -3,
+                right: -3,
+                width: 11,
+                height: 11,
+                borderRadius: "50%",
+                bgcolor: tokens.primary,
+                border: `2px solid ${tokens.bgPanel}`,
+              }}
+            />
+          </Box>
+        </Box>
+      )}
+
+      {/* ── AI SHOPPING DRAWER (ZERO OVERLAP, GENERATIVE MINI PRODUCT CARDS & FOLLOW-UPS) ── */}
+      <Drawer
+        anchor='right'
+        open={isOpen}
+        onClose={() => setIsOpen(false)}
+        disableScrollLock
+        slotProps={{
+          paper: {
+            sx: {
+              width: { xs: "100%", sm: 420 },
+              maxWidth: "100vw",
+              height: "100dvh",
+              overflow: "hidden !important",
+              overflowY: "hidden !important",
+              borderRadius: { xs: 0, sm: "24px 0 0 24px" },
+              display: "flex",
+              flexDirection: "column",
+              bgcolor: tokens.bgSurfaceContainerLow,
+              border: "none",
+              boxShadow: "-16px 0 48px rgba(15, 23, 42, 0.12)",
+            },
+          },
         }}
       >
-          {/* Header */}
+        {/* Minimal M3 Side Sheet Header */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            px: 2.5,
+            pt: 2.25,
+            pb: 1.5,
+            bgcolor: tokens.bgSurfaceContainerLow,
+            flexShrink: 0,
+          }}
+        >
+          <Box>
+            <Typography
+              sx={{
+                fontSize: 15,
+                fontWeight: 800,
+                letterSpacing: "-0.02em",
+                color: tokens.textPrimary,
+                lineHeight: 1.2,
+              }}
+            >
+              {isBn ? "উই গ্যাজেট AI" : "We Gadget AI"}
+            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.65, mt: 0.4 }}>
+              <Typography sx={{ fontSize: 11.5, color: tokens.textMuted, lineHeight: 1 }}>
+                {isBn ? "তাৎক্ষণিক স্টোর সহায়তা" : "Instant store assistance"}
+              </Typography>
+            </Box>
+          </Box>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
+            <IconButton
+              component='a'
+              href={getWhatsAppUrl()}
+              target='_blank'
+              rel='noopener noreferrer'
+              size='small'
+              title='WhatsApp'
+              sx={{ color: "#16A34A", "&:hover": { bgcolor: "rgba(22, 163, 74, 0.08)" } }}
+            >
+              <WhatsAppIcon sx={{ fontSize: 17 }} />
+            </IconButton>
+            <IconButton
+              component='a'
+              href={getTelUrl()}
+              size='small'
+              title={`Call ${CONTACT_PHONE}`}
+              sx={{ color: tokens.textSecondary, "&:hover": { bgcolor: tokens.bgSubtle } }}
+            >
+              <CallRoundedIcon sx={{ fontSize: 17 }} />
+            </IconButton>
+            {messages.length > 0 && (
+              <IconButton
+                size='small'
+                onClick={() => {
+                  setMessages([]);
+                  setActiveProductContext(null);
+                  activeProductContextRef.current = null;
+                }}
+                title={isBn ? "নতুন চ্যাট" : "New chat"}
+                sx={{ color: tokens.textSecondary, "&:hover": { bgcolor: tokens.bgSubtle } }}
+              >
+                <RestartAltRoundedIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            )}
+            <IconButton
+              size='small'
+              onClick={() => setIsOpen(false)}
+              title={isBn ? "বন্ধ করুন" : "Close"}
+              sx={{ color: tokens.textSecondary, "&:hover": { bgcolor: tokens.bgSubtle } }}
+            >
+              <CloseRoundedIcon sx={{ fontSize: 19 }} />
+            </IconButton>
+          </Box>
+        </Box>
+
+        {activeProductContext && (
           <Box
             sx={{
-              background: "linear-gradient(135deg, #5B3DF5 0%, #7C5CFF 100%)",
-              color: "#FFFFFF",
-              px: 2,
-              py: 1.5,
+              mx: 2.5,
+              mb: 1,
+              px: 1.25,
+              py: 0.75,
+              borderRadius: "12px",
+              bgcolor: tokens.primaryLight,
+              border: `1px solid ${tokens.primaryBorder}`,
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
               gap: 1,
+              flexShrink: 0,
             }}
           >
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
-              <Box
+            <Box sx={{ minWidth: 0, display: "flex", alignItems: "center", gap: 0.75 }}>
+              <AutoAwesomeRoundedIcon sx={{ fontSize: 14, color: tokens.primaryDark, flexShrink: 0 }} />
+              <Typography
                 sx={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: "12px",
-                  bgcolor: "rgba(255, 255, 255, 0.18)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  fontSize: 11.5,
+                  fontWeight: 600,
+                  color: tokens.primaryDark,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
                 }}
               >
-                <MiniBotIcon size={30} />
-              </Box>
-              <Box>
-                <Typography sx={{ fontSize: 13.5, fontWeight: 800, lineHeight: 1.2 }}>
-                  We Gadget BD Help
-                </Typography>
-                <Typography sx={{ fontSize: 11, color: "rgba(255, 255, 255, 0.85)", mt: 0.2 }}>
-                  AI Assistant & Direct Support
-                </Typography>
-              </Box>
+                {activeProductContext.title}
+              </Typography>
             </Box>
+            <IconButton
+              size='small'
+              onClick={() => {
+                setActiveProductContext(null);
+                activeProductContextRef.current = null;
+              }}
+              aria-label={isBn ? "প্রোডাক্ট কনটেক্সট সরান" : "Clear product context"}
+              sx={{ p: 0.25, color: tokens.primaryDark }}
+            >
+              <CloseRoundedIcon sx={{ fontSize: 14 }} />
+            </IconButton>
+          </Box>
+        )}
 
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.25 }}>
-              {messages.length > 0 && (
-                <IconButton
-                  size="small"
-                  onClick={() => setMessages([])}
-                  title="Reset chat"
-                  sx={{ color: "rgba(255,255,255,0.85)", "&:hover": { color: "#FFFFFF" } }}
+        {/* Scrollable Chat Body */}
+        <Box
+          sx={{
+            flex: 1,
+            overflowY: "auto",
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+            "&::-webkit-scrollbar": { display: "none" },
+            px: 2.5,
+            py: 1.5,
+            display: "flex",
+            flexDirection: "column",
+            gap: 1.5,
+          }}
+        >
+          {messages.length === 0 ? (
+            <Box sx={{ display: "flex", flexDirection: "column", pt: 1 }}>
+              <Box sx={{ mb: 2.5 }}>
+                <Typography
+                  sx={{
+                    fontSize: 22,
+                    fontWeight: 800,
+                    letterSpacing: "-0.03em",
+                    color: tokens.textPrimary,
+                    lineHeight: 1.2,
+                    mb: 0.85,
+                  }}
                 >
-                  <RestartAltRoundedIcon sx={{ fontSize: 18 }} />
-                </IconButton>
-              )}
-              <IconButton
-                size="small"
-                onClick={() => setIsOpen(false)}
-                aria-label="Close help chat"
-                sx={{ color: "rgba(255,255,255,0.85)", "&:hover": { color: "#FFFFFF" } }}
-              >
-                <CloseRoundedIcon sx={{ fontSize: 18 }} />
-              </IconButton>
-            </Box>
-          </Box>
-
-          {/* Direct Contact Strip */}
-          <Box
-            sx={{
-              display: "flex",
-              gap: 1,
-              px: 1.75,
-              py: 1,
-              bgcolor: "#F8FAFC",
-              borderBottom: "1px solid #E2E8F0",
-            }}
-          >
-            <Box
-              component="a"
-              href="tel:01739859756"
-              sx={{
-                flex: 1,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 0.6,
-                py: 0.65,
-                px: 1,
-                borderRadius: "8px",
-                bgcolor: "#FFFFFF",
-                border: "1px solid #E2E8F0",
-                color: "#0F172A",
-                fontSize: 11.5,
-                fontWeight: 700,
-                textDecoration: "none",
-                "&:hover": { borderColor: "#5B3DF5", color: "#5B3DF5" },
-              }}
-            >
-              <CallRoundedIcon sx={{ fontSize: 14, color: "#5B3DF5" }} />
-              <span>01739859756</span>
-            </Box>
-            <Box
-              component="a"
-              href="https://wa.me/8801739859756"
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{
-                flex: 1,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 0.6,
-                py: 0.65,
-                px: 1,
-                borderRadius: "8px",
-                bgcolor: "#ECFDF5",
-                border: "1px solid #A7F3D0",
-                color: "#047857",
-                fontSize: 11.5,
-                fontWeight: 700,
-                textDecoration: "none",
-                "&:hover": { bgcolor: "#D1FAE5" },
-              }}
-            >
-              <WhatsAppIcon sx={{ fontSize: 15 }} />
-              <span>WhatsApp</span>
-            </Box>
-          </Box>
-
-          {/* Body */}
-          <Box sx={{ p: 1.75 }}>
-            {messages.length === 0 ? (
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 0.9, mb: 1.5 }}>
-                <Typography sx={{ fontSize: 12, color: "#64748B", mb: 0.25 }}>
-                  Hello! 👋 Ask anything about gadgets, orders, or contact us directly above:
+                  {activeProductContext
+                    ? isBn
+                      ? "এই প্রোডাক্ট সম্পর্কে জানতে চান?"
+                      : "Questions about this product?"
+                    : isBn
+                      ? "আজ কী ধরনের গ্যাজেট খুঁজছেন?"
+                      : "How can we help you shop?"}
                 </Typography>
-                {HELP_PROMPTS.map((item) => {
+                <Typography sx={{ fontSize: 13, color: tokens.textSecondary, lineHeight: 1.55 }}>
+                  {activeProductContext
+                    ? isBn
+                      ? `${activeProductContext.title} সম্পর্কে স্পেকস, ওয়ারেন্টি বা ডেলিভারি নিয়ে জিজ্ঞেস করুন।`
+                      : `Ask anything about ${activeProductContext.title} — specs, warranty, or alternatives.`
+                    : isBn
+                      ? "বাজেট, প্রয়োজন বা ডেলিভারি সম্পর্কে বাংলা, ইংরেজি বা বাংলিশে লিখুন।"
+                      : "Ask by budget, use-case, or delivery policy in English, বাংলা, or Banglish."}
+                </Typography>
+              </Box>
+
+              {/* M3 2x2 Tonal Bento Prompt Grid */}
+              <Box
+                sx={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                  gap: 1.25,
+                }}
+              >
+                {(activeProductContext ? getProductQuickQuestions(isBn) : QUICK_QUESTIONS).map((item) => {
                   const IconComp = item.icon;
                   return (
                     <Box
                       key={item.label}
-                      component="button"
-                      type="button"
+                      component='button'
+                      type='button'
                       onClick={() => sendMessage(item.prompt)}
                       sx={{
-                        width: "100%",
                         display: "flex",
-                        alignItems: "center",
+                        flexDirection: "column",
+                        alignItems: "flex-start",
                         justifyContent: "space-between",
-                        gap: 1,
-                        px: 1.35,
-                        py: 0.95,
-                        borderRadius: "12px",
-                        bgcolor: "#FFFFFF",
-                        border: "1px solid #E8ECFF",
+                        gap: 1.5,
+                        p: 1.75,
+                        borderRadius: "20px",
+                        bgcolor: tokens.bgPanel,
+                        border: "none",
                         cursor: "pointer",
-                        color: "#1E293B",
-                        transition: "all 150ms ease",
-                        "&:hover": {
-                          bgcolor: "#F5F3FF",
-                          borderColor: "#C4B5FD",
-                        },
+                        textAlign: "left",
                       }}
                     >
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        <IconComp sx={{ fontSize: 16, color: "#5B3DF5" }} />
-                        <Typography sx={{ fontSize: 12.2, fontWeight: 600, color: "#1E293B" }}>
+                      <Box
+                        sx={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: "12px",
+                          bgcolor: tokens.bgSurfaceContainerLow,
+                          color: tokens.primaryDark,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <IconComp sx={{ fontSize: 18 }} />
+                      </Box>
+                      <Box>
+                        <Typography sx={{ fontSize: 12.5, fontWeight: 700, color: tokens.textPrimary, lineHeight: 1.3, mb: 0.35 }}>
                           {item.label}
                         </Typography>
+                        <Typography sx={{ fontSize: 11, color: tokens.textMuted, lineHeight: 1.3 }}>{item.sub}</Typography>
                       </Box>
-                      <ArrowForwardRoundedIcon sx={{ fontSize: 14, color: "#5B3DF5" }} />
                     </Box>
                   );
                 })}
               </Box>
-            ) : (
-              <Box
-                ref={scrollRef}
-                sx={{
-                  height: 240,
-                  overflowY: "auto",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 1,
-                  mb: 1.5,
-                  pr: 0.5,
-                  "&::-webkit-scrollbar": { width: 4 },
-                  "&::-webkit-scrollbar-thumb": { bgcolor: "#CBD5E1", borderRadius: 2 },
-                }}
-              >
-                {messages.map((msg, idx) => (
+            </Box>
+          ) : (
+            messages.map((msg, idx) => {
+              const isLastModel = msg.role === "model" && idx === messages.length - 1;
+              return (
+                <Box
+                  key={idx}
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: msg.role === "user" ? "flex-end" : "flex-start",
+                    gap: 1,
+                  }}
+                >
                   <Box
-                    key={idx}
                     sx={{
-                      alignSelf: msg.role === "user" ? "flex-end" : "flex-start",
-                      maxWidth: "88%",
-                      px: 1.4,
-                      py: 0.95,
-                      borderRadius: msg.role === "user" ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
-                      bgcolor: msg.role === "user" ? "#5B3DF5" : "#F1F5F9",
-                      color: msg.role === "user" ? "#FFFFFF" : "#0F172A",
-                      fontSize: 12.5,
-                      lineHeight: 1.5,
-                      whiteSpace: "pre-wrap",
+                      maxWidth: msg.role === "user" ? "84%" : "100%",
+                      px: 1.85,
+                      py: 1.25,
+                      borderRadius: "20px",
+                      bgcolor: msg.role === "user" ? tokens.bgDark : tokens.bgPanel,
+                      color: msg.role === "user" ? tokens.textWhite : tokens.textPrimary,
+                      border: "none",
+                      fontSize: 13,
+                      lineHeight: 1.55,
                       wordBreak: "break-word",
+                      "& p": { m: 0, mb: 0.75, "&:last-child": { mb: 0 } },
+                      "& ul, & ol": { m: 0, mb: 0.75, pl: 2.25, "&:last-child": { mb: 0 } },
+                      "& li": { mb: 0.35, "&:last-child": { mb: 0 } },
+                      "& strong": { fontWeight: 700 },
                     }}
                   >
-                    {msg.role === "model" ? renderMessageWithLinks(msg.text) : msg.text}
+                    {msg.role === "model" ? (
+                      <Markdown
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          a: ({ href = "", children }) => {
+                            const isExternal = href.startsWith("http");
+                            return isExternal ? (
+                              <Box
+                                component='a'
+                                href={href}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                sx={{
+                                  color: tokens.primaryDark,
+                                  fontWeight: 700,
+                                  textDecoration: "underline",
+                                  textUnderlineOffset: "2px",
+                                }}
+                              >
+                                {children}
+                              </Box>
+                            ) : (
+                              <Box
+                                component={Link}
+                                href={href || "/products"}
+                                onClick={() => setIsOpen(false)}
+                                sx={{
+                                  color: tokens.primaryDark,
+                                  fontWeight: 700,
+                                  textDecoration: "underline",
+                                  textUnderlineOffset: "2px",
+                                }}
+                              >
+                                {children}
+                              </Box>
+                            );
+                          },
+                        }}
+                      >
+                        {msg.text}
+                      </Markdown>
+                    ) : (
+                      msg.text
+                    )}
                   </Box>
-                ))}
-                {isLoading && (
-                  <Box
-                    sx={{
-                      alignSelf: "flex-start",
-                      px: 1.4,
-                      py: 0.85,
-                      borderRadius: "14px 14px 14px 4px",
-                      bgcolor: "#F1F5F9",
-                      color: "#64748B",
-                      fontSize: 12,
-                      fontWeight: 600,
-                    }}
-                  >
-                    Thinking...
-                  </Box>
-                )}
-              </Box>
-            )}
 
-            {/* Input */}
+                  {/* Rich Mini Product Cards (Generative UI from tool calling) */}
+                  {msg.role === "model" && msg.products && msg.products.length > 0 && (
+                    <Box sx={{ width: "100%", display: "flex", flexDirection: "column", gap: 0.85 }}>
+                      {msg.products.map((p) => (
+                        <AiMiniProductCard key={p.id} product={p} onNavigate={() => setIsOpen(false)} />
+                      ))}
+                    </Box>
+                  )}
+
+                  {/* Smart M3 Tonal Follow-up Chips */}
+                  {isLastModel && !isLoading && msg.followUps && msg.followUps.length > 0 && (
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, pt: 0.5 }}>
+                      {msg.followUps.map((chip) => (
+                        <Box
+                          key={chip}
+                          component='button'
+                          type='button'
+                          onClick={() => sendMessage(chip)}
+                          sx={{
+                            px: 1.4,
+                            py: 0.65,
+                            borderRadius: "999px",
+                            border: "none",
+                            bgcolor: tokens.bgPanel,
+                            color: tokens.textPrimary,
+                            fontSize: 11.5,
+                            fontWeight: 700,
+                            cursor: "pointer",
+                            transition: "background-color 150ms ease, color 150ms ease",
+                            "&:hover": {
+                              bgcolor: tokens.primaryLight,
+                              color: tokens.primaryDark,
+                            },
+                          }}
+                        >
+                          {chip}
+                        </Box>
+                      ))}
+                    </Box>
+                  )}
+                </Box>
+              );
+            })
+          )}
+
+          {isLoading && (
             <Box
-              component="form"
-              onSubmit={(e: React.FormEvent) => {
-                e.preventDefault();
-                sendMessage(input);
-              }}
               sx={{
-                display: "flex",
+                alignSelf: "flex-start",
+                display: "inline-flex",
                 alignItems: "center",
-                gap: 0.75,
-                bgcolor: "#F8FAFC",
-                border: "1px solid #E2E8F0",
-                borderRadius: "9999px",
-                pl: 1.5,
-                pr: 0.5,
-                py: 0.45,
-                "&:focus-within": { borderColor: "#5B3DF5", bgcolor: "#FFFFFF" },
+                gap: 1,
+                px: 1.5,
+                py: 0.9,
+                borderRadius: "14px 14px 14px 4px",
+                bgcolor: tokens.bgPanel,
+                border: `1px solid ${tokens.borderSubtle}`,
+                color: tokens.textMuted,
+                fontSize: 12.5,
+                fontWeight: 500,
               }}
             >
-              <Box
-                component="input"
-                type="text"
-                value={input}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
-                placeholder="Ask anything or get help..."
-                disabled={isLoading}
-                sx={{
-                  flex: 1,
-                  minWidth: 0,
-                  border: "none",
-                  outline: "none",
-                  bgcolor: "transparent",
-                  fontSize: 12.5,
-                  fontWeight: 500,
-                  color: "#0F172A",
-                  "&::placeholder": { color: "#94A3B8" },
-                }}
-              />
-              <IconButton
-                type="submit"
-                disabled={isLoading || !input.trim()}
-                size="small"
-                sx={{
-                  width: 30,
-                  height: 30,
-                  bgcolor: "#5B3DF5",
-                  color: "#FFFFFF",
-                  "&:hover": { bgcolor: "#4C2EE0" },
-                  "&.Mui-disabled": { bgcolor: "#C7D2FE", color: "#FFFFFF" },
-                }}
-              >
-                <ArrowForwardRoundedIcon sx={{ fontSize: 16 }} />
-              </IconButton>
+              <CircularProgress size={14} sx={{ color: tokens.primary }} />
+              <span>{isBn ? "গ্যাজেট খোঁজা হচ্ছে..." : "Searching catalog..."}</span>
             </Box>
-          </Box>
+          )}
+          <div ref={messagesEndRef} />
         </Box>
 
-      {/* Circular Floating Help Button (No Phone Number by Default) */}
-      <Box
-        component="button"
-        type="button"
-        onClick={() => setIsOpen((prev) => !prev)}
-        aria-label={isOpen ? "Close AI Help" : "Open AI Help"}
-        sx={{
-          width: 56,
-          height: 56,
-          borderRadius: "50%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "linear-gradient(135deg, #5B3DF5 0%, #7C5CFF 100%)",
-          color: "#FFFFFF",
-          border: "2.5px solid rgba(255, 255, 255, 0.95)",
-          boxShadow: "0 12px 30px rgba(91, 61, 245, 0.34)",
-          cursor: "pointer",
-          transition: "transform 180ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 180ms ease",
-          "&:hover": {
-            transform: "translateY(-2px) scale(1.06)",
-            boxShadow: "0 16px 38px rgba(91, 61, 245, 0.44)",
-          },
-          "&:active": {
-            transform: "scale(0.96)",
-          },
-        }}
-      >
-        {isOpen ? <CloseRoundedIcon sx={{ fontSize: 24 }} /> : <MiniBotIcon size={34} />}
-      </Box>
-    </Box>
+        {/* M3 Floating Pill Input Bar */}
+        <Box
+          component='form'
+          onSubmit={handleSubmit}
+          sx={{
+            px: 2,
+            pb: 2,
+            pt: 1,
+            bgcolor: tokens.bgSurfaceContainerLow,
+            flexShrink: 0,
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              pl: 2,
+              pr: 0.75,
+              py: 0.65,
+              borderRadius: "28px",
+              bgcolor: tokens.bgPanel,
+              boxShadow: "0 2px 12px rgba(15, 23, 42, 0.05)",
+            }}
+          >
+            <Box
+              component='input'
+              type='text'
+              value={input}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
+              placeholder={isBn ? "বাজেট বা গ্যাজেটের নাম লিখুন..." : "Ask in English, বাংলা, or Banglish..."}
+              sx={{
+                flex: 1,
+                minWidth: 0,
+                height: 36,
+                border: "none",
+                bgcolor: "transparent",
+                outline: "none",
+                fontSize: 13,
+                fontFamily: "inherit",
+                color: tokens.textPrimary,
+                "&::placeholder": { color: tokens.textMuted, opacity: 1 },
+              }}
+            />
+            <IconButton
+              type='submit'
+              disabled={isLoading || !input.trim()}
+              aria-label='Send message'
+              sx={{
+                width: 38,
+                height: 38,
+                borderRadius: "50%",
+                bgcolor: tokens.bgDark,
+                color: tokens.textWhite,
+                flexShrink: 0,
+                "&:hover": { bgcolor: tokens.primaryDark },
+                "&.Mui-disabled": { bgcolor: tokens.bgSurfaceContainerHigh, color: tokens.textDisabled },
+              }}
+            >
+              <ArrowForwardRoundedIcon sx={{ fontSize: 18 }} />
+            </IconButton>
+          </Box>
+        </Box>
+      </Drawer>
+    </>
   );
 }
+
+export default FloatingAiChat;

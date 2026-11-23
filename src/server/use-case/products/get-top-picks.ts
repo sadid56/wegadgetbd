@@ -1,7 +1,8 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { product, category } from "@/db/schema";
 import type { Context } from "@/server/context";
 import type { TopPickProduct } from "@/server/schemas/products.schema";
+import { formatDiscountBadge, getProductReviewCountMap } from "./_shared";
 
 export class GetTopPicksUseCase {
   constructor(private readonly db: Context["db"]) {}
@@ -15,7 +16,7 @@ export class GetTopPicksUseCase {
         slug: product.slug,
         price: product.price,
         discountPrice: product.discountPrice,
-        thumbnail: sql<string | null>`${product.images}[1]`,
+        images: product.images,
         rating: product.rating,
         soldCount: product.soldCount,
         inStock: product.inStock,
@@ -24,14 +25,15 @@ export class GetTopPicksUseCase {
       .from(product)
       .leftJoin(category, eq(product.categoryId, category.id))
       .where(and(eq(product.status, "ACTIVE"), eq(product.isDeleted, false)))
-      .orderBy(
-        desc(product.soldCount),
-        desc(product.rating),
-        desc(product.createdAt)
-      )
+      .orderBy(desc(product.soldCount), desc(product.rating), desc(product.createdAt))
       .limit(limit);
 
-    return rows.map((p, index) => this.mapProduct(p, index));
+    const reviewCountMap = await getProductReviewCountMap(
+      this.db,
+      rows.map((r) => r.id),
+    );
+
+    return rows.map((p, index) => this.mapProduct(p, index, reviewCountMap.get(p.id) ?? 0));
   }
 
   private mapProduct(
@@ -41,14 +43,15 @@ export class GetTopPicksUseCase {
       slug: string;
       price: string | number;
       discountPrice: string | number | null;
-      thumbnail: string | null;
+      images: string[] | null;
       brand?: string | null;
       rating: string | number | null;
       soldCount: number | null;
       inStock: boolean | null;
       categoryName: string | null;
     },
-    index: number,
+    _index: number,
+    reviewCount: number,
   ): TopPickProduct {
     const priceNum = Number(p.price);
     const discountNum = p.discountPrice != null ? Number(p.discountPrice) : null;
@@ -60,11 +63,11 @@ export class GetTopPicksUseCase {
     let badgeVariant: string | null = "default";
 
     if (hasDiscount) {
-      badge = "Sale";
+      badge = formatDiscountBadge(priceNum, discountNum) ?? "Sale";
       badgeVariant = "sale";
     }
 
-    const rawImage = p.thumbnail ?? null;
+    const rawImage = Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null;
 
     return {
       id: p.id,
@@ -73,11 +76,11 @@ export class GetTopPicksUseCase {
       brand: p.brand || p.categoryName || "GADGET",
       badge,
       badgeVariant,
-      rating: Number(p.rating ?? 5.0).toFixed(1),
-      reviewCount: `${Math.max(p.soldCount || 0, 120)}+`,
+      rating: reviewCount > 0 ? Number(p.rating ?? 0).toFixed(1) : "0.0",
+      reviewCount,
       price,
       originalPrice,
-      image: rawImage,
+      thumbnail: rawImage,
       inStock: p.inStock ?? true,
     };
   }

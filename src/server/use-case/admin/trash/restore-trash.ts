@@ -2,7 +2,6 @@ import { eq } from "drizzle-orm";
 import { product, category, customerReview, order } from "@/db/schema";
 import type { Context } from "@/server/context";
 import { cacheService, CACHE_KEYS } from "@/server/services/cache";
-import { writeAudit } from "@/server/lib/orm";
 import { revalidateProductPaths } from "@/server/lib/revalidate";
 import type { TrashItemType } from "@/server/schemas/admin.schema";
 import { ORPCError } from "@orpc/server";
@@ -15,7 +14,6 @@ export class RestoreTrashUseCase {
 
   async execute({ id, itemType }: { id: string; itemType: TrashItemType }) {
     let restored: boolean = false;
-    let itemTitle: string | undefined;
 
     switch (itemType) {
       case "PRODUCT": {
@@ -26,7 +24,6 @@ export class RestoreTrashUseCase {
           .returning();
         if (updated) {
           restored = true;
-          itemTitle = updated.title;
           revalidateProductPaths([updated.slug]);
         }
         break;
@@ -40,7 +37,6 @@ export class RestoreTrashUseCase {
           .returning();
         if (updated) {
           restored = true;
-          itemTitle = updated.name;
           await cacheService.deletePattern(CACHE_KEYS.categoriesPattern);
         }
         break;
@@ -54,7 +50,6 @@ export class RestoreTrashUseCase {
           .returning();
         if (updated) {
           restored = true;
-          itemTitle = updated.customerName;
         }
         break;
       }
@@ -67,7 +62,6 @@ export class RestoreTrashUseCase {
           .returning();
         if (updated) {
           restored = true;
-          itemTitle = `Order #${updated.id.slice(0, 8)} (${updated.customerName})`;
         }
         break;
       }
@@ -79,17 +73,6 @@ export class RestoreTrashUseCase {
     if (!restored) {
       throw new ORPCError("NOT_FOUND", { message: `Item of type ${itemType} with ID ${id} not found.` });
     }
-
-    await writeAudit(this.db, {
-      action: "STATUS_CHANGE",
-      actorId: this.actorId,
-      metadata: {
-        event: "TRASH_RESTORE",
-        itemType,
-        id,
-        title: itemTitle,
-      },
-    });
 
     return { success: true, id, itemType };
   }

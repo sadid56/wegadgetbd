@@ -2,6 +2,7 @@ import { eq, and, or, ilike, desc, asc, count, sql, isNotNull } from "drizzle-or
 import { product, category } from "@/db/schema";
 import type { Context } from "@/server/context";
 import type { ListProductsInput } from "@/server/schemas/products.schema";
+import { getProductReviewCountMap } from "./_shared";
 
 type OrderByClause = ReturnType<typeof asc>[];
 
@@ -30,8 +31,13 @@ export class ListProductsUseCase {
       this.fetchProductCount(input.category, whereClause),
     ]);
 
+    const reviewCountMap = await getProductReviewCountMap(
+      this.db,
+      rows.map((r) => r.id),
+    );
+
     return {
-      products: rows.map((p) => this.mapProduct(p)),
+      products: rows.map((p) => this.mapProduct(p, reviewCountMap.get(p.id) ?? 0)),
       total: Number(total),
       page,
       limit,
@@ -91,7 +97,7 @@ export class ListProductsUseCase {
 
     const categorySubquery = this.db.select({ id: category.id }).from(category).where(eq(category.slug, catSlug)).limit(1);
 
-    return and(whereClause, eq(product.categoryId, categorySubquery as any));
+    return and(whereClause, eq(product.categoryId, sql`(${categorySubquery})`));
   }
 
   private buildOrderByClause(sort?: string): OrderByClause {
@@ -117,7 +123,7 @@ export class ListProductsUseCase {
         slug: product.slug,
         price: product.price,
         discountPrice: product.discountPrice,
-        thumbnail: sql<string | null>`${product.images}[1]`,
+        images: product.images,
         isFeatured: product.isFeatured,
         inStock: product.inStock,
         soldCount: product.soldCount,
@@ -132,31 +138,36 @@ export class ListProductsUseCase {
       .offset(offset);
   }
 
-  private mapProduct(p: {
-    id: string;
-    title: string;
-    slug: string;
-    price: string | number;
-    discountPrice: string | number | null;
-    thumbnail: string | null;
-    isFeatured: boolean | null;
-    inStock: boolean | null;
-    soldCount: number | null;
-    rating: string | number | null;
-    categoryName: string | null;
-  }) {
+  private mapProduct(
+    p: {
+      id: string;
+      title: string;
+      slug: string;
+      price: string | number;
+      discountPrice: string | number | null;
+      images: string[] | null;
+      isFeatured: boolean | null;
+      inStock: boolean | null;
+      soldCount: number | null;
+      rating: string | number | null;
+      categoryName: string | null;
+    },
+    reviewsCount: number,
+  ) {
     return {
       id: p.id,
       title: p.title,
       slug: p.slug,
       price: Number(p.price),
       discountPrice: p.discountPrice != null ? Number(p.discountPrice) : null,
-      thumbnail: p.thumbnail ?? null,
+      thumbnail: Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : null,
       brand: p.categoryName || "GADGET",
       isFeatured: p.isFeatured ?? false,
       inStock: p.inStock ?? true,
       soldCount: p.soldCount ?? 360,
-      rating: Number(p.rating ?? 5),
+      reviewsCount,
+      reviewCount: reviewsCount,
+      rating: reviewsCount > 0 ? Number(p.rating ?? 0) : 0,
     };
   }
 

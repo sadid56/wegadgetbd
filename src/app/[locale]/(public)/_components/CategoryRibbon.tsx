@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Link } from "@/i18n/routing";
 import Box from "@mui/material/Box";
+import Typography from "@mui/material/Typography";
 import { Skeleton } from "@/components/ui/skeleton";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -68,7 +69,7 @@ export function CategoryRibbon() {
       sx={{
         position: "relative",
         zIndex: 10,
-        mt: { xs: -4.5, md: -6.5 },
+        mt: { xs: 1, sm: 1.5, md: 1.75 },
         mb: { xs: 3, md: 4 },
       }}
     >
@@ -103,8 +104,8 @@ export function CategoryRibbon() {
               left: 0,
               top: 0,
               bottom: 0,
-              width: { xs: 44, sm: 68 },
-              background: `linear-gradient(to right, ${tokens.bgPanel} 35%, rgba(255, 255, 255, 0) 100%)`,
+              width: { xs: 52, sm: 80 },
+              background: `linear-gradient(to right, ${tokens.bgPanel} 40%, rgba(255, 255, 255, 0.72) 70%, rgba(255, 255, 255, 0) 100%)`,
               zIndex: 2,
               pointerEvents: "none",
               opacity: canScrollLeft ? 1 : 0,
@@ -119,8 +120,8 @@ export function CategoryRibbon() {
               right: 0,
               top: 0,
               bottom: 0,
-              width: { xs: 44, sm: 68 },
-              background: `linear-gradient(to left, ${tokens.bgPanel} 35%, rgba(255, 255, 255, 0) 100%)`,
+              width: { xs: 56, sm: 88 },
+              background: `linear-gradient(to left, ${tokens.bgPanel} 45%, rgba(255, 255, 255, 0.78) 72%, rgba(255, 255, 255, 0) 100%)`,
               zIndex: 2,
               pointerEvents: "none",
               opacity: showRightFade ? 1 : 0,
@@ -149,25 +150,45 @@ export function CategoryRibbon() {
                   key={i}
                   sx={{
                     display: "inline-flex",
+                    flexDirection: "column",
                     alignItems: "center",
-                    justifyContent: "center",
-                    width: { xs: 72, sm: 84, md: 92 },
-                    height: { xs: 72, sm: 84, md: 92 },
-                    borderRadius: { xs: "18px", sm: "22px" },
-                    bgcolor: tokens.bgSubtle,
-                    border: `1px solid ${tokens.borderSubtle}`,
-                    p: { xs: 1.25, sm: 1.6 },
+                    gap: { xs: 0.65, sm: 0.75 },
+                    width: { xs: 76, sm: 88, md: 96 },
                     flexShrink: 0,
-                    overflow: "hidden",
                   }}
                 >
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: { xs: 60, sm: 70, md: 76 },
+                      height: { xs: 60, sm: 70, md: 76 },
+                      borderRadius: { xs: "16px", sm: "20px" },
+                      bgcolor: tokens.bgSubtle,
+                      border: `1px solid ${tokens.borderSubtle}`,
+                      p: { xs: 1.15, sm: 1.4 },
+                      overflow: "hidden",
+                    }}
+                  >
+                    <Skeleton
+                      variant="rounded"
+                      animation="wave"
+                      sx={{
+                        width: "65%",
+                        height: "65%",
+                        borderRadius: "12px",
+                        bgcolor: "rgba(15, 23, 42, 0.05)",
+                      }}
+                    />
+                  </Box>
                   <Skeleton
-                    variant="rounded"
+                    variant="text"
                     animation="wave"
                     sx={{
-                      width: "65%",
-                      height: "65%",
-                      borderRadius: "12px",
+                      width: "70%",
+                      height: 14,
+                      borderRadius: "6px",
                       bgcolor: "rgba(15, 23, 42, 0.05)",
                     }}
                   />
@@ -182,39 +203,69 @@ export function CategoryRibbon() {
                     aria-label={cat.name}
                     sx={{
                       display: "inline-flex",
+                      flexDirection: "column",
                       alignItems: "center",
-                      justifyContent: "center",
-                      width: { xs: 72, sm: 84, md: 92 },
-                      height: { xs: 72, sm: 84, md: 92 },
-                      borderRadius: { xs: "18px", sm: "22px" },
-                      bgcolor: tokens.bgSubtle,
-                      border: `1px solid ${tokens.borderSubtle}`,
-                      transition: "background-color 0.2s ease, border-color 0.2s ease",
-                      p: { xs: 1.25, sm: 1.6 },
+                      gap: { xs: 0.65, sm: 0.75 },
+                      width: { xs: 76, sm: 88, md: 96 },
                       flexShrink: 0,
                       textDecoration: "none",
-                      overflow: "hidden",
-                      // No bounce effect on hover
-                      "&:hover": {
+                      "&:hover .cat-icon-box": {
                         bgcolor: tokens.primaryLight,
                         borderColor: tokens.primaryBorder,
                       },
+                      "&:hover .cat-label": {
+                        color: tokens.primary,
+                      },
                     }}
                   >
-                    {cat.icon && (
-                      <Box
-                        component="img"
-                        src={getAssetUrl(cat.icon)}
-                        alt={cat.name}
-                        loading="eager"
-                        sx={{
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "contain",
-                          display: "block",
-                        }}
-                      />
-                    )}
+                    <Box
+                      className="cat-icon-box"
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: { xs: 60, sm: 70, md: 76 },
+                        height: { xs: 60, sm: 70, md: 76 },
+                        borderRadius: { xs: "16px", sm: "20px" },
+                        bgcolor: tokens.bgSubtle,
+                        border: `1px solid ${tokens.borderSubtle}`,
+                        transition: "background-color 0.2s ease, border-color 0.2s ease",
+                        p: { xs: 1.15, sm: 1.4 },
+                        overflow: "hidden",
+                      }}
+                    >
+                      {cat.icon && (
+                        <Box
+                          component="img"
+                          src={getAssetUrl(cat.icon)}
+                          alt={cat.name}
+                          loading="eager"
+                          sx={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "contain",
+                            display: "block",
+                          }}
+                        />
+                      )}
+                    </Box>
+                    <Typography
+                      className="cat-label"
+                      sx={{
+                        width: "100%",
+                        fontSize: { xs: 11, sm: 12 },
+                        fontWeight: 600,
+                        lineHeight: 1.25,
+                        color: tokens.textPrimary,
+                        textAlign: "center",
+                        whiteSpace: "nowrap",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        transition: "color 0.2s ease",
+                      }}
+                    >
+                      {cat.name}
+                    </Typography>
                   </Box>
                 </Tooltip>
               ))

@@ -24,6 +24,7 @@ const nextConfig: NextConfig = {
       "@tanstack/react-query",
       "@uiw/react-md-editor",
       "react-zoom-pan-pinch",
+      "@mui/x-date-pickers",
     ],
   },
   devIndicators: false,

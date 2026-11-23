@@ -116,7 +116,7 @@ export function ReviewCarousel() {
             "&::-webkit-scrollbar": { display: "none" },
           }}
         >
-          {reviews.map((review: any, index: number) => {
+          {reviews.map((review, index) => {
             const isFirst = index === 0;
             const isLast = index === reviews.length - 1;
             return (

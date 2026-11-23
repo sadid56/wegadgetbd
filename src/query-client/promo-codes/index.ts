@@ -24,7 +24,10 @@ export const useValidatePromoCode = () =>
     mutationFn: PromoCodeEndpoints.validate,
   });
 
-export const useCreatePromoCode = (options?: Partial<MutationOptions<any>>) =>
+type CreatePromoPayload = Parameters<typeof orpcClient.promoCodes.create>[0];
+type UpdatePromoPayload = Parameters<typeof orpcClient.promoCodes.update>[0];
+
+export const useCreatePromoCode = (options?: Partial<MutationOptions<CreatePromoPayload>>) =>
   useAppMutation({
     mutationFn: PromoCodeEndpoints.create,
     invalidateKeys: [promoCodeBaseKey],
@@ -32,7 +35,7 @@ export const useCreatePromoCode = (options?: Partial<MutationOptions<any>>) =>
     ...options,
   });
 
-export const useUpdatePromoCode = (options?: Partial<MutationOptions<any>>) =>
+export const useUpdatePromoCode = (options?: Partial<MutationOptions<UpdatePromoPayload>>) =>
   useAppMutation({
     mutationFn: PromoCodeEndpoints.update,
     invalidateKeys: [promoCodeBaseKey],
@@ -40,7 +43,7 @@ export const useUpdatePromoCode = (options?: Partial<MutationOptions<any>>) =>
     ...options,
   });
 
-export const useDeletePromoCode = (options?: Partial<MutationOptions<any>>) =>
+export const useDeletePromoCode = (options?: Partial<MutationOptions<string>>) =>
   useAppMutation({
     mutationFn: PromoCodeEndpoints.delete,
     invalidateKeys: [promoCodeBaseKey],

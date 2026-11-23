@@ -9,9 +9,11 @@ import {
   Badge,
   Select,
   MenuItem,
-  FormControl,
   Divider,
 } from "@/components/ui";
+import { FormControl } from "@/components/ui/select";
+import { IconButton } from "@/components/ui/icon-button";
+import CloseIcon from "@mui/icons-material/Close";
 
 import PersonOutlineIcon from "@mui/icons-material/PersonOutlined";
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
@@ -27,11 +29,12 @@ import { orderStatusEnum, type OrderStatus } from "@/db/schema";
 import { parseDevice } from "@/lib/parse-device";
 import { getAssetUrl } from "@/lib/storage";
 import { tokens } from "@/theme/theme";
+import type { AdminOrderItem } from "./orders-client";
 
 interface OrderDetailsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  order: any;
+  order: AdminOrderItem | null;
   onStatusChange: (id: string, status: OrderStatus) => Promise<void>;
 }
 
@@ -55,8 +58,15 @@ const sectionTitleSx = {
 export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }: OrderDetailsModalProps) {
   if (!order) return null;
 
-  const items = order.items as any[];
-  const device = parseDevice(order.userAgent);
+  const items = (order.items || []) as Array<{
+    id: string;
+    productTitle: string;
+    price: number;
+    quantity: number;
+    image?: string | null;
+    [key: string]: unknown;
+  }>;
+  const device = parseDevice(order.userAgent as string | undefined);
   const deviceLabel = `${device.os || ""} ${device.browser || ""} (${device.device})`.trim() || "Unknown Device";
 
   return (
@@ -68,8 +78,8 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
       slotProps={{
         paper: {
           sx: {
-            maxWidth: 768,
-            maxHeight: "90vh",
+            maxWidth: { xs: "100%", sm: 768 },
+            maxHeight: { xs: "100dvh", sm: "90vh" },
           },
         },
       }}
@@ -81,7 +91,7 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            gap: 2,
+            gap: 1.5,
           }}
         >
           <Typography
@@ -94,18 +104,31 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
           >
             Order Details
           </Typography>
-          <FormControl size='small' sx={{ minWidth: 140 }}>
-            <Select
-              value={order.status}
-              onChange={(e) => onStatusChange(order.id, e.target.value as OrderStatus)}
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <FormControl size='small' sx={{ minWidth: { xs: 120, sm: 140 } }}>
+              <Select
+                value={order.status}
+                onChange={(e) => onStatusChange(order.id, e.target.value as OrderStatus)}
+              >
+                {orderStatusEnum.enumValues.map((s) => (
+                  <MenuItem key={s} value={s}>
+                    {s}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            <IconButton
+              size='small'
+              aria-label='Close'
+              onClick={() => onOpenChange(false)}
+              sx={{
+                display: { xs: "inline-flex", sm: "none" },
+                color: "text.secondary",
+              }}
             >
-              {orderStatusEnum.enumValues.map((s) => (
-                <MenuItem key={s} value={s}>
-                  {s}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+              <CloseIcon sx={{ fontSize: 20 }} />
+            </IconButton>
+          </Box>
         </Box>
       </ModalTitle>
 
@@ -158,14 +181,14 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
                     ৳{Number(order.totalAmount).toLocaleString()}
                   </Box>
                   <Badge variant='outline' sx={{ ml: 1 }}>
-                    {order.paymentMethod.replace(/_/g, " ")}
+                    {(order.paymentMethod || "COD").replace(/_/g, " ")}
                   </Badge>
                 </Box>
                 <Box sx={infoRowSx}>
                   <MonitorOutlinedIcon sx={{ fontSize: 20, color: tokens.primary }} />
                   <Box
                     component='span'
-                    title={order.userAgent}
+                    title={String(order.userAgent || "")}
                     sx={{
                       fontSize: 13,
                       color: "text.secondary",
@@ -205,14 +228,14 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
                 borderRadius: `${tokens.radiusMd}px`,
                 border: "1px solid",
                 borderColor: tokens.borderDefault,
-                overflow: "hidden",
+                overflowX: "auto",
               }}
             >
               <Box
                 component='table'
                 sx={{
                   width: "100%",
-                  fontSize: 14,
+                  fontSize: { xs: 12.5, sm: 14 },
                   textAlign: "left",
                   borderCollapse: "collapse",
                 }}
@@ -236,12 +259,13 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
                         key={h.label}
                         component='th'
                         sx={{
-                          px: 2,
+                          px: { xs: 1.25, sm: 2 },
                           py: 1,
                           fontWeight: 700,
                           textAlign: h.align,
-                          fontSize: 13,
+                          fontSize: { xs: 12, sm: 13 },
                           color: "text.primary",
+                          whiteSpace: "nowrap",
                         }}
                       >
                         {h.label}
@@ -263,13 +287,13 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
                         "&:hover": { bgcolor: tokens.bgSubtle },
                       }}
                     >
-                      <Box component='td' sx={{ px: 2, py: 1.5 }}>
+                      <Box component='td' sx={{ px: { xs: 1.25, sm: 2 }, py: 1.5 }}>
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                          {item.image && (
+                          {Boolean(item.image) && (
                             <Box
                               component='img'
-                              src={getAssetUrl(item.image)}
-                              alt={item.title}
+                              src={getAssetUrl(String(item.image))}
+                              alt={String(item.title || "")}
                               sx={{
                                 height: 32,
                                 width: 32,
@@ -282,27 +306,28 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
                             />
                           )}
                           <Box component='span' sx={{ fontWeight: 500, color: "text.primary" }}>
-                            {item.title}
+                            {String(item.title || "")}
                           </Box>
                         </Box>
                       </Box>
-                      <Box component='td' sx={{ px: 2, py: 1.5, color: "text.primary" }}>
+                      <Box component='td' sx={{ px: { xs: 1.25, sm: 2 }, py: 1.5, color: "text.primary", whiteSpace: "nowrap" }}>
                         ৳{Number(item.price).toLocaleString()}
                       </Box>
-                      <Box component='td' sx={{ px: 2, py: 1.5, color: "text.primary" }}>
-                        ×{item.qty}
+                      <Box component='td' sx={{ px: { xs: 1.25, sm: 2 }, py: 1.5, color: "text.primary", whiteSpace: "nowrap" }}>
+                        ×{Number(item.qty || 1)}
                       </Box>
                       <Box
                         component='td'
                         sx={{
-                          px: 2,
+                          px: { xs: 1.25, sm: 2 },
                           py: 1.5,
                           textAlign: "right",
                           fontWeight: 700,
                           color: "text.primary",
+                          whiteSpace: "nowrap",
                         }}
                       >
-                        ৳{(Number(item.price) * item.qty).toLocaleString()}
+                        ৳{(Number(item.price) * Number(item.qty || 1)).toLocaleString()}
                       </Box>
                     </Box>
                   ))}
@@ -420,7 +445,7 @@ export function OrderDetailsModal({ open, onOpenChange, order, onStatusChange }:
             )}
           </Box>
         </Box>
-      </ModalContent>
+      </ModalContent> 
     </Modal>
   );
 }

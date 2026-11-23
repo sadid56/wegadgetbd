@@ -69,7 +69,7 @@ export default function CartPage() {
   }, 0);
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: tokens.bgCanvas, pb: { xs: 8, md: 10 } }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: tokens.bgCanvas, pb: { xs: 12, md: 10 } }}>
       {/* Top Stepper Navigation */}
       <CheckoutStepperHeader
         currentStep="cart"
@@ -86,10 +86,11 @@ export default function CartPage() {
               bgcolor: "transparent",
               border: "none",
               cursor: "pointer",
-              fontSize: 13,
+              fontSize: { xs: 12, sm: 13 },
               fontWeight: 600,
               color: tokens.danger,
               p: 0,
+              whiteSpace: "nowrap",
               transition: "opacity 150ms ease",
               "&:hover": { opacity: 0.8 },
             }}
@@ -101,12 +102,12 @@ export default function CartPage() {
       />
 
       {/* Main Container */}
-      <Box sx={{ maxWidth: 1200, mx: "auto", px: { xs: 2, sm: 3 }, pt: { xs: 3, md: 4 } }}>
-        <Box sx={{ mb: 3 }}>
+      <Box sx={{ maxWidth: 1200, mx: "auto", px: { xs: 2, sm: 3 }, pt: { xs: 2, md: 4 } }}>
+        <Box sx={{ mb: { xs: 2, md: 3 } }}>
           <Typography
             component="h1"
             sx={{
-              fontSize: { xs: 22, md: 28 },
+              fontSize: { xs: 21, md: 28 },
               fontWeight: 800,
               color: tokens.textPrimary,
               letterSpacing: "-0.02em",
@@ -114,7 +115,7 @@ export default function CartPage() {
           >
             {t("title")}
           </Typography>
-          <Typography sx={{ fontSize: 14, color: tokens.textMuted, mt: 0.5 }}>
+          <Typography sx={{ fontSize: { xs: 13, sm: 14 }, color: tokens.textMuted, mt: 0.4 }}>
             {t("itemsInCart", { count: locale === "bn" ? toBengaliNumber(totalCount) : totalCount })}
           </Typography>
         </Box>
@@ -123,17 +124,17 @@ export default function CartPage() {
           sx={{
             display: "grid",
             gridTemplateColumns: { xs: "1fr", lg: "1fr 380px" },
-            gap: 3,
+            gap: { xs: 2, md: 3 },
             alignItems: "flex-start",
           }}
         >
           {/* Left Column: Products List + Coupon */}
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: { xs: 2, md: 2.5 } }}>
             <Box
               sx={{
                 bgcolor: tokens.bgPanel,
                 border: "none",
-                borderRadius: "12px",
+                borderRadius: { xs: "16px", sm: "12px" },
                 overflow: "hidden",
               }}
             >
@@ -170,7 +171,7 @@ export default function CartPage() {
                     setDeleteTarget({
                       type: "single",
                       id: String(targetItem.id),
-                      title: targetItem.title || targetItem.name || "this item",
+                      title: targetItem.title || "this item",
                     })
                   }
                 />
@@ -182,8 +183,8 @@ export default function CartPage() {
               sx={{
                 bgcolor: tokens.bgPanel,
                 border: "none",
-                borderRadius: "12px",
-                p: 2.5,
+                borderRadius: { xs: "16px", sm: "12px" },
+                p: { xs: 1.75, sm: 2.5 },
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5 }}>

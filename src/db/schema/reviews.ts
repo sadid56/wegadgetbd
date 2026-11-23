@@ -7,6 +7,7 @@ import {
   pgEnum,
   index,
   unique,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
 import { product } from "./products";
@@ -87,7 +88,7 @@ export const reviewReply = pgTable(
     reviewId: text("reviewId")
       .notNull()
       .references(() => productReview.id, { onDelete: "cascade" }),
-    parentId: text("parentId").references((): any => reviewReply.id, { onDelete: "cascade" }),
+    parentId: text("parentId").references((): AnyPgColumn => reviewReply.id, { onDelete: "cascade" }),
     userId: text("userId").references(() => user.id, { onDelete: "set null" }),
     userName: text("userName").notNull(),
     userAvatar: text("userAvatar"),

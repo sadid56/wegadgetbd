@@ -5,16 +5,17 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { TextField } from "@/components/ui/input";
 import { tokens } from "@/theme/theme";
-import { BN } from "./checkout-constants";
 import { Field } from "./checkout-field";
 import { useLocale, useTranslations } from "next-intl";
 import { formatPrice } from "@/lib/i18n-utils";
+import type { UseFormRegister, FieldErrors, UseFormSetValue } from "react-hook-form";
+import type { CheckoutValues } from "./checkout-schema";
 
 interface CheckoutFormProps {
-  register: any;
-  errors: any;
+  register: UseFormRegister<CheckoutValues>;
+  errors: FieldErrors<CheckoutValues>;
   locationValue: string;
-  setValue: any;
+  setValue: UseFormSetValue<CheckoutValues>;
   onSubmit?: FormEventHandler<HTMLFormElement>;
 }
 
@@ -27,7 +28,7 @@ export function CheckoutForm({ register, errors, locationValue, setValue, onSubm
     { value: "outside_dhaka", label: t("outsideDhaka"), charge: formatPrice(130, locale), desc: t("outsideDhakaDesc") },
   ] as const;
 
-  const fieldProps = (name: string, htmlInputProps?: Record<string, any>) => {
+  const fieldProps = (name: keyof CheckoutValues, htmlInputProps?: React.InputHTMLAttributes<HTMLInputElement>) => {
     const { ref, ...rest } = register(name);
     return {
       ...rest,

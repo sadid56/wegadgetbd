@@ -22,35 +22,6 @@ export const dashboardStatsOutputSchema = z.object({
   recentActivity: z.array(z.any()),
 });
 
-// Audit Logs Schemas
-export const auditLogSchema = z.object({
-  id: z.string(),
-  action: z.string(),
-  actorId: z.string(),
-  metadata: z.any().nullable().optional(),
-  timestamp: z.date().or(z.string()),
-  user: z
-    .object({
-      id: z.string(),
-      name: z.string(),
-      email: z.string(),
-    })
-    .nullable()
-    .optional(),
-});
-
-export const listAuditLogsInputSchema = paginationInputSchema.extend({
-  search: z.string().optional(),
-  action: z.string().optional(),
-});
-
-export const listAuditLogsOutputSchema = z.object({
-  logs: z.array(auditLogSchema),
-  total: z.number(),
-  currentPage: z.number(),
-  totalPages: z.number(),
-});
-
 // Users Schemas
 export const userSchema = z.object({
   id: z.string(),
@@ -65,7 +36,6 @@ export const userSchema = z.object({
   updatedAt: z.date().or(z.string()),
   _count: z.object({ sessions: z.number() }).optional(),
   sessions: z.array(z.any()).optional(),
-  auditLogs: z.array(z.any()).optional(),
 });
 
 export const listUsersInputSchema = paginationInputSchema.extend({
@@ -202,9 +172,6 @@ export const trashActionInputSchema = z.object({
 export type TrashActionInput = z.infer<typeof trashActionInputSchema>;
 
 export type DashboardStatsOutput = z.infer<typeof dashboardStatsOutputSchema>;
-export type AuditLog = z.infer<typeof auditLogSchema>;
-export type ListAuditLogsInput = z.infer<typeof listAuditLogsInputSchema>;
-export type ListAuditLogsOutput = z.infer<typeof listAuditLogsOutputSchema>;
 export type User = z.infer<typeof userSchema>;
 export type ListUsersInput = z.infer<typeof listUsersInputSchema>;
 export type ListUsersOutput = z.infer<typeof listUsersOutputSchema>;

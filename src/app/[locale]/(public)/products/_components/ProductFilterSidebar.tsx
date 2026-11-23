@@ -61,12 +61,13 @@ export interface ProductFilterSidebarProps {
   totalProductsCount: number;
 }
 
-const MAX_SLIDER_PRICE = 300000;
+const MAX_SLIDER_PRICE = 10000;
 
 const PRICE_PRESETS = [
-  { label: "৳0-10k", min: null, max: 10000 },
-  { label: "৳10k-30k", min: 10000, max: 30000 },
-  { label: "৳30k+", min: 30000, max: null },
+  { label: "Under ৳1,000", min: null, max: 1000 },
+  { label: "৳1,000 - ৳3,000", min: 1000, max: 3000 },
+  { label: "৳3,000 - ৳10,000", min: 3000, max: 10000 },
+  { label: "৳10,000+", min: 10000, max: null },
 ] as const;
 
 const sectionCardSx = {
@@ -232,7 +233,7 @@ export function ProductFilterSidebar({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          border: isMobileDrawer ? "none" : "1px solid rgba(0, 191, 166, 0.25)",
+          border: "none",
           borderBottom: isMobileDrawer ? "1px solid rgba(0, 191, 166, 0.2)" : undefined,
           boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)",
           position: isMobileDrawer ? "sticky" : "static",
@@ -324,7 +325,7 @@ export function ProductFilterSidebar({
               onChangeCommitted={handleSliderCommitted}
               min={0}
               max={MAX_SLIDER_PRICE}
-              step={2500}
+              step={100}
               valueLabelDisplay='auto'
               valueLabelFormat={(v) => `৳${locale === "bn" ? toBengaliNumber(v) : v.toLocaleString()}`}
             />
@@ -335,7 +336,7 @@ export function ProductFilterSidebar({
               ৳{locale === "bn" ? toBengaliNumber(0) : "0"}
             </Typography>
             <Typography sx={{ fontSize: "0.6875rem", color: tokens.textSecondary, fontWeight: 500 }}>
-              ৳{locale === "bn" ? toBengaliNumber(300000) : "300,000"}+
+              ৳{locale === "bn" ? toBengaliNumber(MAX_SLIDER_PRICE) : MAX_SLIDER_PRICE.toLocaleString()}+
             </Typography>
           </Box>
 
@@ -359,71 +360,73 @@ export function ProductFilterSidebar({
           </Box>
         </FilterSection>
 
-        <FilterSection title={t("brand")} open={open.brand} onToggle={() => toggle("brand")}>
-          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25, pt: 0.25 }}>
-            {filteredBrands.map((b) => {
-              const isChecked = brandLower === b.name.toLowerCase();
-              return (
-                <Box
-                  key={b.name}
-                  onClick={() => onBrandChange(isChecked ? "" : b.name)}
+        {brands.length > 0 && (
+          <FilterSection title={t("brand")} open={open.brand} onToggle={() => toggle("brand")}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 0.25, pt: 0.25 }}>
+              {filteredBrands.map((b) => {
+                const isChecked = brandLower === b.name.toLowerCase();
+                return (
+                  <Box
+                    key={b.name}
+                    onClick={() => onBrandChange(isChecked ? "" : b.name)}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      cursor: "pointer",
+                      userSelect: "none",
+                      px: 0.75,
+                      py: 0.25,
+                      borderRadius: "8px",
+                      bgcolor: isChecked ? "rgba(0, 191, 166, 0.08)" : "transparent",
+                      transition: "background-color 0.15s ease",
+                      "&:hover": {
+                        bgcolor: isChecked ? "rgba(0, 191, 166, 0.12)" : "rgba(0, 0, 0, 0.02)",
+                      },
+                    }}
+                  >
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+                      <Checkbox checked={isChecked} size='small' />
+                      <Typography
+                        sx={{
+                          fontSize: "0.8125rem",
+                          color: isChecked ? tokens.primary : tokens.textPrimary,
+                          fontWeight: isChecked ? 600 : 400,
+                        }}
+                      >
+                        {b.name}
+                      </Typography>
+                    </Box>
+                    <Typography sx={{ fontSize: "0.6875rem", color: tokens.textDisabled }}>({b.count})</Typography>
+                  </Box>
+                );
+              })}
+
+              {brands.length > 5 && (
+                <Typography
+                  component='button'
+                  type='button'
+                  onClick={() => setShowAllBrands((v) => !v)}
                   sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
+                    background: "none",
+                    border: "none",
+                    color: tokens.primary,
+                    fontSize: "0.75rem",
+                    fontWeight: 600,
                     cursor: "pointer",
-                    userSelect: "none",
+                    textAlign: "left",
+                    p: 0,
+                    mt: 0.25,
                     px: 0.75,
-                    py: 0.25,
-                    borderRadius: "8px",
-                    bgcolor: isChecked ? "rgba(0, 191, 166, 0.08)" : "transparent",
-                    transition: "background-color 0.15s ease",
-                    "&:hover": {
-                      bgcolor: isChecked ? "rgba(0, 191, 166, 0.12)" : "rgba(0, 0, 0, 0.02)",
-                    },
+                    "&:hover": { textDecoration: "underline" },
                   }}
                 >
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                    <Checkbox checked={isChecked} size='small' />
-                    <Typography
-                      sx={{
-                        fontSize: "0.8125rem",
-                        color: isChecked ? tokens.primary : tokens.textPrimary,
-                        fontWeight: isChecked ? 600 : 400,
-                      }}
-                    >
-                      {b.name}
-                    </Typography>
-                  </Box>
-                  <Typography sx={{ fontSize: "0.6875rem", color: tokens.textDisabled }}>({b.count})</Typography>
-                </Box>
-              );
-            })}
-
-            {brands.length > 5 && (
-              <Typography
-                component='button'
-                type='button'
-                onClick={() => setShowAllBrands((v) => !v)}
-                sx={{
-                  background: "none",
-                  border: "none",
-                  color: tokens.primary,
-                  fontSize: "0.75rem",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  textAlign: "left",
-                  p: 0,
-                  mt: 0.25,
-                  px: 0.75,
-                  "&:hover": { textDecoration: "underline" },
-                }}
-              >
-                {showAllBrands ? `${t("showLess")} ▴` : `${t("showMore")} ▾`}
-              </Typography>
-            )}
-          </Box>
-        </FilterSection>
+                  {showAllBrands ? `${t("showLess")} ▴` : `${t("showMore")} ▾`}
+                </Typography>
+              )}
+            </Box>
+          </FilterSection>
+        )}
 
         <FilterSection
           title={t("rating")}

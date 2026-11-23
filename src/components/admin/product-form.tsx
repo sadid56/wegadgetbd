@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
@@ -14,13 +14,14 @@ import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/ui/icon-button";
 import { TextField, InputAdornment } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { FormControl, Select, MenuItem } from "@/components/ui/select";
+import { FormControl as SelectFormControl, Select, MenuItem } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { CircularProgress } from "@/components/ui/spinner";
 import { Card } from "@/components/ui/card";
+import { FileDropdown } from "@/components/ui/file-dropdown";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
-import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import VideocamOutlinedIcon from "@mui/icons-material/VideocamOutlined";
 import AddIcon from "@mui/icons-material/Add";
@@ -28,18 +29,24 @@ import AddIcon from "@mui/icons-material/Add";
 import { useCreateProduct, useUpdateProduct } from "@/query-client/products";
 import { useAdminCategories } from "@/query-client/categories";
 import { useToast } from "@/context/toast-context";
-import { uploadFileToStorage, getAssetUrl, stripAssetDomain } from "@/lib/storage";
+import { uploadFileToStorage, stripAssetDomain } from "@/lib/storage";
 import { normalizeVideoInput } from "@/lib/video-links";
 import { slugify } from "@/lib/utils";
-import { tokens } from "@/theme/theme";
 import { createProductInputSchema, type CreateProductInput } from "@/server/schemas/products.schema";
 
 const MDEditor = dynamic(() => import("@uiw/react-md-editor"), { ssr: false });
 
 export type ProductFormValues = CreateProductInput;
 
+interface ProductFormInitialData extends Omit<Partial<CreateProductInput>, "price" | "discountPrice" | "markdown_description"> {
+  id: string;
+  price?: number | string | null;
+  discountPrice?: number | string | null;
+  markdown_description?: string | null;
+}
+
 interface ProductFormProps {
-  initialData?: any;
+  initialData?: ProductFormInitialData | null;
 }
 
 export const COMMON_GADGET_ATTRIBUTES = [
@@ -66,19 +73,22 @@ export const COMMON_GADGET_ATTRIBUTES = [
   "Package Contents",
 ];
 
-const parseInitialSpecifications = (raw: any): { id: string; key: string; value: string }[] => {
+const parseInitialSpecifications = (raw: unknown): { id: string; key: string; value: string }[] => {
   if (!raw) return [];
   if (Array.isArray(raw)) {
     return raw
-      .filter((s: any) => s && (s.key || s.value))
-      .map((s: any) => ({
+      .filter(
+        (s): s is { key?: unknown; value?: unknown } =>
+          Boolean(s) && typeof s === "object" && ("key" in s || "value" in s)
+      )
+      .map((s) => ({
         id: crypto.randomUUID(),
         key: String(s.key || ""),
         value: String(s.value || ""),
       }));
   }
   if (typeof raw === "object") {
-    return Object.entries(raw).map(([key, value]) => ({
+    return Object.entries(raw as Record<string, unknown>).map(([key, value]) => ({
       id: crypto.randomUUID(),
       key,
       value: String(value || ""),
@@ -135,12 +145,12 @@ export function ProductForm({ initialData }: ProductFormProps) {
   };
 
   const form = useForm<ProductFormValues>({
-    resolver: zodResolver(createProductInputSchema) as any,
+    resolver: zodResolver(createProductInputSchema) as Resolver<ProductFormValues>,
     defaultValues: initialData
       ? {
           ...initialData,
-          price: initialData.price ? Number(initialData.price) : ("" as any),
-          discountPrice: initialData.discountPrice != null ? Number(initialData.discountPrice) : ("" as any),
+          price: initialData.price ? Number(initialData.price) : ("" as unknown as number),
+          discountPrice: initialData.discountPrice != null ? Number(initialData.discountPrice) : ("" as unknown as number),
           images: initialData.images || [],
           specifications: initialData.specifications || {},
           tags: initialData.tags || [],
@@ -153,8 +163,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
       : {
           title: "",
           slug: "",
-          price: "" as any,
-          discountPrice: "" as any,
+          price: "" as unknown as number,
+          discountPrice: "" as unknown as number,
           categoryId: "",
           status: "PENDING",
           images: [],
@@ -188,7 +198,7 @@ export function ProductForm({ initialData }: ProductFormProps) {
             toast.success("Product updated successfully");
             router.push("/admin/products");
           },
-          onError: (err: any) => {
+          onError: (err: Error) => {
             toast.error(err?.message || "Failed to update product");
           },
         },
@@ -199,19 +209,18 @@ export function ProductForm({ initialData }: ProductFormProps) {
           toast.success("Product created successfully");
           router.push("/admin/products");
         },
-        onError: (err: any) => {
+        onError: (err: Error) => {
           toast.error(err?.message || "Failed to create product");
         },
       });
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.length) return;
+  const handleImageUpload = async (files: File[]) => {
+    if (!files.length) return;
     setUploading(true);
 
     try {
-      const files = Array.from(e.target.files);
       const newImages = [...form.getValues("images")];
 
       for (const file of files) {
@@ -221,8 +230,8 @@ export function ProductForm({ initialData }: ProductFormProps) {
 
       form.setValue("images", newImages);
       toast.success("Images uploaded");
-    } catch (error: any) {
-      toast.error("Upload failed: " + error.message);
+    } catch (error: unknown) {
+      toast.error("Upload failed: " + (error instanceof Error ? error.message : "Unknown error"));
     } finally {
       setUploading(false);
     }
@@ -249,215 +258,195 @@ export function ProductForm({ initialData }: ProductFormProps) {
   const isPending = isCreating || isUpdating || uploading;
 
   return (
-    <Box
-      component='form'
-      onSubmit={form.handleSubmit(onSubmit as any)}
-      sx={{ display: "flex", flexDirection: "column", gap: 3.5, width: "100%" }}
-    >
-      {/* Title & Slug */}
-      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 3 }}>
-        <Box>
-          <Label htmlFor='title' sx={{ mb: 0.75, display: "block" }}>
-            Name of the product *
-          </Label>
-          <Controller
+    <Form {...form}>
+      <Box
+        component='form'
+        onSubmit={form.handleSubmit(onSubmit)}
+        sx={{ display: "flex", flexDirection: "column", gap: 3.5, width: "100%" }}
+      >
+        {/* Title & Slug */}
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 3 }}>
+          <FormField
+            control={form.control}
             name='title'
-            control={form.control}
             render={({ field }) => (
-              <TextField
-                {...field}
-                id='title'
-                placeholder='Product title'
-                fullWidth
-                size='small'
-                error={!!form.formState.errors.title}
-                helperText={form.formState.errors.title?.message}
-                onChange={(e) => {
-                  field.onChange(e);
-                  if (!initialData && !form.formState.dirtyFields.slug) {
-                    form.setValue("slug", slugify(e.target.value));
-                  }
-                }}
-              />
+              <FormItem>
+                <FormLabel>Name of the product *</FormLabel>
+                <FormControl>
+                  <TextField
+                    {...field}
+                    placeholder='Product title'
+                    fullWidth
+                    size='small'
+                    onChange={(e) => {
+                      field.onChange(e);
+                      if (!initialData && !form.formState.dirtyFields.slug) {
+                        form.setValue("slug", slugify(e.target.value));
+                      }
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
           />
-        </Box>
 
-        <Box>
-          <Label htmlFor='slug' sx={{ mb: 0.75, display: "block" }}>
-            Slug (Optional)
-          </Label>
-          <Controller
+          <FormField
+            control={form.control}
             name='slug'
-            control={form.control}
             render={({ field }) => (
-              <TextField
-                {...field}
-                id='slug'
-                placeholder='unique-url-identifier'
-                fullWidth
-                size='small'
-                error={!!form.formState.errors.slug}
-                helperText={form.formState.errors.slug?.message}
-              />
+              <FormItem>
+                <FormLabel>Slug (Optional)</FormLabel>
+                <FormControl>
+                  <TextField {...field} placeholder='unique-url-identifier' fullWidth size='small' />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
           />
         </Box>
-      </Box>
 
-      {/* Category, Status, Price, DiscountPrice */}
-      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "repeat(4, 1fr)" }, gap: 2.5 }}>
-        {/* Category */}
-        <Box>
-          <Label sx={{ mb: 0.75, display: "block" }}>
-            Category *
-          </Label>
-          <Controller
+        {/* Category, Status, Price, DiscountPrice */}
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "repeat(4, 1fr)" }, gap: 2.5 }}>
+          <FormField
+            control={form.control}
             name='categoryId'
-            control={form.control}
             render={({ field }) => (
-              <FormControl fullWidth size='small' error={!!form.formState.errors.categoryId}>
-                <Select {...field}>
-                  <MenuItem value='' disabled>
-                    Select category
-                  </MenuItem>
-                  {categories?.map((cat) => (
-                    <MenuItem key={cat.id} value={cat.id} sx={{ fontSize: 14 }}>
-                      {cat.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {form.formState.errors.categoryId && (
-                  <Typography variant='caption' sx={{ color: "error.main", mt: 0.5 }}>
-                    {form.formState.errors.categoryId.message}
-                  </Typography>
-                )}
-              </FormControl>
+              <FormItem>
+                <FormLabel>Category *</FormLabel>
+                <FormControl>
+                  <SelectFormControl fullWidth size='small' error={!!form.formState.errors.categoryId}>
+                    <Select {...field}>
+                      <MenuItem value='' disabled>
+                        Select category
+                      </MenuItem>
+                      {categories?.map((cat) => (
+                        <MenuItem key={cat.id} value={cat.id} sx={{ fontSize: 14 }}>
+                          {cat.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </SelectFormControl>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
           />
-        </Box>
 
-        {/* Status */}
-        <Box>
-          <Label sx={{ mb: 0.75, display: "block" }}>
-            Status *
-          </Label>
-          <Controller
+          <FormField
+            control={form.control}
             name='status'
-            control={form.control}
             render={({ field }) => (
-              <FormControl fullWidth size='small'>
-                <Select {...field}>
-                  <MenuItem value='PENDING' sx={{ fontSize: 14 }}>
-                    Pending
-                  </MenuItem>
-                  <MenuItem value='ACTIVE' sx={{ fontSize: 14 }}>
-                    Active
-                  </MenuItem>
-                  <MenuItem value='INACTIVE' sx={{ fontSize: 14 }}>
-                    Inactive
-                  </MenuItem>
-                </Select>
-              </FormControl>
+              <FormItem>
+                <FormLabel>Status *</FormLabel>
+                <FormControl>
+                  <SelectFormControl fullWidth size='small'>
+                    <Select {...field}>
+                      <MenuItem value='PENDING' sx={{ fontSize: 14 }}>
+                        Pending
+                      </MenuItem>
+                      <MenuItem value='ACTIVE' sx={{ fontSize: 14 }}>
+                        Active
+                      </MenuItem>
+                      <MenuItem value='INACTIVE' sx={{ fontSize: 14 }}>
+                        Inactive
+                      </MenuItem>
+                    </Select>
+                  </SelectFormControl>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
           />
-        </Box>
 
-        {/* Price */}
-        <Box>
-          <Label htmlFor='price' sx={{ mb: 0.75, display: "block" }}>
-            Main Price *
-          </Label>
-          <Controller
+          <FormField
+            control={form.control}
             name='price'
-            control={form.control}
             render={({ field }) => (
-              <TextField
-                {...field}
-                id='price'
-                type='number'
-                placeholder='0.00'
-                fullWidth
-                size='small'
-                slotProps={{ htmlInput: { step: "0.01" } }}
-                error={!!form.formState.errors.price}
-                helperText={form.formState.errors.price?.message}
-              />
+              <FormItem>
+                <FormLabel>Main Price *</FormLabel>
+                <FormControl>
+                  <TextField
+                    {...field}
+                    type='number'
+                    placeholder='0.00'
+                    fullWidth
+                    size='small'
+                    slotProps={{ htmlInput: { step: "0.01" } }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
           />
-        </Box>
 
-        {/* Discount Price */}
-        <Box>
-          <Label htmlFor='discountPrice' sx={{ mb: 0.75, display: "block" }}>
-            Discount Price
-          </Label>
-          <Controller
+          <FormField
+            control={form.control}
             name='discountPrice'
-            control={form.control}
             render={({ field }) => (
-              <TextField
-                {...field}
-                id='discountPrice'
-                type='number'
-                placeholder='0.00'
-                fullWidth
-                size='small'
-                slotProps={{ htmlInput: { step: "0.01" } }}
-                error={!!form.formState.errors.discountPrice}
-                helperText={form.formState.errors.discountPrice?.message}
-              />
+              <FormItem>
+                <FormLabel>Discount Price</FormLabel>
+                <FormControl>
+                  <TextField
+                    {...field}
+                    type='number'
+                    placeholder='0.00'
+                    fullWidth
+                    size='small'
+                    slotProps={{ htmlInput: { step: "0.01" } }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
           />
         </Box>
-      </Box>
 
-      {/* Rating & Sold count */}
-      <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2.5 }}>
-        <Box>
-          <Label sx={{ mb: 0.75, display: "block" }}>
-            Rating (0 - 5)
-          </Label>
-          <Controller
+        {/* Rating & Sold count */}
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2.5 }}>
+          <FormField
+            control={form.control}
             name='rating'
-            control={form.control}
             render={({ field }) => (
-              <TextField
-                {...field}
-                type='number'
-                placeholder='5.0'
-                fullWidth
-                size='small'
-                slotProps={{ htmlInput: { step: "0.1", min: "0", max: "5" } }}
-                error={!!form.formState.errors.rating}
-                helperText={form.formState.errors.rating?.message}
-              />
+              <FormItem>
+                <FormLabel>Rating (0 - 5)</FormLabel>
+                <FormControl>
+                  <TextField
+                    {...field}
+                    type='number'
+                    placeholder='5.0'
+                    fullWidth
+                    size='small'
+                    slotProps={{ htmlInput: { step: "0.1", min: "0", max: "5" } }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
           />
-        </Box>
 
-        <Box>
-          <Label sx={{ mb: 0.75, display: "block" }}>
-            Sold Count
-          </Label>
-          <Controller
-            name='soldCount'
+          <FormField
             control={form.control}
+            name='soldCount'
             render={({ field }) => (
-              <TextField
-                {...field}
-                type='number'
-                placeholder='360'
-                fullWidth
-                size='small'
-                slotProps={{ htmlInput: { min: "0" } }}
-                error={!!form.formState.errors.soldCount}
-                helperText={form.formState.errors.soldCount?.message || "Used in product CTA button"}
-              />
+              <FormItem>
+                <FormLabel>Sold Count</FormLabel>
+                <FormControl>
+                  <TextField
+                    {...field}
+                    type='number'
+                    placeholder='360'
+                    fullWidth
+                    size='small'
+                    slotProps={{ htmlInput: { min: "0" } }}
+                  />
+                </FormControl>
+                <FormDescription>Used in product CTA button</FormDescription>
+                <FormMessage />
+              </FormItem>
             )}
           />
         </Box>
-      </Box>
 
       {/* Dynamic Key Attributes & Technical Specifications */}
       <Card sx={{ p: { xs: 2, sm: 2.5 }, display: "flex", flexDirection: "column", gap: 2 }}>
@@ -572,21 +561,25 @@ export function ProductForm({ initialData }: ProductFormProps) {
 
       {/* Stock Availability */}
       <Card sx={{ p: 2 }}>
-        <Controller
-          name='inStock'
+        <FormField
           control={form.control}
+          name='inStock'
           render={({ field }) => (
-            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-              <Box>
-                <Typography sx={{ fontSize: 14, fontWeight: 600 }}>Stock Availability</Typography>
-                <Typography variant='caption' sx={{ color: "text.secondary", display: "block", mt: 0.25 }}>
-                  {field.value
-                    ? "In Stock — product is currently available for purchase"
-                    : "Out of Stock — product is marked as unavailable"}
-                </Typography>
+            <FormItem>
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <Box>
+                  <Typography sx={{ fontSize: 14, fontWeight: 600 }}>Stock Availability</Typography>
+                  <Typography variant='caption' sx={{ color: "text.secondary", display: "block", mt: 0.25 }}>
+                    {field.value
+                      ? "In Stock — product is currently available for purchase"
+                      : "Out of Stock — product is marked as unavailable"}
+                  </Typography>
+                </Box>
+                <FormControl>
+                  <Switch checked={Boolean(field.value)} onCheckedChange={(val) => field.onChange(val)} />
+                </FormControl>
               </Box>
-              <Switch checked={Boolean(field.value)} onCheckedChange={(val) => field.onChange(val)} />
-            </Box>
+            </FormItem>
           )}
         />
       </Card>
@@ -598,26 +591,31 @@ export function ProductForm({ initialData }: ProductFormProps) {
         </Label>
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1fr 1fr" }, gap: 2 }}>
           {[0, 1].map((index) => (
-            <Controller
+            <FormField
               key={index}
-              name={`videoLinks.${index}` as any}
               control={form.control}
+              name={`videoLinks.${index}` as `videoLinks.${number}`}
               render={({ field }) => (
-                <TextField
-                  {...field}
-                  placeholder={`Video link ${index + 1}`}
-                  fullWidth
-                  size='small'
-                  slotProps={{
-                    input: {
-                      startAdornment: (
-                        <InputAdornment position='start'>
-                          <VideocamOutlinedIcon sx={{ fontSize: 18, color: "text.secondary" }} />
-                        </InputAdornment>
-                      ),
-                    },
-                  }}
-                />
+                <FormItem>
+                  <FormControl>
+                    <TextField
+                      {...field}
+                      placeholder={`Video link ${index + 1}`}
+                      fullWidth
+                      size='small'
+                      slotProps={{
+                        input: {
+                          startAdornment: (
+                            <InputAdornment position='start'>
+                              <VideocamOutlinedIcon sx={{ fontSize: 18, color: "text.secondary" }} />
+                            </InputAdornment>
+                          ),
+                        },
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
             />
           ))}
@@ -625,14 +623,12 @@ export function ProductForm({ initialData }: ProductFormProps) {
       </Box>
 
       {/* Tags */}
-      <Box>
-        <Label sx={{ mb: 0.75, display: "block" }}>
-          Tags (Keywords for search)
-        </Label>
-        <Controller
-          name='tags'
-          control={form.control}
-          render={({ field }) => (
+      <FormField
+        control={form.control}
+        name='tags'
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Tags (Keywords for search)</FormLabel>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
               <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
                 {(field.value || []).map((tag, idx) => (
@@ -645,113 +641,42 @@ export function ProductForm({ initialData }: ProductFormProps) {
                   </Badge>
                 ))}
               </Box>
-              <TextField
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={handleAddTag}
-                placeholder='Add tag and press Enter or comma'
-                fullWidth
-                size='small'
-                helperText='Press Enter or comma to add each tag'
-              />
+              <FormControl>
+                <TextField
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={handleAddTag}
+                  placeholder='Add tag and press Enter or comma'
+                  fullWidth
+                  size='small'
+                />
+              </FormControl>
+              <FormDescription>Press Enter or comma to add each tag</FormDescription>
             </Box>
-          )}
-        />
-      </Box>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
       {/* Images */}
       <Box>
         <Label sx={{ mb: 0.75, display: "block" }}>
           Images (Thumbnail and Gallery) *
         </Label>
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5, mb: 1.5 }}>
-          {form.watch("images")?.map((url, idx) => (
-            <Box
-              key={idx}
-              sx={{
-                position: "relative",
-                width: 100,
-                height: 100,
-                borderRadius: "8px",
-                overflow: "hidden",
-                border: "1px solid",
-                borderColor: idx === 0 ? "primary.main" : "divider",
-              }}
-            >
-              <Box component='img' src={getAssetUrl(url)} alt={`img-${idx}`} sx={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              <IconButton
-                size='small'
-                onClick={() => {
-                  const updated = [...form.getValues("images")];
-                  updated.splice(idx, 1);
-                  form.setValue("images", updated);
-                }}
-                sx={{
-                  position: "absolute",
-                  top: 4,
-                  right: 4,
-                  bgcolor: tokens.bgOverlay,
-                  color: tokens.textWhite,
-                  p: 0.5,
-                  "&:hover": { bgcolor: tokens.danger },
-                }}
-              >
-                <CloseIcon sx={{ fontSize: 14 }} />
-              </IconButton>
-              {idx === 0 && (
-                <Typography
-                  sx={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    bgcolor: tokens.primary,
-                    color: tokens.textWhite,
-                    fontSize: 10,
-                    textAlign: "center",
-                    py: 0.25,
-                    fontWeight: 700,
-                  }}
-                >
-                  Thumbnail
-                </Typography>
-              )}
-            </Box>
-          ))}
-
-          <Box
-            component='label'
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 100,
-              height: 100,
-              borderRadius: "8px",
-              border: "2px dashed",
-              borderColor: "divider",
-              bgcolor: "action.hover",
-              cursor: uploading ? "not-allowed" : "pointer",
-              "&:hover": { borderColor: "primary.main" },
-            }}
-          >
-            {uploading ? (
-              <CircularProgress size={20} sx={{ color: "primary.main" }} />
-            ) : (
-              <>
-                <CloudUploadOutlinedIcon sx={{ fontSize: 24, color: "text.secondary" }} />
-                <Typography sx={{ fontSize: 11, color: "text.secondary", mt: 0.5 }}>Upload</Typography>
-              </>
-            )}
-            <input type='file' accept='image/*' multiple hidden onChange={handleImageUpload} disabled={uploading} />
-          </Box>
-        </Box>
-        {form.formState.errors.images && (
-          <Typography variant='caption' sx={{ color: "error.main" }}>
-            {form.formState.errors.images.message}
-          </Typography>
-        )}
+        <FileDropdown
+          multiple
+          value={form.watch("images")}
+          onFilesSelect={handleImageUpload}
+          onRemove={(idx) => {
+            const updated = [...form.getValues("images")];
+            updated.splice(idx, 1);
+            form.setValue("images", updated);
+          }}
+          uploading={uploading}
+          showThumbnailBadge
+          error={!!form.formState.errors.images}
+          helperText={form.formState.errors.images?.message}
+        />
       </Box>
 
       {/* Markdown Description */}
@@ -793,5 +718,6 @@ export function ProductForm({ initialData }: ProductFormProps) {
         </Button>
       </Box>
     </Box>
+    </Form>
   );
 }

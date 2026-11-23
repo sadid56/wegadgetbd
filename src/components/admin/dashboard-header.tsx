@@ -32,16 +32,16 @@ export function DashboardHeader({
       sx={[
         {
           display: "flex",
-          alignItems: "center",
+          alignItems: { xs: "flex-start", sm: "center" },
           justifyContent: "space-between",
-          gap: 2,
+          gap: { xs: 1.5, sm: 2 },
           flexWrap: "wrap",
         },
         ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
       ]}
       {...props}
     >
-      <Box>
+      <Box sx={{ flex: "1 1 180px", minWidth: 0 }}>
         <Typography
           component="h1"
           {...titleProps}
@@ -62,7 +62,7 @@ export function DashboardHeader({
             variant="body2"
             sx={{
               color: "text.secondary",
-              fontSize: 14,
+              fontSize: { xs: 13, sm: 14 },
               mt: 0.5,
             }}
           >
@@ -72,7 +72,15 @@ export function DashboardHeader({
       </Box>
 
       {(action || children) && (
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+            flexWrap: "wrap",
+            flexShrink: 0,
+          }}
+        >
           {action}
           {children}
         </Box>

@@ -83,12 +83,12 @@ export function Navbar() {
   return (
     <>
       {/* Spacer for non-home pages so page content isn't covered */}
-      {!isHome && <Box sx={{ height: { xs: 72, sm: 80, md: 88 } }} />}
+      {!isHome && <Box sx={{ height: { xs: 66, sm: 76, md: 84 } }} />}
 
       {/* Outer Fixed Centered Wrapper */}
       <Box
         ref={headerContainerRef}
-        component="header"
+        component='nav'
         sx={{
           position: "fixed",
           top: { xs: 8, sm: 12, md: 16 },
@@ -115,7 +115,7 @@ export function Navbar() {
             backdropFilter: "blur(16px)",
             WebkitBackdropFilter: "blur(16px)",
             borderRadius: "9999px",
-            border: "1px solid #E2E8F0",
+            // border: "1px solid #E2E8F0",
             boxShadow: "0 4px 20px -2px rgba(15, 23, 42, 0.06)",
             px: { xs: 1.5, sm: 2, md: 2.75 },
             display: "flex",
@@ -127,7 +127,7 @@ export function Navbar() {
         >
           {/* Left: Brand Logo */}
           <Box sx={{ display: "flex", alignItems: "center", flexShrink: 0, mr: { xs: 1, md: 2 } }}>
-            <BrandLogo variant="light" size="md" href="/" showText={false} />
+            <BrandLogo variant='light' size='md' href='/' showText={false} />
           </Box>
 
           {/* Center: Gadgets Categories with Dropdown */}
@@ -150,12 +150,12 @@ export function Navbar() {
               return (
                 <Dropdown
                   key={category.id}
-                  triggerOn="hover"
+                  triggerOn='hover'
                   align={isNearRight ? "right" : "left"}
                   trigger={
                     <Box
-                      component="button"
-                      type="button"
+                      component='button'
+                      type='button'
                       sx={{
                         background: "transparent",
                         border: "none",
@@ -212,7 +212,7 @@ export function Navbar() {
           >
             {/* Language Switcher */}
             <Box sx={{ display: { xs: "none", sm: "flex" }, flexShrink: 0 }}>
-              <LanguageSwitcher variant="navbar" />
+              <LanguageSwitcher variant='navbar' />
             </Box>
 
             {/* User Profile (stays securely inside navbar) */}
@@ -224,7 +224,7 @@ export function Navbar() {
             <Box sx={{ flexShrink: 0 }}>
               <IconButton
                 component={Link}
-                href="/cart"
+                href='/cart'
                 aria-label={t("cart")}
                 sx={{
                   color: "#0F172A",
@@ -270,7 +270,7 @@ export function Navbar() {
                 bgcolor: "rgba(15, 23, 42, 0.04)",
                 flexShrink: 0,
               }}
-              aria-label="Open Menu"
+              aria-label='Open Menu'
             >
               <MenuIcon />
             </IconButton>
@@ -279,11 +279,7 @@ export function Navbar() {
       </Box>
 
       {/* Mobile Drawer */}
-      <NavbarMobile
-        open={mobileMenuOpen}
-        onClose={() => setMobileMenuOpen(false)}
-        categories={categories}
-      />
+      <NavbarMobile open={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} categories={categories} />
     </>
   );
 }

@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getSiteUrl } from "@/lib/seo";
 import { db } from "@/db";
-import { product, category } from "@/db/schema";
+import { product } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

@@ -12,6 +12,8 @@ export class AdminGetProductUseCase {
       with: { category: true },
     });
 
+    if (!foundProduct) return null;
+
     return formatProduct(foundProduct);
   }
 }

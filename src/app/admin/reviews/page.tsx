@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { format } from "date-fns";
 
 import Box from "@mui/material/Box";
@@ -24,13 +24,25 @@ import { ReviewStatusChip } from "@/components/admin/review-status-chip";
 import { getAssetUrl } from "@/lib/storage";
 import { tokens } from "@/theme/theme";
 
+export interface AdminCustomerReview {
+  id: string;
+  customerName: string;
+  customerPic?: string | null;
+  rating: number;
+  review: string;
+  status: string;
+  createdAt: string | Date;
+  product?: { title?: string | null } | null;
+  [key: string]: unknown;
+}
+
 export default function AdminReviewsPage() {
   const { data: reviews, isLoading } = useReviews();
   const { mutate: deleteReview } = useDeleteReview();
   const { mutate: toggleStatus } = useToggleReviewStatus();
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingReview, setEditingReview] = useState<any>(null);
+  const [editingReview, setEditingReview] = useState<AdminCustomerReview | null>(null);
   const [reviewToDelete, setReviewToDelete] = useState<string | null>(null);
 
   const confirmDelete = () => {
@@ -40,11 +52,14 @@ export default function AdminReviewsPage() {
     }
   };
 
-  const handleStatusChange = (id: string, status: "APPROVED" | "REJECTED" | "PENDING") => {
-    toggleStatus({ id, status });
-  };
+  const handleStatusChange = useCallback(
+    (id: string, status: "APPROVED" | "REJECTED" | "PENDING") => {
+      toggleStatus({ id, status });
+    },
+    [toggleStatus],
+  );
 
-  const columns: DataTableColumn<any>[] = useMemo(
+  const columns: DataTableColumn<AdminCustomerReview>[] = useMemo(
     () => [
       {
         id: "customer",
@@ -192,7 +207,7 @@ export default function AdminReviewsPage() {
         ),
       },
     ],
-    [],
+    [handleStatusChange],
   );
 
   return (
@@ -228,6 +243,7 @@ export default function AdminReviewsPage() {
       <Modal
         open={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
+        showCloseButton
         maxWidth='sm'
         fullWidth
         slotProps={{ paper: { sx: { borderRadius: "12px" } } }}

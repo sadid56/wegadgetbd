@@ -2,8 +2,6 @@ import { z } from "zod";
 import { adminProcedure } from "@/server/init";
 import {
   dashboardStatsOutputSchema,
-  listAuditLogsInputSchema,
-  listAuditLogsOutputSchema,
   listUsersInputSchema,
   listUsersOutputSchema,
   userSchema,
@@ -19,7 +17,6 @@ import {
 } from "@/server/schemas/admin.schema";
 
 import { GetDashboardStatsUseCase } from "@/server/use-case/admin/dashboard/get-stats";
-import { ListAuditLogsUseCase } from "@/server/use-case/admin/audit-list/list-audit-logs";
 import { ListUsersUseCase } from "@/server/use-case/admin/users/list-users";
 import { GetUserUseCase } from "@/server/use-case/admin/users/get-user";
 import { UpdateUserUseCase } from "@/server/use-case/admin/users/update-user";
@@ -45,19 +42,6 @@ export const adminRouter = {
       .input(z.object({}).optional())
       .output(dashboardStatsOutputSchema)
       .handler(async ({ context }) => new GetDashboardStatsUseCase(context.db).execute()),
-  },
-
-  auditLogs: {
-    list: adminProcedure
-      .route({
-        method: "GET",
-        path: "/admin/audit-logs",
-        summary: "Get audit logs",
-        tags: ["Admin Audit Logs"],
-      })
-      .input(listAuditLogsInputSchema)
-      .output(listAuditLogsOutputSchema)
-      .handler(async ({ input, context }) => new ListAuditLogsUseCase(context.db).execute(input)),
   },
 
   users: {

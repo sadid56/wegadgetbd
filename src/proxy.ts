@@ -47,10 +47,7 @@ export function proxy(request: NextRequest) {
 
   const payload = decodeJwt(request.cookies.get("access-token")?.value);
   const isAuthenticated = payload !== null;
-  const isAdmin =
-    request.cookies.get("user-role")?.value === "ADMIN" ||
-    payload?.app_metadata?.role === "ADMIN" ||
-    payload?.user_metadata?.role === "ADMIN";
+  const isAdmin = request.cookies.get("user-role")?.value === "ADMIN";
 
   if (isAdminRoute) {
     if (!isAuthenticated) {

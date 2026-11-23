@@ -92,8 +92,8 @@ export function usePromoCode(subtotal: number) {
           success: true,
           message: res.message || `Promo code "${res.code}" applied!`,
         };
-      } catch (err: any) {
-        const msg = err?.message || "Failed to validate promo code.";
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : (err as { message?: string })?.message || "Failed to validate promo code.";
         setPromoError(msg);
         return { success: false, message: msg };
       } finally {

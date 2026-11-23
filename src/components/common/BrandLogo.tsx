@@ -27,8 +27,6 @@ export function BrandLogo({
     size === "sm" ? -2.5 : size === "lg" ? -3.8 : { xs: -2.5, md: -3 };
   const textColor = variant === "dark" ? tokens.textWhite : tokens.textPrimary;
 
-  // Use high-contrast vibrant teal on dark surfaces, midnight W on light surfaces
-  const logoSrc = variant === "dark" ? "/logo-dark.png" : "/logo-light.png";
 
   const content = (
     <Box
@@ -43,9 +41,9 @@ export function BrandLogo({
     >
       {/* Signature We Gadget BD WG Monogram */}
       <Box
-        component="img"
-        src={logoSrc}
-        alt="We Gadget BD"
+        component='img'
+        src={"/brand-logo.png"}
+        alt='We Gadget BD'
         sx={{
           height: iconHeight,
           width: "auto",
@@ -59,16 +57,13 @@ export function BrandLogo({
                   md: `translateY(${opticalShift.md}px)`,
                 }
               : `translateY(${opticalShift}px)`,
-          filter:
-            variant === "dark"
-              ? "drop-shadow(0 2px 8px rgba(0, 191, 166, 0.3))"
-              : "none",
+          filter: variant === "dark" ? "drop-shadow(0 2px 8px rgba(0, 191, 166, 0.3))" : "none",
         }}
       />
 
       {showText && (
         <Typography
-          component="span"
+          component='span'
           sx={{
             fontWeight: 800,
             fontSize,
@@ -81,7 +76,7 @@ export function BrandLogo({
           }}
         >
           We Gadget{" "}
-          <Box component="span" sx={{ color: tokens.primary }}>
+          <Box component='span' sx={{ color: tokens.primary }}>
             BD
           </Box>
         </Typography>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useMemo, useState } from "react";
 import { useQueryState, parseAsString, parseAsInteger, parseAsBoolean } from "nuqs";
 import { useTranslations } from "next-intl";
 import Box from "@mui/material/Box";
@@ -13,6 +13,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 
 import { useProducts, useBrands } from "@/query-client/products";
 import { useCategories } from "@/query-client/categories";
+import type { ListProductsInput } from "@/server/schemas/products.schema";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useBodyScrollLock } from "@/hooks/use-body-scroll-lock";
 import { ProductCard } from "../../_components/ProductCard";
@@ -120,7 +121,7 @@ function ShopPageContent() {
     search: debouncedSearch || undefined,
     category: category === "all" ? undefined : category,
     brand: brand || undefined,
-    sort: (sort || undefined) as any,
+    sort: (sort || undefined) as ListProductsInput["sort"],
     minPrice: minPrice !== null && minPrice >= 0 ? minPrice : undefined,
     maxPrice: maxPrice !== null && maxPrice >= 0 ? maxPrice : undefined,
     inStock: inStock || undefined,
@@ -139,12 +140,12 @@ function ShopPageContent() {
   const categories: CategoryItem[] = useMemo(
     () => [
       { id: "all", name: "All Products", slug: "all", count: productsData?.total },
-      ...(categoriesData ?? []).map((c: any) => ({
-        id: c.id,
+      ...(categoriesData ?? []).map((c) => ({
+        id: c.slug,
         name: c.name,
         slug: c.slug,
         icon: c.icon,
-        count: c.productCount || undefined,
+        count: undefined,
       })),
     ],
     [categoriesData, productsData?.total],
@@ -247,6 +248,14 @@ function ShopPageContent() {
     [setSort, resetPage],
   );
 
+  const handleSearchChange = useCallback(
+    (val: string) => {
+      setSearch(val ? val : null);
+      resetPage();
+    },
+    [setSearch, resetPage],
+  );
+
   const handlePageSelect = useCallback(
     (newPage: number) => {
       setPage(newPage === 1 ? null : newPage);
@@ -312,7 +321,7 @@ function ShopPageContent() {
       <SectionContainer
         component='div'
         sx={{
-          py: { xs: 2.5, sm: 3, md: 3.5 },
+          pt: { xs: 1, sm: 2.5, md: 3.5 },
           pb: { xs: 6, md: 10 },
         }}
       >
@@ -348,6 +357,8 @@ function ShopPageContent() {
               limit={ITEMS_PER_PAGE}
               onOpenMobileFilters={handleOpenMobileFilters}
               activeFilterCount={activeFilterCount}
+              searchValue={search}
+              onSearchChange={handleSearchChange}
             />
 
             {isLoading ? (

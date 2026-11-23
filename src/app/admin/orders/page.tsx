@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import Box from "@mui/material/Box";
-import { CircularProgress } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardHeader } from "@/components/admin/dashboard-header";
 import { OrdersClient } from "./_components/orders-client";
 
@@ -16,8 +16,9 @@ export default function OrdersPage() {
 
       <Suspense
         fallback={
-          <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-            <CircularProgress />
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            <Skeleton variant="rounded" animation="wave" width="100%" height={44} />
+            <Skeleton variant="rounded" animation="wave" width="100%" height={260} />
           </Box>
         }
       >

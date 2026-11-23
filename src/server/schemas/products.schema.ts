@@ -19,6 +19,7 @@ export const productSchema = z.object({
   price: z.number().or(z.string()),
   discountPrice: z.number().or(z.string()).nullable().optional(),
   images: z.array(z.string()),
+  thumbnail: z.string().nullable().optional(),
   categoryId: z.string(),
   category: productCategorySchema.optional(),
   status: productStatusSchema,
@@ -34,9 +35,9 @@ export const productSchema = z.object({
   model: z.string().nullable().optional(),
   warranty: z.string().nullable().optional(),
   origin: z.string().nullable().optional(),
-  packagingDelivery: z.any().nullable().optional(),
+  packagingDelivery: z.unknown().nullable().optional(),
   whyBuyText: z.string().nullable().optional(),
-  specifications: z.any().optional(),
+  specifications: z.unknown().optional(),
   createdAt: z.date().or(z.string()),
   updatedAt: z.date().or(z.string()),
 });
@@ -95,7 +96,7 @@ export const topPickProductSchema = z.object({
   reviewCount: z.string().or(z.number()),
   price: z.number(),
   originalPrice: z.number().nullable().optional(),
-  image: z.string().nullable().optional(),
+  thumbnail: z.string().nullable().optional(),
   inStock: z.boolean().default(true),
 });
 
@@ -115,7 +116,23 @@ export const customerReviewSchema = z.object({
 });
 
 // Interactive Reviews, Replies, and Likes Schemas
-export const reviewReplySchema: z.ZodType<any> = z.lazy(() =>
+export interface ReviewReplyItem {
+  id: string;
+  reviewId: string;
+  parentId?: string | null;
+  userId?: string | null;
+  userName: string;
+  userAvatar?: string | null;
+  userRole: string;
+  comment: string;
+  likesCount: number;
+  isLiked?: boolean;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  replies?: ReviewReplyItem[];
+}
+
+export const reviewReplySchema: z.ZodType<ReviewReplyItem> = z.lazy(() =>
   z.object({
     id: z.string(),
     reviewId: z.string(),
@@ -132,7 +149,6 @@ export const reviewReplySchema: z.ZodType<any> = z.lazy(() =>
     replies: z.array(z.lazy(() => reviewReplySchema)).optional().default([]),
   })
 );
-export type ReviewReplyItem = z.infer<typeof reviewReplySchema>;
 
 export const productReviewItemSchema = z.object({
   id: z.string(),

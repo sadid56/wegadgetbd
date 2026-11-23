@@ -6,7 +6,14 @@ import { PRODUCT_COLUMNS } from "./_shared";
 export class CreateReviewUseCase {
   constructor(private readonly db: Context["db"]) {}
 
-  async execute(input: any) {
+  async execute(input: {
+    customerName: string;
+    customerPic?: string | null;
+    review: string;
+    rating: number;
+    status?: ReviewStatus;
+    productId?: string | null;
+  }) {
     const [newReview] = await this.db
       .insert(customerReview)
       .values({
@@ -19,7 +26,9 @@ export class CreateReviewUseCase {
       })
       .returning();
 
-    return this.findWithProduct(newReview.id) as any;
+    const created = await this.findWithProduct(newReview.id);
+    if (!created) throw new Error("Failed to load created review");
+    return created;
   }
 
   private findWithProduct(id: string) {

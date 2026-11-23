@@ -14,9 +14,9 @@ export class DeleteSaleUseCase {
         return { success: false as const, error: "Sale not found", message: "Sale not found" };
       }
       return { success: true as const, data: undefined };
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("DeleteSaleUseCase failed:", err);
-      const msg = err?.message || "Failed to delete sale";
+      const msg = err instanceof Error ? err.message : "Failed to delete sale";
       return { success: false as const, error: msg, message: msg };
     }
   }
@@ -32,9 +32,9 @@ export class GetSaleUseCase {
         return { success: false as const, error: "Sale not found", message: "Sale not found" };
       }
       return { success: true as const, data: serializeSale(found) };
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("GetSaleUseCase failed:", err);
-      const msg = err?.message || "Failed to get sale";
+      const msg = err instanceof Error ? err.message : "Failed to get sale";
       return { success: false as const, error: msg, message: msg };
     }
   }

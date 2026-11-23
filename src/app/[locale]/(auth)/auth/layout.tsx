@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";

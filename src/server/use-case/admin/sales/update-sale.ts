@@ -13,7 +13,7 @@ export class UpdateSaleUseCase {
   constructor(private readonly dbInstance: Context["db"] = db) {}
 
   async execute(id: string, input: UpdateSaleInput) {
-    const error = validateSaleInput(input as any, { partial: true });
+    const error = validateSaleInput(input as Parameters<typeof validateSaleInput>[0], { partial: true });
     if (error) {
       return { success: false as const, error, message: error };
     }
@@ -54,9 +54,9 @@ export class UpdateSaleUseCase {
 
       const [updated] = await this.dbInstance.update(sale).set(updateData).where(eq(sale.id, id)).returning();
       return { success: true as const, data: serializeSale(updated) };
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("UpdateSaleUseCase failed:", err);
-      const msg = err?.message || "Failed to update sale";
+      const msg = err instanceof Error ? err.message : "Failed to update sale";
       return { success: false as const, error: msg, message: msg };
     }
   }

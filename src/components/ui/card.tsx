@@ -17,8 +17,8 @@ export interface CardProps extends MuiCardProps {
 export interface CardHeaderProps extends Omit<MuiCardHeaderProps, "title" | "subheader"> {
   title?: React.ReactNode;
   subheader?: React.ReactNode;
-  titleTypographyProps?: Record<string, any>;
-  subheaderTypographyProps?: Record<string, any>;
+  titleTypographyProps?: Partial<TypographyProps>;
+  subheaderTypographyProps?: Partial<TypographyProps>;
 }
 
 export type CardContentProps = MuiCardContentProps;
@@ -34,15 +34,15 @@ export const Paper = React.forwardRef<HTMLDivElement, PaperProps>(function Paper
   return (
     <MuiPaper
       ref={ref}
+      elevation={0}
       sx={[
         {
           bgcolor: tokens.bgPanel,
           color: tokens.textPrimary,
-          border: `1px solid ${tokens.borderDefault}`,
+          border: "none",
           borderRadius: `${tokens.radiusLg}px`,
-          boxShadow: tokens.elevation1,
+          boxShadow: "none",
           backgroundImage: "none",
-          transition: "box-shadow 0.2s cubic-bezier(0.2, 0, 0, 1)",
         },
         ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
       ]}
@@ -58,15 +58,16 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(function Card(
   return (
     <MuiCard
       ref={ref}
+      elevation={0}
       sx={[
         {
           bgcolor: tokens.bgPanel,
           color: tokens.textPrimary,
-          border: `1px solid ${tokens.borderDefault}`,
+          border: "none",
           borderRadius: `${tokens.radiusXl}px`,
-          boxShadow: tokens.elevation1,
+          boxShadow: "none",
           backgroundImage: "none",
-          p: 2.5,
+          p: { xs: 2, sm: 2.5 },
           "&:has(.MuiCardContent-root), &:has(.MuiCardHeader-root)": {
             p: 0,
           },
@@ -93,13 +94,13 @@ export const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(func
           variant: "h6",
           sx: { fontWeight: 700, fontSize: "1.05rem", color: tokens.textPrimary },
           ...titleTypographyProps,
-          ...(slotProps as any)?.title,
+          ...(slotProps as { title?: object } | undefined)?.title,
         },
         subheader: {
           variant: "body2",
           sx: { color: tokens.textMuted, mt: 0.25 },
           ...subheaderTypographyProps,
-          ...(slotProps as any)?.subheader,
+          ...(slotProps as { subheader?: object } | undefined)?.subheader,
         },
       }}
       sx={[

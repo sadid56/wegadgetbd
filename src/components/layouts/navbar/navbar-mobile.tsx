@@ -17,7 +17,7 @@ import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import { tokens } from "@/theme/theme";
 import { BrandLogo } from "@/components/common/BrandLogo";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
-import { NAV_CATEGORIES, type NavCategoryItem } from "./nav-data";
+import { NAV_CATEGORIES } from "./nav-data";
 
 export interface NavLinkItem {
   name: string;

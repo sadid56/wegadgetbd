@@ -1,12 +1,26 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { Session, User as SupabaseUser, AuthError } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 
 const ACCESS_MAX_AGE = 7 * 24 * 60 * 60;
 const REFRESH_MAX_AGE = 30 * 24 * 60 * 60;
 
 type ErrorCtx = { error: { message: string } };
+
+export interface FormattedUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  image: string | null;
+  emailVerified: boolean;
+  banned: boolean;
+  phoneNumber?: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 function setCookie(name: string, value: string, maxAge: number) {
   if (typeof document === "undefined") return;
@@ -19,14 +33,14 @@ function getCookie(name: string): string | null {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-function syncSupabaseCookies(session: any) {
-  if (typeof document === "undefined") return;
-  if (session?.access_token) {
+function syncSupabaseCookies(session: Session | null) {
+  if (typeof document === "undefined" || !session) return;
+  if (session.access_token) {
     setCookie("access-token", session.access_token, ACCESS_MAX_AGE);
     if (session.refresh_token) {
       setCookie("refresh-token", session.refresh_token, REFRESH_MAX_AGE);
     }
-    const role = session.user?.user_metadata?.role || "USER";
+    const role = (session.user?.user_metadata?.role as string) || "USER";
     setCookie("user-role", role, ACCESS_MAX_AGE);
   }
 }
@@ -38,31 +52,32 @@ function clearAuthCookiesClient() {
   setCookie("user-role", "", 0);
 }
 
-function formatUser(sbUser: any) {
+function formatUser(sbUser: SupabaseUser | null): FormattedUser | null {
   if (!sbUser) return null;
-  const meta = sbUser.user_metadata ?? {};
+  const meta = (sbUser.user_metadata as Record<string, unknown>) ?? {};
   return {
     id: sbUser.id,
-    name: meta.name || meta.full_name || sbUser.email?.split("@")[0] || "User",
+    name: (meta.name as string) || (meta.full_name as string) || sbUser.email?.split("@")[0] || "User",
     email: sbUser.email || "",
-    role: meta.role || "USER",
-    image: meta.avatar_url || meta.picture || null,
+    role: (meta.role as string) || "USER",
+    image: (meta.avatar_url as string) || (meta.picture as string) || null,
     emailVerified: Boolean(sbUser.email_confirmed_at),
     banned: Boolean(meta.banned),
+    phoneNumber: (sbUser.phone as string) || (meta.phone as string) || (meta.phoneNumber as string) || null,
     createdAt: new Date(sbUser.created_at),
     updatedAt: new Date(sbUser.updated_at || sbUser.created_at),
   };
 }
 
-async function attempt<R extends { data: any; error: any }>(
-  fn: () => Promise<R>,
+async function attempt<T, E extends { message: string } = AuthError>(
+  fn: () => Promise<{ data: T; error: E | null }>,
   opts: {
-    beforeSuccess?: (data: R["data"]) => void;
-    onSuccess?: (data: R["data"]) => void;
+    beforeSuccess?: (data: T) => void;
+    onSuccess?: (data: T) => void;
     onError?: (ctx: ErrorCtx) => void;
     fallbackError: string;
   },
-): Promise<{ data: R["data"] | null; error: any }> {
+): Promise<{ data: T | null; error: E | { message: string } | null }> {
   try {
     const result = await fn();
     if (result.error) {
@@ -72,16 +87,17 @@ async function attempt<R extends { data: any; error: any }>(
     opts.beforeSuccess?.(result.data);
     opts.onSuccess?.(result.data);
     return { data: result.data, error: null };
-  } catch (err: any) {
-    opts.onError?.({ error: { message: err?.message || opts.fallbackError } });
-    return { data: null, error: err };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : opts.fallbackError;
+    opts.onError?.({ error: { message } });
+    return { data: null, error: { message } };
   }
 }
 
 export function useSession() {
-  const [data, setData] = useState<{ user: any; session: any } | null>(null);
+  const [data, setData] = useState<{ user: FormattedUser | null; session: Session } | null>(null);
   const [isPending, setIsPending] = useState(true);
-  const [error, setError] = useState<any>(null);
+  const [error, setError] = useState<AuthError | Error | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -155,18 +171,24 @@ export const signIn = {
     password: string;
     callbackURL?: string;
     fetchOptions?: {
-      onSuccess?: (ctx: { data: any }) => void;
+      onSuccess?: (ctx: { data: unknown }) => void;
       onError?: (ctx: ErrorCtx) => void;
     };
   }) {
-    return attempt(() => supabase.auth.signInWithPassword({ email, password }), {
-      beforeSuccess: (data) => {
-        if (data.session) syncSupabaseCookies(data.session);
+    return attempt(
+      async () => {
+        const res = await supabase.auth.signInWithPassword({ email, password });
+        return { data: res.data, error: res.error };
       },
-      onSuccess: (data) => fetchOptions?.onSuccess?.({ data }),
-      onError: fetchOptions?.onError,
-      fallbackError: "Failed to sign in",
-    });
+      {
+        beforeSuccess: (data) => {
+          if (data?.session) syncSupabaseCookies(data.session);
+        },
+        onSuccess: (data) => fetchOptions?.onSuccess?.({ data }),
+        onError: fetchOptions?.onError,
+        fallbackError: "Failed to sign in",
+      },
+    );
   },
 
   social({
@@ -181,10 +203,11 @@ export const signIn = {
     };
   }) {
     return attempt(
-      () => {
+      async () => {
         const origin = typeof window !== "undefined" ? window.location.origin : "";
         const redirectTo = `${origin}/auth/callback?next=${encodeURIComponent(callbackURL)}`;
-        return supabase.auth.signInWithOAuth({ provider, options: { redirectTo } });
+        const res = await supabase.auth.signInWithOAuth({ provider, options: { redirectTo } });
+        return { data: res.data, error: res.error };
       },
       {
         onError: fetchOptions?.onError,
@@ -206,7 +229,7 @@ export const signUp = {
     name?: string;
     callbackURL?: string;
     fetchOptions?: {
-      onSuccess?: (ctx: { data: any }) => void;
+      onSuccess?: (ctx: { data: unknown }) => void;
       onError?: (ctx: ErrorCtx) => void;
     };
   }) {
@@ -252,9 +275,10 @@ export async function signOut(options?: {
     }
     onSuccess?.();
     return { error: null };
-  } catch (err: any) {
-    onError?.({ error: { message: err?.message || "Failed to sign out" } });
-    return { error: err };
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to sign out";
+    onError?.({ error: { message } });
+    return { error: { message } };
   }
 }
 

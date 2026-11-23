@@ -34,9 +34,9 @@ export class CreatePaymentUseCase {
         .returning({ id: payment.id });
 
       return { success: true as const, data: { id: created.id } };
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("CreatePaymentUseCase failed:", err);
-      const msg = err?.message || "Failed to create payment";
+      const msg = err instanceof Error ? err.message : "Failed to create payment";
       return { success: false as const, error: msg, message: msg };
     }
   }
@@ -76,9 +76,9 @@ export class UpdatePaymentUseCase {
       }
 
       return { success: true as const, data: { id: updated.id } };
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("UpdatePaymentUseCase failed:", err);
-      const msg = err?.message || "Failed to update payment";
+      const msg = err instanceof Error ? err.message : "Failed to update payment";
       return { success: false as const, error: msg, message: msg };
     }
   }
@@ -94,9 +94,9 @@ export class DeletePaymentUseCase {
         return { success: false as const, error: "Payment not found", message: "Payment not found" };
       }
       return { success: true as const, data: undefined };
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("DeletePaymentUseCase failed:", err);
-      const msg = err?.message || "Failed to delete payment";
+      const msg = err instanceof Error ? err.message : "Failed to delete payment";
       return { success: false as const, error: msg, message: msg };
     }
   }

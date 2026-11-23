@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { sale } from "@/db/schema";
-import { eq, or, ilike, desc, count, and, gte, lte, inArray, isNotNull, sql } from "drizzle-orm";
+import { eq, or, ilike, desc, count, and, gte, lte, inArray, isNotNull, sql, type SQL } from "drizzle-orm";
 import type { Context } from "@/server/context";
 import { isValidDate } from "@/server/lib/action-utils";
 import {
@@ -38,9 +38,9 @@ export class ListSalesUseCase {
     if (input.startDate && !isValidDate(input.startDate)) return this.emptyResponse();
     if (input.endDate && !isValidDate(input.endDate)) return this.emptyResponse();
 
-    const conditions: any[] = [];
+    const conditions: SQL[] = [];
     if (search) {
-      conditions.push(or(ilike(sale.productName, `%${search}%`), ilike(sale.customerName, `%${search}%`)));
+      conditions.push(or(ilike(sale.productName, `%${search}%`), ilike(sale.customerName, `%${search}%`))!);
     }
     if (sellerFilter) {
       conditions.push(eq(sale.sellerName, sellerFilter));
@@ -67,7 +67,7 @@ export class ListSalesUseCase {
     const last30Days = new Date(now);
     last30Days.setDate(now.getDate() - 30);
 
-    const otherStatsConditions: any[] = [];
+    const otherStatsConditions: SQL[] = [];
     if (input.startDate) otherStatsConditions.push(gte(sale.date, input.startDate));
     if (input.endDate) otherStatsConditions.push(lte(sale.date, input.endDate));
     if (sellerFilter) otherStatsConditions.push(eq(sale.sellerName, sellerFilter));

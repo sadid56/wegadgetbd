@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { format } from "date-fns";
-import { useQueryState, parseAsInteger } from "nuqs";
 import { useToast } from "@/context/toast-context";
 
 import Box from "@mui/material/Box";
@@ -16,11 +15,11 @@ import MonitorIcon from "@mui/icons-material/Monitor";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
 import { useSessions, useRevokeSession } from "@/query-client/admin";
+import { useListQuery } from "@/hooks/use-list-query";
 
 export default function SessionsPage() {
   const toast = useToast();
-  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [rowsPerPage, setRowsPerPage] = useQueryState("limit", parseAsInteger.withDefault(10));
+  const { page, rowsPerPage, setPage, setRowsPerPage } = useListQuery();
   const [sessionToRevoke, setSessionToRevoke] = useState<string | null>(null);
 
   const { data, isLoading } = useSessions({
@@ -41,7 +40,8 @@ export default function SessionsPage() {
     }
   };
 
-  const columns: DataTableColumn<any>[] = useMemo(
+  type SessionRow = NonNullable<typeof data>["sessions"][number];
+  const columns: DataTableColumn<SessionRow>[] = useMemo(
     () => [
       {
         id: "user",
@@ -71,7 +71,7 @@ export default function SessionsPage() {
                 gap: 1,
                 minWidth: 0,
               }}
-              title={session.userAgent}
+              title={session.userAgent ?? undefined}
             >
               <DeviceIcon sx={{ fontSize: 16, color: "text.secondary", flexShrink: 0 }} />
               <Box
@@ -96,7 +96,7 @@ export default function SessionsPage() {
         header: "IP Address",
         cell: (session) => (
           <Box component='span' sx={{ fontSize: 13, color: "text.primary" }}>
-            {session.ipAddress || session.ip || "Unknown"}
+            {session.ipAddress || "Unknown"}
           </Box>
         ),
       },

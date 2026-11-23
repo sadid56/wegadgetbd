@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { format } from "date-fns";
-import { useToast } from "@/context/toast-context";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -14,7 +13,8 @@ import { Avatar } from "@/components/ui/avatar";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { FormControl, Select, MenuItem } from "@/components/ui/select";
-import { CircularProgress } from "@/components/ui/spinner";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
 import { AlertDialog } from "@/components/ui/alert-dialog";
 
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -32,7 +32,6 @@ import { parseDevice } from "@/lib/parse-device";
 import { tokens } from "@/theme/theme";
 
 export default function UserDetailsPage() {
-  const toast = useToast();
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const { data: user, isLoading } = useUser(id);
@@ -43,34 +42,28 @@ export default function UserDetailsPage() {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-        <CircularProgress size={32} sx={{ color: "primary.main" }} />
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+        <Skeleton variant="rounded" animation="wave" width={200} height={32} />
+        <Skeleton variant="rounded" animation="wave" width="100%" height={180} />
+        <Skeleton variant="rounded" animation="wave" width="100%" height={220} />
       </Box>
     );
   }
 
   if (!user) {
-    return <Box sx={{ py: 6, textAlign: "center", color: "text.secondary", fontSize: 14 }}>User not found</Box>;
+    return <EmptyState title="User not found" />;
   }
 
   const handleRoleChange = (role: string) => {
-    updateUser({ id, data: { role } }, { onSuccess: () => toast.success("Role updated") });
+    updateUser({ id, data: { role: role as "USER" | "ADMIN" } });
   };
 
   const handleBanToggle = () => {
-    const newStatus = !user.banned;
-    updateUser(
-      { id, data: { banned: newStatus } },
-      {
-        onSuccess: () => toast.success(newStatus ? "User banned" : "User unbanned"),
-      },
-    );
+    updateUser({ id, data: { banned: !user.banned } });
   };
 
   const handleRevokeSession = (sessionId: string) => {
-    revokeSession(sessionId, {
-      onSuccess: () => toast.success("Session revoked"),
-    });
+    revokeSession(sessionId);
   };
 
   const confirmRevoke = () => {
@@ -256,7 +249,7 @@ export default function UserDetailsPage() {
             <CardContent sx={{ pt: 1 }}>
               {user.sessions && user.sessions.length > 0 ? (
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                  {user.sessions.map((session: any, idx: number) => {
+                  {user.sessions.map((session: { id: string; userAgent?: string | null; ipAddress?: string | null; createdAt: string | Date; expiresAt: string | Date }, idx: number) => {
                     const { device, os, browser } = parseDevice(session.userAgent);
                     const isMobile = device === "mobile";
                     const DeviceIcon = isMobile ? SmartphoneIcon : MonitorIcon;
@@ -281,7 +274,7 @@ export default function UserDetailsPage() {
                               {os} • {browser}
                             </Box>
                           </Box>
-                          <Box component='p' title={session.userAgent} sx={{ fontSize: 12, color: "text.secondary", m: 0, mt: 0.25 }}>
+                          <Box component='p' title={session.userAgent ?? undefined} sx={{ fontSize: 12, color: "text.secondary", m: 0, mt: 0.25 }}>
                             {device.charAt(0).toUpperCase() + device.slice(1)} - {session.ipAddress || "Unknown IP"}
                           </Box>
                           <Box component='p' sx={{ fontSize: 12, color: "text.secondary", m: 0, mt: 0.25 }}>

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { OrderStatus } from "@/db/schema";
 import { publicProcedure, adminProcedure } from "@/server/init";
 import { CreateOrderUseCase } from "@/server/use-case/orders/create-order";
 import { ListOrdersUseCase } from "@/server/use-case/admin/orders/list-orders";
@@ -50,13 +51,13 @@ export const ordersRouter = {
           page: z.number().optional(),
           limit: z.number().optional(),
           search: z.string().optional(),
-          status: z.any().optional(),
+          status: z.string().optional(),
         })
         .optional()
     )
     .handler(async ({ input, context }) => {
       const useCase = new ListOrdersUseCase(context.db);
-      return useCase.execute(input || {});
+      return useCase.execute({ ...input, status: input?.status as OrderStatus | undefined });
     }),
 
   get: adminProcedure
@@ -79,10 +80,10 @@ export const ordersRouter = {
       summary: "Update order status",
       tags: ["Admin Orders"],
     })
-    .input(z.object({ id: z.string(), status: z.any() }))
+    .input(z.object({ id: z.string(), status: z.string() }))
     .handler(async ({ input, context }) => {
       const useCase = new UpdateOrderStatusUseCase(context.db, context.user.id);
-      return useCase.execute(input.id, input.status);
+      return useCase.execute(input.id, input.status as OrderStatus);
     }),
 
   update: adminProcedure
@@ -92,7 +93,7 @@ export const ordersRouter = {
       summary: "Update order details",
       tags: ["Admin Orders"],
     })
-    .input(z.object({ id: z.string(), data: z.record(z.string(), z.any()) }))
+    .input(z.object({ id: z.string(), data: z.record(z.string(), z.unknown()) }))
     .handler(async ({ input, context }) => {
       const useCase = new UpdateOrderUseCase(context.db, context.user.id);
       return useCase.execute(input.id, input.data);

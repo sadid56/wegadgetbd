@@ -19,7 +19,7 @@ export function Drawer({
   ...props
 }: DrawerProps) {
   const chosenAnchor = anchor || direction;
-  const paperProps = (slotProps?.paper as Record<string, any>) ?? {};
+  const paperProps = (slotProps?.paper as Record<string, unknown>) ?? {};
 
   return (
     <MuiDrawer
@@ -38,17 +38,23 @@ export function Drawer({
                 ? {
                     borderTopLeftRadius: `${tokens.radiusXxl}px`,
                     borderTopRightRadius: `${tokens.radiusXxl}px`,
+                    borderBottomLeftRadius: 0,
+                    borderBottomRightRadius: 0,
                     borderTop: `1px solid ${tokens.borderDefault}`,
                     maxHeight: "85vh",
                   }
                 : chosenAnchor === "top"
                 ? {
+                    borderTopLeftRadius: 0,
+                    borderTopRightRadius: 0,
                     borderBottomLeftRadius: `${tokens.radiusXxl}px`,
                     borderBottomRightRadius: `${tokens.radiusXxl}px`,
                     borderBottom: `1px solid ${tokens.borderDefault}`,
                   }
                 : chosenAnchor === "left"
                 ? {
+                    borderTopLeftRadius: 0,
+                    borderBottomLeftRadius: 0,
                     borderTopRightRadius: `${tokens.radiusXl}px`,
                     borderBottomRightRadius: `${tokens.radiusXl}px`,
                     borderRight: `1px solid ${tokens.borderDefault}`,
@@ -56,6 +62,8 @@ export function Drawer({
                 : {
                     borderTopLeftRadius: `${tokens.radiusXl}px`,
                     borderBottomLeftRadius: `${tokens.radiusXl}px`,
+                    borderTopRightRadius: 0,
+                    borderBottomRightRadius: 0,
                     borderLeft: `1px solid ${tokens.borderDefault}`,
                   }),
             },

@@ -2,7 +2,6 @@ import { eq } from "drizzle-orm";
 import { product, category, customerReview, order } from "@/db/schema";
 import type { Context } from "@/server/context";
 import { cacheService, CACHE_KEYS } from "@/server/services/cache";
-import { writeAudit } from "@/server/lib/orm";
 import { deleteFileFromStorage, deleteMultipleFilesFromStorage } from "@/lib/storage";
 import type { TrashItemType } from "@/server/schemas/admin.schema";
 import { ORPCError } from "@orpc/server";
@@ -15,7 +14,6 @@ export class PermanentDeleteTrashUseCase {
 
   async execute({ id, itemType }: { id: string; itemType: TrashItemType }) {
     let deleted: boolean = false;
-    let itemTitle: string | undefined;
     let deletedFilesCount = 0;
 
     switch (itemType) {
@@ -27,8 +25,6 @@ export class PermanentDeleteTrashUseCase {
         if (!found) {
           throw new ORPCError("NOT_FOUND", { message: "Product not found" });
         }
-
-        itemTitle = found.title;
 
         // Clean up files in Supabase Storage
         if (Array.isArray(found.images) && found.images.length > 0) {
@@ -54,8 +50,6 @@ export class PermanentDeleteTrashUseCase {
           throw new ORPCError("NOT_FOUND", { message: "Category not found" });
         }
 
-        itemTitle = found.name;
-
         // Clean up category icon in Supabase Storage if present
         if (found.icon) {
           try {
@@ -80,8 +74,6 @@ export class PermanentDeleteTrashUseCase {
         if (!found) {
           throw new ORPCError("NOT_FOUND", { message: "Review not found" });
         }
-
-        itemTitle = found.customerName;
 
         // Clean up review media in Supabase Storage if present
         const filesToDelete: string[] = [];
@@ -111,7 +103,6 @@ export class PermanentDeleteTrashUseCase {
           throw new ORPCError("NOT_FOUND", { message: "Order not found" });
         }
 
-        itemTitle = `Order #${found.id.slice(0, 8)} (${found.customerName})`;
         const [res] = await this.db.delete(order).where(eq(order.id, id)).returning();
         deleted = Boolean(res);
         break;
@@ -124,18 +115,6 @@ export class PermanentDeleteTrashUseCase {
     if (!deleted) {
       throw new ORPCError("INTERNAL_SERVER_ERROR", { message: `Failed to permanently delete item.` });
     }
-
-    await writeAudit(this.db, {
-      action: itemType === "PRODUCT" ? "DELETE_PRODUCT" : "STATUS_CHANGE",
-      actorId: this.actorId,
-      metadata: {
-        event: "PERMANENT_DELETE",
-        itemType,
-        id,
-        title: itemTitle,
-        deletedFilesCount,
-      },
-    });
 
     return { success: true, id, itemType, deletedFilesCount };
   }

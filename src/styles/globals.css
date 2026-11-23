@@ -72,11 +72,19 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+:root::-webkit-scrollbar,
 html::-webkit-scrollbar,
 body::-webkit-scrollbar {
-  display: none;
-  width: 0;
-  height: 0;
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+html.concierge-open,
+html.concierge-open body {
+  overflow: hidden !important;
+  height: 100% !important;
+  overscroll-behavior: none !important;
 }
 
 a {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/context/toast-context";
@@ -23,13 +23,14 @@ import {
   type DataTableColumn,
   Dropdown,
   AlertDialog,
+  FileDropdown,
 } from "@/components/ui";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { DashboardHeader } from "@/components/admin/dashboard-header";
 
 import AddIcon from "@mui/icons-material/Add";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import UploadFileOutlinedIcon from "@mui/icons-material/UploadFileOutlined";
 
 import { useAdminCategories, useCreateCategory, useUpdateCategory, useDeleteCategory } from "@/query-client/categories";
 import { uploadFileToStorage, getAssetUrl, stripAssetDomain } from "@/lib/storage";
@@ -37,6 +38,16 @@ import { slugify } from "@/lib/utils";
 import { createCategoryInputSchema, type CreateCategoryInput } from "@/server/schemas/categories.schema";
 
 type CategoryFormValues = CreateCategoryInput;
+type CategoryItem = {
+  id: string;
+  name: string;
+  slug: string;
+  icon?: string | null;
+  productCount?: number;
+  _count?: { products: number };
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+};
 
 export default function CategoriesPage() {
   const toast = useToast();
@@ -101,16 +112,19 @@ export default function CategoriesPage() {
     setIsOpen(true);
   };
 
-  const handleEdit = (category: any) => {
-    setEditingId(category.id);
-    setIsSlugManuallyEdited(true);
-    form.reset({
-      name: category.name,
-      slug: category.slug,
-      icon: category.icon || "",
-    });
-    setIsOpen(true);
-  };
+  const handleEdit = useCallback(
+    (category: CategoryItem) => {
+      setEditingId(category.id);
+      setIsSlugManuallyEdited(true);
+      form.reset({
+        name: category.name,
+        slug: category.slug,
+        icon: category.icon || "",
+      });
+      setIsOpen(true);
+    },
+    [form],
+  );
 
   const selectedCategoryToDelete = categories?.find((c) => c.id === categoryToDelete);
   const hasProducts = Number(selectedCategoryToDelete?._count?.products ?? 0) > 0;
@@ -129,15 +143,15 @@ export default function CategoriesPage() {
     setCategoryToDelete(id);
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.length) return;
+  const handleImageUpload = async (files: File[]) => {
+    if (!files.length) return;
     setUploading(true);
     try {
-      const file = e.target.files[0];
+      const file = files[0];
       const { url } = await uploadFileToStorage({ file, folder: "categories" });
       form.setValue("icon", url);
-    } catch (error: any) {
-      toast.error("Upload failed: " + error.message);
+    } catch (error: unknown) {
+      toast.error("Upload failed: " + ((error as { message?: string })?.message || "Unknown error"));
     } finally {
       setUploading(false);
     }
@@ -155,7 +169,7 @@ export default function CategoriesPage() {
   const watchedIcon = form.watch("icon");
   const isSubmitting = isCreating || isUpdating || uploading;
 
-  const columns: DataTableColumn<any>[] = useMemo(
+  const columns: DataTableColumn<CategoryItem>[] = useMemo(
     () => [
       {
         id: "image",
@@ -230,7 +244,7 @@ export default function CategoriesPage() {
         ),
       },
     ],
-    [],
+    [handleEdit],
   );
 
   return (
@@ -266,135 +280,103 @@ export default function CategoriesPage() {
             handleOpenChange(false);
           }
         }}
-        maxWidth="sm"
+        maxWidth='sm'
         fullWidth
       >
-        <Box component="form" onSubmit={form.handleSubmit(onSubmit)} sx={{ display: "flex", flexDirection: "column" }}>
-          <ModalTitle sx={{ fontSize: 18, fontWeight: 700, pb: 1 }}>
-            {editingId ? "Edit Category" : "Create Category"}
-          </ModalTitle>
-          <ModalContent dividers>
-            <ModalContentText sx={{ fontSize: 14, color: "text.secondary", mb: 2.5 }}>
-              Manage your product categories here.
-            </ModalContentText>
+        <Form {...form}>
+          <Box component='form' onSubmit={form.handleSubmit(onSubmit)} sx={{ display: "flex", flexDirection: "column" }}>
+            <ModalTitle sx={{ fontSize: 18, fontWeight: 700, pb: 1 }}>
+              {editingId ? "Edit Category" : "Create Category"}
+            </ModalTitle>
+            <ModalContent dividers>
+              <ModalContentText sx={{ fontSize: 14, color: "text.secondary", mb: 2.5 }}>
+                Manage your product categories here.
+              </ModalContentText>
 
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
-              {/* Name */}
-              <Box>
-                <Label htmlFor="category-name" sx={{ mb: 1, display: "block" }}>
-                  Name
-                </Label>
-                <TextField
-                  id="category-name"
-                  fullWidth
-                  size="small"
-                  {...form.register("name", {
-                    onChange: (e) => {
-                      if (!editingId && !isSlugManuallyEdited) {
-                        form.setValue("slug", slugify(e.target.value), { shouldValidate: true });
-                      }
-                    },
-                  })}
-                  error={!!form.formState.errors.name}
-                  helperText={form.formState.errors.name?.message}
-                />
-              </Box>
-
-              {/* Slug */}
-              <Box>
-                <Label htmlFor="category-slug" sx={{ mb: 1, display: "block" }}>
-                  Slug
-                </Label>
-                <TextField
-                  id="category-slug"
-                  fullWidth
-                  size="small"
-                  {...form.register("slug", {
-                    onChange: () => {
-                      setIsSlugManuallyEdited(true);
-                    },
-                  })}
-                  error={!!form.formState.errors.slug}
-                  helperText={form.formState.errors.slug?.message}
-                />
-              </Box>
-
-              {/* Image */}
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                <Label sx={{ display: "block" }}>
-                  Image
-                </Label>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                  {watchedIcon && (
-                    <Box
-                      component="img"
-                      src={getAssetUrl(watchedIcon)}
-                      alt="Preview"
-                      sx={{
-                        width: 64,
-                        height: 64,
-                        borderRadius: "6px",
-                        objectFit: "cover",
-                        border: "1px solid",
-                        borderColor: "divider",
-                        flexShrink: 0,
-                      }}
-                    />
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+                <FormField
+                  control={form.control}
+                  name='name'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <TextField
+                          fullWidth
+                          size='small'
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            if (!editingId && !isSlugManuallyEdited) {
+                              form.setValue("slug", slugify(e.target.value), { shouldValidate: true });
+                            }
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                  <Box sx={{ position: "relative" }}>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      disabled={uploading}
-                      startIcon={
-                        uploading ? (
-                          <CircularProgress size={14} sx={{ color: "inherit" }} />
-                        ) : (
-                          <UploadFileOutlinedIcon sx={{ fontSize: 16 }} />
-                        )
-                      }
-                    >
-                      Upload
-                    </Button>
-                    <Box
-                      component="input"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      disabled={uploading}
-                      sx={{
-                        position: "absolute",
-                        inset: 0,
-                        opacity: 0,
-                        cursor: "pointer",
-                      }}
-                    />
-                  </Box>
+                />
+
+                <FormField
+                  control={form.control}
+                  name='slug'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Slug</FormLabel>
+                      <FormControl>
+                        <TextField
+                          fullWidth
+                          size='small'
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            setIsSlugManuallyEdited(true);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Image */}
+                <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                  <Label sx={{ display: "block" }}>
+                    Image
+                  </Label>
+                  <FileDropdown
+                    value={watchedIcon}
+                    onFilesSelect={handleImageUpload}
+                    onRemove={() => form.setValue("icon", "")}
+                    uploading={uploading}
+                    title='Drop category image here or click to upload'
+                    subtitle='PNG, JPG, WEBP recommended (1:1 ratio)'
+                  />
                 </Box>
               </Box>
-            </Box>
-          </ModalContent>
+            </ModalContent>
 
-          <ModalActions sx={{ p: 2, gap: 1 }}>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleOpenChange(false)}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              disabled={isSubmitting}
-              startIcon={isSubmitting ? <CircularProgress size={14} sx={{ color: "inherit" }} /> : undefined}
-            >
-              {isSubmitting ? "Saving..." : "Save"}
-            </Button>
-          </ModalActions>
-        </Box>
+            <ModalActions sx={{ p: 2, gap: 1 }}>
+              <Button
+                type='button'
+                variant='outline'
+                onClick={() => handleOpenChange(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type='submit'
+                variant='primary'
+                disabled={isSubmitting}
+                startIcon={isSubmitting ? <CircularProgress size={14} sx={{ color: "inherit" }} /> : undefined}
+              >
+                {isSubmitting ? "Saving..." : "Save"}
+              </Button>
+            </ModalActions>
+          </Box>
+        </Form>
       </Modal>
 
       {/* Delete Confirmation Alert Dialog */}

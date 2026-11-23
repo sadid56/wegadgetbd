@@ -4,7 +4,6 @@ import { Link, useRouter } from "@/i18n/routing";
 import CheckRoundedIcon from "@mui/icons-material/CheckRounded";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
-import StarIcon from "@mui/icons-material/Star";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import { useLocale, useTranslations } from "next-intl";
@@ -26,6 +25,7 @@ export interface ProductCardItem {
   name?: string;
   rating?: string | number;
   reviewCount?: string | number;
+  reviewsCount?: number;
   readTime?: string;
   price?: number | string;
   originalPrice?: number | string | null;
@@ -59,11 +59,7 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
   const title = product.title || product.name || "Product";
   const brand =
     product.brand || product.category?.name || product.tag || "GADGET";
-  const badge = product.badge || product.tag;
-  const dotColor =
-    DOT_COLORS[product.badgeVariant || product.tagVariant || "default"] ||
-    tokens.primary;
-  const rawImage = product.image || "";
+  const rawImage = product.thumbnail || "";
   const image =
     (rawImage ? getAssetUrl(rawImage) : null) || "/images/default.png";
   const href = product.link || `/products/${product.slug || product.id}`;
@@ -72,7 +68,24 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
     ? Number(product.originalPrice)
     : undefined;
 
-  const handleCardClick = (e: React.MouseEvent) => {
+  const discountLabel =
+    originalPrice && price > 0 && originalPrice > price
+      ? (() => {
+          const pct = Math.round(((originalPrice - price) / originalPrice) * 100);
+          return pct > 0 ? `-${pct}%` : `Save ৳${Math.round(originalPrice - price)}`;
+        })()
+      : null;
+
+  const rawBadge = product.badge || product.tag;
+  const badge = rawBadge === "Sale" && discountLabel ? discountLabel : rawBadge || discountLabel;
+  const dotColor =
+    DOT_COLORS[
+      product.badgeVariant ||
+        product.tagVariant ||
+        (!rawBadge && discountLabel ? "sale" : "default")
+    ] || tokens.primary;
+
+  const handleCardClick = (_e: React.MouseEvent) => {
     // Navigate to details page if not clicking a button
     router.push(href);
   };
@@ -87,6 +100,8 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
         border: "none",
         boxShadow: "none",
         p: 1.5,
+        minWidth: 0,
+        overflow: "hidden",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
@@ -177,11 +192,15 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
             right: 10,
             width: 30,
             height: 30,
-            bgcolor: "rgba(255, 255, 255, 0.92)",
-            backdropFilter: "blur(8px)",
-            border: "1px solid rgba(15, 23, 42, 0.06)",
-            color: tokens.textSecondary,
-            "&:hover": { bgcolor: "rgba(255, 255, 255, 0.92)" },
+            bgcolor: "rgba(255, 255, 255, 0.88)",
+            backdropFilter: "blur(10px)",
+            border: "1px solid rgba(15, 23, 42, 0.1)",
+            boxShadow: "0 2px 8px rgba(15, 23, 42, 0.12), 0 1px 2px rgba(15, 23, 42, 0.06)",
+            color: tokens.textPrimary,
+            "&:hover": {
+              bgcolor: "#FFFFFF",
+              boxShadow: "0 4px 12px rgba(15, 23, 42, 0.16)",
+            },
           }}
         >
           <FavoriteBorderIcon sx={{ fontSize: 15 }} />
@@ -192,6 +211,7 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
       <Box
         sx={{
           flex: 1,
+          minWidth: 0,
           display: "flex",
           flexDirection: "column",
           px: 0.5,
@@ -204,6 +224,8 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
+            gap: 1,
+            minWidth: 0,
             mb: 0.6,
           }}
         >
@@ -214,26 +236,14 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
               color: tokens.textMuted,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
+              minWidth: 0,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
           >
             {brand}
           </Typography>
-
-          <Box sx={{ display: "inline-flex", alignItems: "center", gap: 0.4 }}>
-            <StarIcon sx={{ color: tokens.warning, fontSize: 13 }} />
-            <Typography
-              sx={{
-                fontSize: 11.5,
-                fontWeight: 700,
-                color: tokens.textPrimary,
-              }}
-            >
-              {product.rating ?? "4.8"}
-            </Typography>
-            <Typography sx={{ fontSize: 11, color: tokens.textMuted }}>
-              ({product.reviewCount || product.readTime || "120+"})
-            </Typography>
-          </Box>
         </Box>
 
         <Typography

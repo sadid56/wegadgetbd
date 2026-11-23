@@ -190,7 +190,7 @@ export class SignInUseCase {
           },
         },
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("SignInUseCase failed:", err);
       return { success: false as const, error: "An unexpected error occurred", message: "An unexpected error occurred" };
     }
@@ -261,7 +261,7 @@ export class SignUpUseCase {
             : null,
         },
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("SignUpUseCase failed:", err);
       return { success: false as const, error: "An unexpected error occurred", message: "An unexpected error occurred" };
     }
@@ -291,7 +291,7 @@ export class GetGoogleOAuthUrlUseCase {
       }
 
       return { success: true as const, data: { url: data.url } };
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("GetGoogleOAuthUrlUseCase failed:", err);
       return { success: false as const, error: "Failed to initiate Google sign-in", message: "Failed to initiate Google sign-in" };
     }
@@ -309,7 +309,7 @@ export class SignOutUseCase {
       await clearAuthCookies();
       await supabase.auth.signOut().catch(() => null);
       return { success: true as const, data: null };
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("SignOutUseCase failed:", err);
       return { success: false as const, error: "Failed to sign out", message: "Failed to sign out" };
     }

@@ -1,6 +1,5 @@
 import { db } from "@/db";
 import { sale } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import type { Context } from "@/server/context";
 import {
   DEFAULT_STATUS,
@@ -46,9 +45,9 @@ export class CreateSaleUseCase {
         .returning();
 
       return { success: true as const, data: serializeSale(newSale) };
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("CreateSaleUseCase failed:", err);
-      const msg = err?.message || "Failed to create sale";
+      const msg = err instanceof Error ? err.message : "Failed to create sale";
       return { success: false as const, error: msg, message: msg };
     }
   }

@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { order, type OrderStatus } from "@/db/schema";
-import { desc, count, or, ilike, eq } from "drizzle-orm";
+import { desc, count, or, ilike, eq, type SQL } from "drizzle-orm";
 import type { Context } from "@/server/context";
 import { buildWhere } from "@/server/lib/orm";
 import { offsetOf, paginate } from "@/server/lib/pagination";
@@ -52,11 +52,11 @@ export class ListOrdersUseCase {
   }
 
   private buildWhereClause({ search, status }: ListOrdersInput) {
-    const conditions: any[] = [eq(order.isDeleted, false)];
+    const conditions: SQL[] = [eq(order.isDeleted, false)];
 
     if (search?.trim()) {
       const q = `%${search.trim()}%`;
-      conditions.push(or(ilike(order.customerName, q), ilike(order.phoneNumber, q), ilike(order.address, q)));
+      conditions.push(or(ilike(order.customerName, q), ilike(order.phoneNumber, q), ilike(order.address, q))!);
     }
 
     if (status) {

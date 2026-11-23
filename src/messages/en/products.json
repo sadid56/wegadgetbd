@@ -1,5 +1,6 @@
 {
   "title": "All Products",
+  "searchPlaceholder": "Search gadgets, accessories...",
   "filterProducts": "Filter Products",
   "category": "Category",
   "allProducts": "All Products",
@@ -87,7 +88,6 @@
   "model": "Model",
   "warranty": "Warranty",
   "origin": "Place of Origin",
-  "brand": "Brand",
   "photos": "Photos",
   "video": "Video",
   "packagingDetails": "Packaging Details",

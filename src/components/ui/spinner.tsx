@@ -4,7 +4,7 @@ import * as React from "react";
 import MuiCircularProgress, { type CircularProgressProps as MuiCircularProgressProps } from "@mui/material/CircularProgress";
 import { tokens } from "@/theme/theme";
 
-export interface SpinnerProps extends MuiCircularProgressProps {}
+export type SpinnerProps = MuiCircularProgressProps;
 
 export function Spinner({ sx, size = 24, ...props }: SpinnerProps) {
   return (

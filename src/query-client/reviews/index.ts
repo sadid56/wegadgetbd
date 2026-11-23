@@ -21,6 +21,9 @@ const reviewKeys = {
   approved: ["approvedReviews"] as const,
 };
 
+type CreateAdminReviewPayload = Parameters<typeof orpcClient.admin.reviews.create>[0];
+type UpdateAdminReviewPayload = Parameters<typeof orpcClient.admin.reviews.update>[0];
+
 export const useReviews = () =>
   useQuery({
     queryKey: reviewKeys.all,
@@ -35,13 +38,13 @@ export const useApprovedReviews = () =>
     queryKey: reviewKeys.approved,
     queryFn: async () => {
       const res = await orpcClient.admin.reviews.list();
-      return res.filter((r: any) => r.status === "APPROVED");
+      return res.filter((r: { status?: string }) => r.status === "APPROVED");
     },
   });
 
 export const useCreateReview = (options?: Record<string, unknown>) =>
   useAppMutation({
-    mutationFn: (data: any) => orpcClient.admin.reviews.create(data),
+    mutationFn: (data: CreateAdminReviewPayload) => orpcClient.admin.reviews.create(data),
     invalidateKeys: [reviewKeys.all, reviewKeys.approved],
     successMessage: "Review created successfully",
     ...options,
@@ -49,7 +52,7 @@ export const useCreateReview = (options?: Record<string, unknown>) =>
 
 export const useUpdateReview = (options?: Record<string, unknown>) =>
   useAppMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
+    mutationFn: ({ id, data }: { id: string; data: Omit<UpdateAdminReviewPayload, "id"> }) =>
       orpcClient.admin.reviews.update({ id, ...data }),
     invalidateKeys: [reviewKeys.all, reviewKeys.approved],
     successMessage: "Review updated successfully",

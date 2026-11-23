@@ -45,7 +45,7 @@ interface ProductReviewsProps {
 }
 
 export function ProductReviews({ productId, rating: initialRating, reviewsCount = 0 }: ProductReviewsProps) {
-  const t = useTranslations("products");
+  const _t = useTranslations("products");
   const locale = useLocale();
   const toast = useToast();
 
@@ -71,7 +71,7 @@ export function ProductReviews({ productId, rating: initialRating, reviewsCount 
   const reviews = data?.reviews || [];
   const totalReviews = data?.total ?? reviewsCount;
   const avgRating = totalReviews === 0 ? 0 : (data?.averageRating ?? Number(initialRating || 0));
-  const ratingCounts = data?.ratingCounts || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  const ratingCounts = (data?.ratingCounts || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 }) as Record<number, number>;
 
   const formatNumber = (n: number) => (locale === "bn" ? formatBnNumber(n) : n.toString());
 
@@ -84,8 +84,8 @@ export function ProductReviews({ productId, rating: initialRating, reviewsCount 
         const res = await uploadFileToStorage({ file, folder: "reviews" });
         setNewImages((prev) => [...prev, stripAssetDomain(res.url)]);
       }
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to upload image");
+    } catch (err: unknown) {
+      toast.error((err as { message?: string })?.message || "Failed to upload image");
     } finally {
       setIsUploadingImage(false);
     }
@@ -118,7 +118,7 @@ export function ProductReviews({ productId, rating: initialRating, reviewsCount 
           setNewImages([]);
           setNewRating(5);
         },
-        onError: (err: any) => {
+        onError: (err: { message?: string }) => {
           toast.error(err?.message || "Failed to post review");
         },
       },
@@ -140,7 +140,7 @@ export function ProductReviews({ productId, rating: initialRating, reviewsCount 
           setReplyingToParentId(null);
           setReplyText("");
         },
-        onError: (err: any) => {
+        onError: (err: { message?: string }) => {
           toast.error(err?.message || "Failed to submit reply");
         },
       },
@@ -199,7 +199,7 @@ export function ProductReviews({ productId, rating: initialRating, reviewsCount 
         {/* 5-Star Distribution Bars */}
         <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75 }}>
           {[5, 4, 3, 2, 1].map((star) => {
-            const count = (ratingCounts as any)[star] || 0;
+            const count = ratingCounts[star] || 0;
             const pct = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
             const isSelected = selectedStarFilter === star;
 
@@ -371,7 +371,7 @@ export function ProductReviews({ productId, rating: initialRating, reviewsCount 
         {[5, 4, 3, 2, 1].map((s) => (
           <Chip
             key={s}
-            label={`${s}★ (${formatNumber((ratingCounts as any)[s] || 0)})`}
+            label={`${s}★ (${formatNumber(ratingCounts[s] || 0)})`}
             onClick={() => setSelectedStarFilter(selectedStarFilter === s ? undefined : s)}
             color={selectedStarFilter === s ? "primary" : "default"}
             variant={selectedStarFilter === s ? "filled" : "outlined"}

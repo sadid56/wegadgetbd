@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import NextImage from "next/image";
 import { Link, useRouter } from "@/i18n/routing";
 import { useLocale } from "next-intl";
@@ -9,112 +9,39 @@ import Typography from "@mui/material/Typography";
 import IconButton from "@mui/material/IconButton";
 import { CircularProgress } from "@/components/ui/spinner";
 
-import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
 import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import CloseRoundedIcon from "@mui/icons-material/CloseRounded";
 import TrendingUpRoundedIcon from "@mui/icons-material/TrendingUpRounded";
+import WhatshotRoundedIcon from "@mui/icons-material/WhatshotRounded";
+import AcUnitRoundedIcon from "@mui/icons-material/AcUnitRounded";
+import SavingsRoundedIcon from "@mui/icons-material/SavingsRounded";
+import AutoAwesomeRoundedIcon from "@mui/icons-material/AutoAwesomeRounded";
 
-import { SectionContainer } from "@/components/common/SectionContainer";
 import { useProducts, useTopPicks } from "@/query-client/products";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useClickOutside } from "@/hooks/use-click-outside";
+import { openAiShoppingDrawer } from "@/lib/ai-drawer";
 import { getAssetUrl } from "@/lib/storage";
 import { formatPrice } from "@/lib/i18n-utils";
+import { tokens } from "@/theme/theme";
 
 const TRENDING_TAGS = ["Smart Watch", "TWS Earbuds", "Cleaning Kit", "Mini Blower", "Lint Remover"] as const;
-
-const AI_COLLECTION_PROMPTS = [
-  {
-    emoji: "⌚",
-    label: "Smart Wearables",
-    prompt: "Suggest the best smart wearables and everyday tech from We Gadget BD.",
-  },
-  {
-    emoji: "🎧",
-    label: "Audio & Sound",
-    prompt: "Recommend top audio & sound gadgets available right now with prices.",
-  },
-  {
-    emoji: "❄️",
-    label: "Winter Essentials",
-    prompt: "What are the best winter comfort & fabric care gadgets in your store?",
-  },
-  {
-    emoji: "💻",
-    label: "Desk & Cleaning",
-    prompt: "Recommend desk setup, blower, or electronics cleaning gadgets.",
-  },
-  {
-    emoji: "💰",
-    label: "Best Under ৳1,500",
-    prompt: "Show me the best budget gadgets under ৳1500 with prices.",
-  },
-] as const;
-
-function renderAiLinks(text: string) {
-  const linkRegex = /\[([^\]]+)\]\(((?:\/|https?:\/\/)[^\s)]+)\)/g;
-  const parts: React.ReactNode[] = [];
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
-
-  while ((match = linkRegex.exec(text)) !== null) {
-    if (match.index > lastIndex) {
-      parts.push(text.slice(lastIndex, match.index));
-    }
-    const label = match[1];
-    const href = match[2];
-    const isExternal = href.startsWith("http");
-
-    parts.push(
-      isExternal ? (
-        <Box
-          key={`${href}-${match.index}`}
-          component='a'
-          href={href}
-          target='_blank'
-          rel='noopener noreferrer'
-          sx={{ color: "#5B3DF5", fontWeight: 700, textDecoration: "underline", textUnderlineOffset: "2px" }}
-        >
-          {label}
-        </Box>
-      ) : (
-        <Box
-          key={`${href}-${match.index}`}
-          component={Link}
-          href={href}
-          sx={{ color: "#5B3DF5", fontWeight: 700, textDecoration: "underline", textUnderlineOffset: "2px" }}
-        >
-          {label}
-        </Box>
-      ),
-    );
-    lastIndex = match.index + match[0].length;
-  }
-
-  if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex));
-  }
-  return parts;
-}
 
 export function Hero() {
   const router = useRouter();
   const locale = useLocale();
+  const isBn = locale === "bn";
   const searchBoxRef = useRef<HTMLDivElement | null>(null);
 
-  const [mode, setMode] = useState<"normal" | "ai">("normal");
   const [searchQuery, setSearchQuery] = useState("");
   const [isNormalExpanded, setIsNormalExpanded] = useState(false);
   const [hasFocusedSearch, setHasFocusedSearch] = useState(false);
 
-  // AI Mode state
-  const [aiReply, setAiReply] = useState<string | null>(null);
-  const [aiLoading, setAiLoading] = useState(false);
-
   const debouncedQuery = useDebounce(searchQuery.trim(), 250);
   const { data: searchData, isFetching: isSearching } = useProducts(
     { search: debouncedQuery, limit: 5 },
-    { enabled: mode === "normal" && isNormalExpanded && debouncedQuery.length > 0 },
+    { enabled: isNormalExpanded && debouncedQuery.length > 0 },
   );
   const { data: topPicks, isFetching: isLoadingTopPicks } = useTopPicks(4, {
     enabled: hasFocusedSearch,
@@ -124,59 +51,15 @@ export function Hero() {
   const normalResults = debouncedQuery.length > 0 ? (searchData?.products ?? []) : (topPicks ?? []);
 
   // Close normal dropdown on outside click or Escape
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (searchBoxRef.current && !searchBoxRef.current.contains(e.target as Node)) {
-        setIsNormalExpanded(false);
-      }
-    };
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setIsNormalExpanded(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
+  useClickOutside(searchBoxRef, () => setIsNormalExpanded(false), {
+    enabled: isNormalExpanded,
+  });
 
-  const askAi = async (promptText: string) => {
-    const trimmed = promptText.trim();
-    if (!trimmed || aiLoading) return;
-    setAiLoading(true);
-    setAiReply(null);
-    try {
-      const res = await fetch("/api/ai-assistant", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: trimmed }),
-      });
-      const data = (await res.json()) as { reply?: string };
-      setAiReply(data.reply || "Sorry, I couldn't find a recommendation right now.");
-    } catch {
-      setAiReply("Network error! You can also call or WhatsApp us at 01739859756.");
-    } finally {
-      setAiLoading(false);
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.ChangeEvent) => {
     e.preventDefault();
-    if (mode === "ai") {
-      askAi(searchQuery);
-    } else {
-      const trimmed = searchQuery.trim();
-      setIsNormalExpanded(false);
-      router.push(trimmed ? `/products?search=${encodeURIComponent(trimmed)}` : "/products");
-    }
-  };
-
-  const handleCollectionClick = (prompt: string, label: string) => {
-    setSearchQuery(label);
-    askAi(prompt);
+    const trimmed = searchQuery.trim();
+    setIsNormalExpanded(false);
+    router.push(trimmed ? `/products?search=${encodeURIComponent(trimmed)}` : "/products");
   };
 
   return (
@@ -184,407 +67,354 @@ export function Hero() {
       component='section'
       sx={{
         position: "relative",
+        zIndex: isNormalExpanded ? 60 : 25, // Stacks above CategoryRibbon (zIndex: 10) so search dropdown never hides under it
         width: "100%",
-        minHeight: { xs: 560, sm: 600, md: 640, lg: 680 },
-        display: "flex",
-        alignItems: "center",
-        overflow: "visible",
-        bgcolor: "#EDF8F6",
-        pt: { xs: 12, sm: 13.5, md: 15 },
-        pb: { xs: 10, sm: 12, md: 14 },
-        "&::after": {
-          content: '""',
-          position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 0,
-          height: { xs: 110, md: 150 },
-          background:
-            "linear-gradient(to bottom, rgba(247, 248, 250, 0) 0%, rgba(247, 248, 250, 0.35) 40%, rgba(247, 248, 250, 0.78) 72%, #F7F8FA 100%)",
-          pointerEvents: "none",
-          zIndex: 1,
-        },
+        maxWidth: 1440,
+        mx: "auto",
+        px: { xs: 2, sm: 3, md: 4, lg: 5 },
+        pt: { xs: "74px", sm: "84px", md: "98px", lg: "104px" },
+        pb: 0,
       }}
     >
-      <NextImage
-        src='/images/hero-bg-gadgets.jpg'
-        alt=''
-        fill
-        priority
-        quality={95}
-        sizes='100vw'
-        style={{
-          objectFit: "cover",
-          objectPosition: "center",
-          pointerEvents: "none",
-          zIndex: 0,
+      {/* ── FLOATING ROUNDED HERO CONTAINER ── */}
+      <Box
+        sx={{
+          position: "relative",
+          width: "100%",
+          minHeight: { xs: 420, sm: 500, md: 540, lg: 570 },
+          borderRadius: { xs: "22px", sm: "28px", md: "32px", lg: "36px" },
+          border: `1px solid ${tokens.borderDefault}`,
+          boxShadow: "0 18px 48px -12px rgba(17, 24, 23, 0.08), 0 4px 16px -2px rgba(17, 24, 23, 0.03)",
+          bgcolor: "#EDF8F6",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          px: { xs: 1.75, sm: 3, md: 4 },
+          py: { xs: 4.5, sm: 6.5, md: 7.5, lg: 8 },
         }}
-      />
-
-      <SectionContainer sx={{ position: "relative", zIndex: 30 }}>
+      >
+        {/* Clipped Background Layer (Pure, raw 4K visual - crisp & vibrant) */}
         <Box
           sx={{
-            display: "grid",
-            gridTemplateColumns: {
-              xs: "1fr",
-              lg: "230px minmax(0, 1fr) 210px",
-              xl: "260px minmax(0, 1fr) 240px",
-            },
-            gap: { xs: 3, lg: 2 },
-            alignItems: "center",
+            position: "absolute",
+            inset: 0,
+            borderRadius: "inherit",
+            overflow: "hidden",
+            pointerEvents: "none",
+            zIndex: 0,
           }}
         >
-          {/* Left Spacer for 3D Podium Gadgets */}
-          <Box sx={{ display: { xs: "none", lg: "block" } }} />
+          <NextImage
+            src={getAssetUrl("hero/hero-bg-gadgets.jpg")}
+            alt='We Gadget BD Smart Gear'
+            fill
+            priority
+            quality={95}
+            sizes='(max-width: 1440px) 100vw, 1440px'
+            style={{
+              objectFit: "cover",
+              objectPosition: "center",
+            }}
+          />
 
-          {/* Center Hero Content + Alibaba-Style Dual-Mode Search */}
+          {/* Soft Center Radial Contrast Spotlight */}
           <Box
             sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              textAlign: "center",
-              maxWidth: 680,
-              mx: "auto",
-              width: "100%",
+              position: "absolute",
+              inset: 0,
+              background: {
+                xs: "radial-gradient(ellipse 64% 50% at 50% 38%, rgba(241, 245, 249, 0.84) 0%, rgba(241, 245, 249, 0.46) 40%, rgba(241, 245, 249, 0.12) 72%, rgba(241, 245, 249, 0) 100%)",
+                sm: "radial-gradient(ellipse 48% 52% at 50% 40%, rgba(241, 245, 249, 0.88) 0%, rgba(241, 245, 249, 0.52) 36%, rgba(241, 245, 249, 0.16) 68%, rgba(241, 245, 249, 0) 100%)",
+              },
+            }}
+          />
+        </Box>
+
+        {/* All Hero Content - Strictly Center Aligned */}
+        <Box
+          sx={{
+            position: "relative",
+            zIndex: 10,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            textAlign: "center",
+            maxWidth: 740,
+            mx: "auto",
+            width: "100%",
+          }}
+        >
+          {/* Main Display Heading (Bilingual BN & EN) */}
+          <Typography
+            component='h1'
+            sx={{
+              fontSize: { xs: 28, sm: 38, md: 46, xl: 52 },
+              fontWeight: 800,
+              lineHeight: 1.15,
+              letterSpacing: isBn ? "normal" : "-0.03em",
+              color: tokens.textPrimary,
+              mb: 1.5,
             }}
           >
-            {/* Top Pill */}
-            <Box
-              sx={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 0.85,
-                px: 1.75,
-                py: 0.65,
-                borderRadius: "9999px",
-                bgcolor: "rgba(255, 255, 255, 0.88)",
-                backdropFilter: "blur(12px)",
-                border: "1px solid rgba(255, 255, 255, 0.95)",
-                boxShadow: "0 4px 18px rgba(91, 61, 245, 0.08)",
-                mb: 2,
-              }}
-            >
-              <AutoAwesomeRoundedIcon sx={{ fontSize: 15, color: "#6D4AFF" }} />
-              <Typography sx={{ fontSize: 12.5, fontWeight: 600, color: "#1E1B4B" }}>Your AI Gadget Companion</Typography>
-            </Box>
-
-            {/* Main Display Heading */}
-            <Typography
-              component='h1'
-              sx={{
-                fontSize: { xs: 28, sm: 38, md: 44, xl: 48 },
-                fontWeight: 800,
-                lineHeight: 1.15,
-                letterSpacing: "-0.03em",
-                color: "#0F172A",
-                mb: 1.5,
-              }}
-            >
-              Tell us what you need...
-              <br />
-              Let{" "}
-              <Box
-                component='span'
-                sx={{
-                  position: "relative",
-                  display: "inline-block",
-                  color: "#5B3DF5",
-                  pb: "4px",
-                }}
-              >
-                AI
+            {isBn ? (
+              <>
+                আপনার কী প্রয়োজন জানান...
+                <br />
                 <Box
-                  component='svg'
-                  viewBox='0 0 60 10'
-                  fill='none'
+                  component='span'
                   sx={{
-                    position: "absolute",
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    width: "100%",
-                    height: 8,
-                    pointerEvents: "none",
+                    position: "relative",
+                    display: "inline-block",
+                    color: tokens.primary,
+                    pb: "4px",
                   }}
                 >
-                  <path d='M2 7C18 2 42 2 58 7' stroke='#5B3DF5' strokeWidth='3.5' strokeLinecap='round' />
-                </Box>
-              </Box>{" "}
-              find it for you!
-            </Typography>
-
-            {/* Subtitle */}
-            <Typography
-              sx={{
-                fontSize: { xs: 13.5, sm: 15 },
-                fontWeight: 500,
-                lineHeight: 1.55,
-                color: "#475569",
-                maxWidth: 480,
-                mb: 2.75,
-              }}
-            >
-              From everyday solutions to unique gadgets — smarter, easier, and just for you!
-            </Typography>
-
-            {/* Dual-Mode Search Container (Normal + Alibaba-Style Tall AI Mode) */}
-            <Box
-              ref={searchBoxRef}
-              sx={{
-                position: "relative",
-                width: "100%",
-                maxWidth: 640,
-                mb: 2,
-              }}
-            >
-              <Box
-                component='form'
-                onSubmit={handleSubmit}
-                sx={{
-                  width: "100%",
-                  bgcolor: "#FFFFFF",
-                  borderRadius: mode === "ai" ? "24px" : "28px",
-                  border: mode === "ai" ? "1.5px solid #A78BFA" : "1px solid rgba(226, 232, 240, 0.9)",
-                  boxShadow: mode === "ai" ? "0 20px 50px rgba(91, 61, 245, 0.16)" : "0 14px 36px rgba(91, 61, 245, 0.11)",
-                  px: { xs: 1.5, sm: 2 },
-                  py: 1,
-                  transition: "border-radius 260ms cubic-bezier(0.22, 1, 0.36, 1), border-color 200ms ease, box-shadow 260ms ease",
-                }}
-              >
-                {/* Top Unified Input Row (Zero Unmount/Remount) */}
-                <Box sx={{ display: "flex", alignItems: "flex-start", gap: 1 }}>
-                  {/* Mode Switcher Pill */}
+                  AI
                   <Box
+                    component='svg'
+                    viewBox='0 0 60 10'
+                    fill='none'
                     sx={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      bgcolor: "#F1F5F9",
-                      borderRadius: "9999px",
-                      p: "3px",
-                      flexShrink: 0,
-                      mt: "2px",
+                      position: "absolute",
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      width: "100%",
+                      height: 8,
+                      pointerEvents: "none",
                     }}
                   >
-                    <Box
-                      component='button'
-                      type='button'
-                      onClick={() => {
-                        setMode("normal");
-                        setAiReply(null);
-                      }}
-                      sx={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 0.5,
-                        px: 1.15,
-                        py: 0.5,
-                        borderRadius: "9999px",
-                        border: "none",
-                        cursor: "pointer",
-                        fontSize: 12,
-                        fontWeight: 700,
-                        bgcolor: mode === "normal" ? "#FFFFFF" : "transparent",
-                        color: mode === "normal" ? "#0F172A" : "#64748B",
-                        boxShadow: mode === "normal" ? "0 1px 4px rgba(15, 23, 42, 0.08)" : "none",
-                        transition: "background-color 180ms ease, color 180ms ease",
-                      }}
-                    >
-                      <SearchRoundedIcon sx={{ fontSize: 14 }} />
-                      <span>Search</span>
-                    </Box>
-                    <Box
-                      component='button'
-                      type='button'
-                      onClick={() => {
-                        setMode("ai");
-                        setIsNormalExpanded(false);
-                      }}
-                      sx={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: 0.5,
-                        px: 1.15,
-                        py: 0.5,
-                        borderRadius: "9999px",
-                        border: "none",
-                        cursor: "pointer",
-                        fontSize: 12,
-                        fontWeight: 700,
-                        bgcolor: mode === "ai" ? "#5B3DF5" : "transparent",
-                        color: mode === "ai" ? "#FFFFFF" : "#5B3DF5",
-                        boxShadow: mode === "ai" ? "0 2px 8px rgba(91, 61, 245, 0.25)" : "none",
-                        transition: "background-color 180ms ease, color 180ms ease",
-                      }}
-                    >
-                      <AutoAwesomeRoundedIcon sx={{ fontSize: 13.5 }} />
-                      <span>AI Mode</span>
-                    </Box>
+                    <path d='M2 7C18 2 42 2 58 7' stroke={tokens.primary} strokeWidth='3.5' strokeLinecap='round' />
                   </Box>
-
-                  {/* Unified Textarea (smooth height transition, zero flicker) */}
-                  <Box
-                    component='textarea'
-                    rows={1}
-                    value={searchQuery}
-                    onFocus={() => {
-                      if (mode === "normal") {
-                        setHasFocusedSearch(true);
-                        setIsNormalExpanded(true);
-                      }
-                    }}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
-                      setSearchQuery(e.target.value);
-                      if (mode === "normal") {
-                        if (!hasFocusedSearch) setHasFocusedSearch(true);
-                        if (!isNormalExpanded) setIsNormalExpanded(true);
-                      }
-                    }}
-                    onKeyDown={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-                      if (e.key === "Enter" && !e.shiftKey) {
-                        e.preventDefault();
-                        if (mode === "ai") {
-                          askAi(searchQuery);
-                        } else {
-                          const trimmed = searchQuery.trim();
-                          setIsNormalExpanded(false);
-                          router.push(trimmed ? `/products?search=${encodeURIComponent(trimmed)}` : "/products");
-                        }
-                      }
-                    }}
-                    placeholder={
-                      mode === "ai"
-                        ? 'Ask AI anything: e.g. "Best winter gadgets under ৳1000"...'
-                        : "Search gadgets, earbuds, smartwatches..."
-                    }
-                    sx={{
-                      flex: 1,
-                      minWidth: 0,
-                      resize: "none",
-                      border: "none",
-                      outline: "none",
-                      bgcolor: "transparent",
-                      fontFamily: "inherit",
-                      fontSize: { xs: 13, sm: 14 },
-                      fontWeight: 500,
-                      lineHeight: "22px",
-                      color: "#0F172A",
-                      px: 0.5,
-                      pt: "7px",
-                      height: mode === "ai" ? 64 : 36,
-                      transition: "height 260ms cubic-bezier(0.22, 1, 0.36, 1)",
-                      "&::placeholder": { color: "#64748B", opacity: 1 },
-                    }}
-                  />
-
-                  {/* Normal Mode Compact Submit Arrow */}
-                  {mode === "normal" && (
-                    <IconButton
-                      type='submit'
-                      aria-label='Search products'
-                      sx={{
-                        width: 36,
-                        height: 36,
-                        bgcolor: "#5B3DF5",
-                        color: "#FFFFFF",
-                        flexShrink: 0,
-                        "&:hover": { bgcolor: "#4C2EE0" },
-                      }}
-                    >
-                      <ArrowForwardRoundedIcon sx={{ fontSize: 18 }} />
-                    </IconButton>
-                  )}
-                </Box>
-
-                {/* Smooth GPU-Friendly Expandable AI Footer (0fr -> 1fr) */}
+                </Box>{" "}
+                খুঁজে দেবে আপনার জন্য!
+              </>
+            ) : (
+              <>
+                Tell us what you need...
+                <br />
+                Let{" "}
                 <Box
+                  component='span'
                   sx={{
-                    display: "grid",
-                    gridTemplateRows: mode === "ai" ? "1fr" : "0fr",
-                    opacity: mode === "ai" ? 1 : 0,
-                    transition: "grid-template-rows 260ms cubic-bezier(0.22, 1, 0.36, 1), opacity 200ms ease",
+                    position: "relative",
+                    display: "inline-block",
+                    color: tokens.primary,
+                    pb: "4px",
                   }}
                 >
-                  <Box sx={{ overflow: "hidden" }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 1,
-                        pt: 1,
-                        mt: 0.75,
-                        borderTop: "1px solid #F1F5F9",
-                      }}
-                    >
-                      <Typography sx={{ fontSize: 11.5, color: "#64748B", fontWeight: 500 }}>
-                        ✨ Powered by Gemini AI • Press Enter or pick a collection below
-                      </Typography>
-
-                      <Box
-                        component='button'
-                        type='submit'
-                        disabled={aiLoading || !searchQuery.trim()}
-                        sx={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 0.75,
-                          px: 2,
-                          py: 0.75,
-                          borderRadius: "9999px",
-                          border: "none",
-                          bgcolor: "#5B3DF5",
-                          color: "#FFFFFF",
-                          fontSize: 12.5,
-                          fontWeight: 700,
-                          cursor: "pointer",
-                          flexShrink: 0,
-                          transition: "background-color 150ms ease",
-                          "&:hover": { bgcolor: "#4C2EE0" },
-                          "&:disabled": { opacity: 0.55, cursor: "not-allowed" },
-                        }}
-                      >
-                        {aiLoading ? (
-                          <CircularProgress size={14} sx={{ color: "#FFFFFF" }} />
-                        ) : (
-                          <AutoAwesomeRoundedIcon sx={{ fontSize: 15 }} />
-                        )}
-                        <span>{aiLoading ? "Thinking..." : "Ask AI"}</span>
-                      </Box>
-                    </Box>
+                  AI
+                  <Box
+                    component='svg'
+                    viewBox='0 0 60 10'
+                    fill='none'
+                    sx={{
+                      position: "absolute",
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      width: "100%",
+                      height: 8,
+                      pointerEvents: "none",
+                    }}
+                  >
+                    <path d='M2 7C18 2 42 2 58 7' stroke={tokens.primary} strokeWidth='3.5' strokeLinecap='round' />
                   </Box>
-                </Box>
+                </Box>{" "}
+                find it for you!
+              </>
+            )}
+          </Typography>
+
+          {/* Subtitle */}
+          <Typography
+            sx={{
+              fontSize: { xs: 13.5, sm: 15, md: 15.5 },
+              fontWeight: 600,
+              lineHeight: 1.5,
+              color: tokens.textPrimary,
+              maxWidth: 520,
+              mx: "auto",
+              mb: 2.5,
+            }}
+          >
+            {isBn
+              ? "দৈনন্দিন সমাধান থেকে ইউনিক গ্যাজেট — আরও সহজ, স্মার্ট ও আপনার মনের মতো!"
+              : "From everyday solutions to unique gadgets — smarter, easier, and just for you!"}
+          </Typography>
+
+          {/* Clean Search Container + 1-Click Concierge Shortcut */}
+          <Box
+            ref={searchBoxRef}
+            sx={{
+              position: "relative",
+              zIndex: isNormalExpanded ? 80 : 20,
+              width: "100%",
+              maxWidth: 620,
+              minHeight: 54,
+              mb: 2,
+            }}
+          >
+            <Box
+              component='form'
+              onSubmit={handleSubmit}
+              sx={{
+                position: "relative",
+                zIndex: 90,
+                width: "100%",
+                borderRadius: "999px",
+                bgcolor: tokens.bgPanel,
+                boxShadow: isNormalExpanded
+                  ? "0 14px 40px rgba(17, 24, 23, 0.13), 0 3px 12px rgba(17, 24, 23, 0.04)"
+                  : "0 6px 22px rgba(17, 24, 23, 0.08)",
+                transition: "box-shadow 220ms ease",
+                display: "flex",
+                alignItems: "center",
+                gap: { xs: 0.75, sm: 1 },
+                pl: { xs: 1.75, sm: 2.25 },
+                pr: 1,
+                py: 0.9,
+              }}
+            >
+              <SearchRoundedIcon sx={{ fontSize: 20, color: tokens.textMuted, flexShrink: 0 }} />
+
+              <Box
+                component='input'
+                type='text'
+                value={searchQuery}
+                onFocus={() => {
+                  setHasFocusedSearch(true);
+                  setIsNormalExpanded(true);
+                }}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  setSearchQuery(e.target.value);
+                  if (!hasFocusedSearch) setHasFocusedSearch(true);
+                  if (!isNormalExpanded) setIsNormalExpanded(true);
+                }}
+                placeholder={isBn ? "গ্যাজেট, ইয়ারবাডস, স্মার্টওয়াচ খুঁজুন..." : "Search gadgets, earbuds, smartwatches..."}
+                sx={{
+                  flex: 1,
+                  minWidth: 0,
+                  height: 36,
+                  border: "none",
+                  outline: "none",
+                  bgcolor: "transparent",
+                  fontFamily: "inherit",
+                  fontSize: { xs: 13.5, sm: 14 },
+                  fontWeight: 500,
+                  color: tokens.textPrimary,
+                  "&::placeholder": { color: tokens.textMuted, opacity: 1 },
+                }}
+              />
+
+              {/* Single Entry Point to AI Shopping Bot Drawer */}
+              <Box
+                component='button'
+                type='button'
+                onClick={() => {
+                  setIsNormalExpanded(false);
+                  openAiShoppingDrawer(searchQuery.trim() || undefined);
+                }}
+                sx={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 0.6,
+                  px: { xs: 1.2, sm: 1.5 },
+                  py: 0.65,
+                  borderRadius: "999px",
+                  border: "1px solid rgba(0, 191, 166, 0.38)",
+                  background: "linear-gradient(135deg, rgba(0, 191, 166, 0.12) 0%, rgba(6, 182, 212, 0.14) 100%)",
+                  boxShadow: "0 2px 10px rgba(0, 191, 166, 0.14)",
+                  color: tokens.primaryDark,
+                  fontSize: { xs: 11.5, sm: 12 },
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  flexShrink: 0,
+                  whiteSpace: "nowrap",
+                  transition: "all 180ms ease",
+                  "&:hover": {
+                    background: "linear-gradient(135deg, rgba(0, 191, 166, 0.18) 0%, rgba(6, 182, 212, 0.2) 100%)",
+                    borderColor: "rgba(0, 191, 166, 0.55)",
+                    boxShadow: "0 3px 12px rgba(0, 191, 166, 0.18)",
+                  },
+                }}
+              >
+                <AutoAwesomeRoundedIcon sx={{ fontSize: 14, color: tokens.primary }} />
+                <span>{isBn ? "বটকে জিজ্ঞেস করুন" : "Ask Bot"}</span>
               </Box>
 
-              {/* ── NORMAL MODE EXPANDED INLINE DROPDOWN (NOT A MODAL) ── */}
-              {mode === "normal" && isNormalExpanded && (
+              <IconButton
+                type='submit'
+                aria-label='Search products'
+                sx={{
+                  width: 36,
+                  height: 36,
+                  bgcolor: tokens.primary,
+                  color: tokens.onPrimary,
+                  flexShrink: 0,
+                  boxShadow: tokens.shadowPrimary,
+                  "&:hover": { bgcolor: tokens.primaryHover },
+                }}
+              >
+                <ArrowForwardRoundedIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Box>
+
+            {/* ── FLOATING NORMAL SEARCH DROPDOWN ── */}
+            <Box
+              sx={{
+                position: "absolute",
+                top: "calc(100% + 8px)",
+                left: 0,
+                right: 0,
+                zIndex: 95,
+                bgcolor: tokens.bgPanel,
+                borderRadius: { xs: "20px", sm: "24px" },
+                boxShadow: "0 14px 40px rgba(17, 24, 23, 0.13), 0 3px 12px rgba(17, 24, 23, 0.04)",
+                display: "grid",
+                gridTemplateRows: isNormalExpanded ? "1fr" : "0fr",
+                opacity: isNormalExpanded ? 1 : 0,
+                pointerEvents: isNormalExpanded ? "auto" : "none",
+                transition: "grid-template-rows 240ms cubic-bezier(0.16, 1, 0.3, 1), opacity 180ms ease",
+                overflow: "hidden",
+              }}
+            >
+              <Box sx={{ overflow: "hidden" }}>
                 <Box
                   sx={{
-                    position: "absolute",
-                    top: "calc(100% + 8px)",
-                    left: 0,
-                    right: 0,
-                    zIndex: 50,
-                    bgcolor: "rgba(255, 255, 255, 0.98)",
-                    backdropFilter: "blur(20px)",
-                    borderRadius: "20px",
-                    border: "1px solid #E2E8F0",
-                    boxShadow: "0 20px 50px rgba(15, 23, 42, 0.14)",
-                    p: 2,
+                    pt: 1.5,
+                    px: { xs: 2, sm: 2.25 },
+                    pb: 2,
                     textAlign: "left",
                   }}
                 >
-                  {/* Popular Tags */}
+                  {/* Header + Close */}
                   <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1.25 }}>
-                    <Typography sx={{ fontSize: 11.5, fontWeight: 700, color: "#64748B", display: "flex", alignItems: "center", gap: 0.5 }}>
-                      <TrendingUpRoundedIcon sx={{ fontSize: 14, color: "#5B3DF5" }} />
-                      {debouncedQuery ? "Matching Products" : "Popular Searches & Top Picks"}
+                    <Typography
+                      sx={{ fontSize: 11.5, fontWeight: 700, color: tokens.textMuted, display: "flex", alignItems: "center", gap: 0.5 }}
+                    >
+                      <TrendingUpRoundedIcon sx={{ fontSize: 14, color: tokens.primary }} />
+                      {debouncedQuery
+                        ? isBn
+                          ? "খুঁজে পাওয়া পণ্য"
+                          : "Matching Products"
+                        : isBn
+                          ? "জনপ্রিয় সার্চ ও সেরা পছন্দ"
+                          : "Popular Searches & Top Picks"}
                     </Typography>
-                    <IconButton size='small' onClick={() => setIsNormalExpanded(false)} sx={{ p: 0.25 }}>
-                      <CloseRoundedIcon sx={{ fontSize: 16, color: "#64748B" }} />
+                    <IconButton
+                      size='small'
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsNormalExpanded(false);
+                      }}
+                      sx={{ p: 0.25 }}
+                    >
+                      <CloseRoundedIcon sx={{ fontSize: 16, color: tokens.textMuted }} />
                     </IconButton>
                   </Box>
 
+                  {/* Trending Chips */}
                   <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75, mb: 1.75 }}>
                     {TRENDING_TAGS.map((tag) => (
                       <Box
@@ -597,14 +427,15 @@ export function Hero() {
                         sx={{
                           px: 1.25,
                           py: 0.45,
-                          borderRadius: "9999px",
-                          border: "1px solid #E2E8F0",
-                          bgcolor: "#F8FAFC",
+                          borderRadius: `${tokens.radiusPill}px`,
+                          border: `1px solid ${tokens.borderDefault}`,
+                          bgcolor: tokens.bgSurface,
                           fontSize: 11.5,
                           fontWeight: 600,
-                          color: "#334155",
+                          color: tokens.textSecondary,
                           cursor: "pointer",
-                          "&:hover": { borderColor: "#5B3DF5", color: "#5B3DF5", bgcolor: "#F5F3FF" },
+                          transition: "all 140ms ease",
+                          "&:hover": { borderColor: tokens.primary, color: tokens.primaryDark, bgcolor: tokens.primaryLight },
                         }}
                       >
                         {tag}
@@ -614,20 +445,54 @@ export function Hero() {
 
                   {/* Live Results */}
                   {isDropdownLoading ? (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, py: 2, justifyContent: "center", color: "#64748B" }}>
-                      <CircularProgress size={16} />
-                      <Typography sx={{ fontSize: 12.5 }}>Searching...</Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, py: 2, justifyContent: "center", color: tokens.textMuted }}>
+                      <CircularProgress size={16} sx={{ color: tokens.primary }} />
+                      <Typography sx={{ fontSize: 12.5 }}>{isBn ? "খোঁজা হচ্ছে..." : "Searching..."}</Typography>
                     </Box>
                   ) : normalResults.length === 0 ? (
-                    <Typography sx={{ fontSize: 12.5, color: "#64748B", py: 1.5, textAlign: "center" }}>
-                      No matching products found. Try AI Mode to get personalized suggestions!
-                    </Typography>
+                    <Box sx={{ py: 1.5, textAlign: "center" }}>
+                      <Typography sx={{ fontSize: 12.5, color: tokens.textMuted, mb: 1 }}>
+                        {isBn ? "সরাসরি কোনো পণ্য পাওয়া যায়নি।" : "No matching products found."}
+                      </Typography>
+                      <Box
+                        component='button'
+                        type='button'
+                        onClick={() => {
+                          setIsNormalExpanded(false);
+                          openAiShoppingDrawer(searchQuery.trim());
+                        }}
+                        sx={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 0.65,
+                          px: 1.75,
+                          py: 0.7,
+                          borderRadius: "999px",
+                          border: "none",
+                          background: "linear-gradient(135deg, #00897B 0%, #00BFA6 55%, #06B6D4 100%)",
+                          boxShadow: "0 4px 14px rgba(0, 191, 166, 0.28)",
+                          color: tokens.onPrimary,
+                          fontSize: 12,
+                          fontWeight: 700,
+                          cursor: "pointer",
+                          transition: "transform 160ms ease, box-shadow 160ms ease",
+                          "&:hover": {
+                            transform: "translateY(-1px)",
+                            boxShadow: "0 6px 18px rgba(0, 191, 166, 0.36)",
+                          },
+                        }}
+                      >
+                        <AutoAwesomeRoundedIcon sx={{ fontSize: 14 }} />
+                        <span>{isBn ? "বটকে জিজ্ঞেস করুন" : "Ask Bot"}</span>
+                      </Box>
+                    </Box>
                   ) : (
-                    <Box sx={{ display: "flex", flexDirection: "column", gap: 0.75, maxHeight: 260, overflowY: "auto" }}>
-                      {normalResults.map((item: any) => {
-                        const rawImg = item.image || item.thumbnail || item.images?.[0] || "";
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5, maxHeight: 280, overflowY: "auto", pr: 0.5 }}>
+                      {normalResults.map((item) => {
+                        const rawImg = item.thumbnail || "";
                         const imgSrc = (rawImg ? getAssetUrl(rawImg) : null) || "/images/default.png";
-                        const effectivePrice = Number(item.discountPrice || item.price || 0);
+                        const itemDiscount = "discountPrice" in item ? item.discountPrice : undefined;
+                        const effectivePrice = Number(itemDiscount || item.price || 0);
                         return (
                           <Box
                             key={item.id}
@@ -639,24 +504,31 @@ export function Hero() {
                               alignItems: "center",
                               gap: 1.5,
                               p: 1,
-                              borderRadius: "12px",
+                              borderRadius: "14px",
                               textDecoration: "none",
                               transition: "background-color 140ms ease",
-                              "&:hover": { bgcolor: "#F8FAFC" },
+                              "&:hover": { bgcolor: tokens.bgSubtle },
                             }}
                           >
                             <Box
                               component='img'
                               src={imgSrc}
                               alt={item.title}
-                              sx={{ width: 44, height: 44, borderRadius: "10px", objectFit: "cover", bgcolor: "#F1F5F9", flexShrink: 0 }}
+                              sx={{
+                                width: 42,
+                                height: 42,
+                                borderRadius: "10px",
+                                objectFit: "cover",
+                                bgcolor: tokens.bgSubtle,
+                                flexShrink: 0,
+                              }}
                             />
                             <Box sx={{ flex: 1, minWidth: 0 }}>
                               <Typography
                                 sx={{
                                   fontSize: 13,
                                   fontWeight: 600,
-                                  color: "#0F172A",
+                                  color: tokens.textPrimary,
                                   whiteSpace: "nowrap",
                                   overflow: "hidden",
                                   textOverflow: "ellipsis",
@@ -664,209 +536,169 @@ export function Hero() {
                               >
                                 {item.title}
                               </Typography>
-                              <Typography sx={{ fontSize: 12, fontWeight: 700, color: "#5B3DF5" }}>
+                              <Typography sx={{ fontSize: 12, fontWeight: 700, color: tokens.primaryDark }}>
                                 {formatPrice(effectivePrice, locale)}
                               </Typography>
                             </Box>
-                            <ArrowForwardRoundedIcon sx={{ fontSize: 16, color: "#94A3B8" }} />
+                            <ArrowForwardRoundedIcon sx={{ fontSize: 16, color: tokens.textDisabled }} />
                           </Box>
                         );
                       })}
                     </Box>
                   )}
                 </Box>
-              )}
-
-              {/* ── AI MODE RESPONSE PANEL ── */}
-              {mode === "ai" && (aiLoading || aiReply) && (
-                <Box
-                  sx={{
-                    mt: 1.5,
-                    bgcolor: "rgba(255, 255, 255, 0.96)",
-                    backdropFilter: "blur(20px)",
-                    borderRadius: "20px",
-                    border: "1px solid #DDD6FE",
-                    boxShadow: "0 18px 42px rgba(91, 61, 245, 0.14)",
-                    p: 2,
-                    textAlign: "left",
-                  }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 1 }}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                      <AutoAwesomeRoundedIcon sx={{ fontSize: 16, color: "#5B3DF5" }} />
-                      <Typography sx={{ fontSize: 12.5, fontWeight: 800, color: "#1E1B4B" }}>AI Recommendation</Typography>
-                    </Box>
-                    <IconButton size='small' onClick={() => setAiReply(null)} sx={{ p: 0.25 }}>
-                      <CloseRoundedIcon sx={{ fontSize: 16, color: "#64748B" }} />
-                    </IconButton>
-                  </Box>
-                  {aiLoading ? (
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, py: 1, color: "#64748B" }}>
-                      <CircularProgress size={16} sx={{ color: "#5B3DF5" }} />
-                      <Typography sx={{ fontSize: 13 }}>Finding the best gadgets for you...</Typography>
-                    </Box>
-                  ) : (
-                    <Typography
-                      sx={{
-                        fontSize: 13.5,
-                        lineHeight: 1.6,
-                        color: "#1E293B",
-                        whiteSpace: "pre-wrap",
-                        wordBreak: "break-word",
-                      }}
-                    >
-                      {renderAiLinks(aiReply || "")}
-                    </Typography>
-                  )}
-                </Box>
-              )}
-            </Box>
-
-            {/* Quick Suggestion Pills (Normal -> Filter Links, AI Mode -> Collection Prompts) */}
-            <Box
-              sx={{
-                display: "flex",
-                flexWrap: "wrap",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 1,
-              }}
-            >
-              {mode === "ai" ? (
-                AI_COLLECTION_PROMPTS.map((item) => (
-                  <Box
-                    key={item.label}
-                    component='button'
-                    type='button'
-                    onClick={() => handleCollectionClick(item.prompt, item.label)}
-                    sx={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 0.65,
-                      px: 1.5,
-                      py: 0.6,
-                      borderRadius: "9999px",
-                      bgcolor: "rgba(255, 255, 255, 0.90)",
-                      backdropFilter: "blur(10px)",
-                      border: "1px solid #DDD6FE",
-                      boxShadow: "0 4px 12px rgba(91, 61, 245, 0.08)",
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: "#1E1B4B",
-                      cursor: "pointer",
-                      transition: "all 150ms ease",
-                      "&:hover": {
-                        bgcolor: "#F5F3FF",
-                        borderColor: "#5B3DF5",
-                        transform: "translateY(-1px)",
-                      },
-                    }}
-                  >
-                    <span>{item.emoji}</span>
-                    <span>{item.label}</span>
-                  </Box>
-                ))
-              ) : (
-                <>
-                  <Box
-                    component={Link}
-                    href='/products?sort=best-selling'
-                    sx={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 0.75,
-                      px: 1.6,
-                      py: 0.65,
-                      borderRadius: "9999px",
-                      bgcolor: "rgba(255, 255, 255, 0.88)",
-                      backdropFilter: "blur(10px)",
-                      border: "1px solid rgba(255, 255, 255, 0.95)",
-                      boxShadow: "0 4px 12px rgba(15, 23, 42, 0.05)",
-                      fontSize: 12.5,
-                      fontWeight: 600,
-                      color: "#1E293B",
-                      textDecoration: "none",
-                      "&:hover": { bgcolor: "#FFFFFF", transform: "translateY(-1px)" },
-                    }}
-                  >
-                    <span>🔥</span>
-                    <span>Trending</span>
-                  </Box>
-                  <Box
-                    component={Link}
-                    href='/products?category=winter-comfort-gadgets'
-                    sx={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 0.75,
-                      px: 1.6,
-                      py: 0.65,
-                      borderRadius: "9999px",
-                      bgcolor: "rgba(255, 255, 255, 0.88)",
-                      backdropFilter: "blur(10px)",
-                      border: "1px solid rgba(255, 255, 255, 0.95)",
-                      boxShadow: "0 4px 12px rgba(15, 23, 42, 0.05)",
-                      fontSize: 12.5,
-                      fontWeight: 600,
-                      color: "#1E293B",
-                      textDecoration: "none",
-                      "&:hover": { bgcolor: "#FFFFFF", transform: "translateY(-1px)" },
-                    }}
-                  >
-                    <span>❄️</span>
-                    <span>Winter Essentials</span>
-                  </Box>
-                  <Box
-                    component={Link}
-                    href='/products?sort=price-asc'
-                    sx={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 0.75,
-                      px: 1.6,
-                      py: 0.65,
-                      borderRadius: "9999px",
-                      bgcolor: "rgba(255, 255, 255, 0.88)",
-                      backdropFilter: "blur(10px)",
-                      border: "1px solid rgba(255, 255, 255, 0.95)",
-                      boxShadow: "0 4px 12px rgba(15, 23, 42, 0.05)",
-                      fontSize: 12.5,
-                      fontWeight: 600,
-                      color: "#1E293B",
-                      textDecoration: "none",
-                      "&:hover": { bgcolor: "#FFFFFF", transform: "translateY(-1px)" },
-                    }}
-                  >
-                    <span>⭐</span>
-                    <span>Best Budget</span>
-                  </Box>
-                  <IconButton
-                    component={Link}
-                    href='/products'
-                    aria-label='Browse all products'
-                    size='small'
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      bgcolor: "rgba(255, 255, 255, 0.88)",
-                      backdropFilter: "blur(10px)",
-                      border: "1px solid rgba(255, 255, 255, 0.95)",
-                      boxShadow: "0 4px 12px rgba(15, 23, 42, 0.05)",
-                      color: "#1E293B",
-                      "&:hover": { bgcolor: "#FFFFFF", color: "#5B3DF5" },
-                    }}
-                  >
-                    <ArrowForwardRoundedIcon sx={{ fontSize: 15 }} />
-                  </IconButton>
-                </>
-              )}
+              </Box>
             </Box>
           </Box>
 
-          {/* Right Spacer */}
-          <Box sx={{ display: { xs: "none", lg: "block" } }} />
+          {/* Quick Suggestion Pills */}
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: { xs: 0.75, sm: 1 },
+              maxWidth: { xs: 360, sm: "100%" },
+            }}
+          >
+            <Box
+              component={Link}
+              href='/products?sort=best-selling'
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 0.75,
+                px: { xs: 1.35, sm: 1.6 },
+                py: { xs: 0.55, sm: 0.65 },
+                borderRadius: `${tokens.radiusPill}px`,
+                bgcolor: "rgba(255, 255, 255, 0.90)",
+                backdropFilter: "blur(10px)",
+                border: `1px solid ${tokens.borderSubtle}`,
+                boxShadow: tokens.shadowSm,
+                fontSize: { xs: 11.5, sm: 12.5 },
+                fontWeight: 600,
+                color: tokens.textPrimary,
+                textDecoration: "none",
+                cursor: "pointer",
+                transition: "none",
+                "&:hover": {
+                  transform: "none",
+                  bgcolor: "rgba(255, 255, 255, 0.90)",
+                  borderColor: tokens.borderSubtle,
+                  boxShadow: tokens.shadowSm,
+                  color: tokens.textPrimary,
+                },
+                "&:active": {
+                  transform: "none",
+                },
+              }}
+            >
+              <WhatshotRoundedIcon sx={{ fontSize: 16, color: "#F97316" }} />
+              <span>{isBn ? "ট্রেন্ডিং" : "Trending"}</span>
+            </Box>
+            <Box
+              component={Link}
+              href='/products?category=winter-comfort-gadgets'
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 0.75,
+                px: { xs: 1.35, sm: 1.6 },
+                py: { xs: 0.55, sm: 0.65 },
+                borderRadius: `${tokens.radiusPill}px`,
+                bgcolor: "rgba(255, 255, 255, 0.90)",
+                backdropFilter: "blur(10px)",
+                border: `1px solid ${tokens.borderSubtle}`,
+                boxShadow: tokens.shadowSm,
+                fontSize: { xs: 11.5, sm: 12.5 },
+                fontWeight: 600,
+                color: tokens.textPrimary,
+                textDecoration: "none",
+                cursor: "pointer",
+                transition: "none",
+                "&:hover": {
+                  transform: "none",
+                  bgcolor: "rgba(255, 255, 255, 0.90)",
+                  borderColor: tokens.borderSubtle,
+                  boxShadow: tokens.shadowSm,
+                  color: tokens.textPrimary,
+                },
+                "&:active": {
+                  transform: "none",
+                },
+              }}
+            >
+              <AcUnitRoundedIcon sx={{ fontSize: 15, color: "#0284C7" }} />
+              <span>{isBn ? "উইন্টার এসেনশিয়ালস" : "Winter Essentials"}</span>
+            </Box>
+            <Box
+              component={Link}
+              href='/products?sort=price-asc'
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 0.75,
+                px: { xs: 1.35, sm: 1.6 },
+                py: { xs: 0.55, sm: 0.65 },
+                borderRadius: `${tokens.radiusPill}px`,
+                bgcolor: "rgba(255, 255, 255, 0.90)",
+                backdropFilter: "blur(10px)",
+                border: `1px solid ${tokens.borderSubtle}`,
+                boxShadow: tokens.shadowSm,
+                fontSize: { xs: 11.5, sm: 12.5 },
+                fontWeight: 600,
+                color: tokens.textPrimary,
+                textDecoration: "none",
+                cursor: "pointer",
+                transition: "none",
+                "&:hover": {
+                  transform: "none",
+                  bgcolor: "rgba(255, 255, 255, 0.90)",
+                  borderColor: tokens.borderSubtle,
+                  boxShadow: tokens.shadowSm,
+                  color: tokens.textPrimary,
+                },
+                "&:active": {
+                  transform: "none",
+                },
+              }}
+            >
+              <SavingsRoundedIcon sx={{ fontSize: 16, color: "#EAB308" }} />
+              <span>{isBn ? "বেস্ট বাজেট" : "Best Budget"}</span>
+            </Box>
+            <IconButton
+              component={Link}
+              href='/products'
+              aria-label='Browse all products'
+              size='small'
+              sx={{
+                width: 32,
+                height: 32,
+                bgcolor: "rgba(255, 255, 255, 0.90)",
+                backdropFilter: "blur(10px)",
+                border: `1px solid ${tokens.borderSubtle}`,
+                boxShadow: tokens.shadowSm,
+                color: tokens.textPrimary,
+                p: 0,
+                transition: "none",
+                "&:hover": {
+                  transform: "none",
+                  bgcolor: "rgba(255, 255, 255, 0.90)",
+                  borderColor: tokens.borderSubtle,
+                  boxShadow: tokens.shadowSm,
+                  color: tokens.textPrimary,
+                },
+                "&:active": {
+                  transform: "none",
+                },
+              }}
+            >
+              <ArrowForwardRoundedIcon sx={{ fontSize: 15, color: tokens.textPrimary }} />
+            </IconButton>
+          </Box>
         </Box>
-      </SectionContainer>
+      </Box>
     </Box>
   );
 }

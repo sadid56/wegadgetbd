@@ -18,8 +18,9 @@ export class ListBrandsUseCase {
         ORDER BY count DESC
       `);
 
-      const rows = (res as any)?.rows || res || [];
-      return rows.map((r: any) => ({
+      const rawRes = res as unknown as { rows?: Array<{ name: unknown; count: unknown }> } | Array<{ name: unknown; count: unknown }>;
+      const rows = Array.isArray(rawRes) ? rawRes : rawRes?.rows || [];
+      return rows.map((r: { name: unknown; count: unknown }) => ({
         name: String(r.name).trim(),
         count: Number(r.count),
       }));

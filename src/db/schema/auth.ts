@@ -6,7 +6,6 @@ import {
   pgEnum,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { auditLog } from "./system";
 import { order } from "./orders";
 
 // ==========================================
@@ -88,7 +87,6 @@ export const verification = pgTable("verification", {
 export const userRelations = relations(user, ({ many }) => ({
   accounts: many(account),
   sessions: many(session),
-  auditLogs: many(auditLog),
   orders: many(order),
 }));
 

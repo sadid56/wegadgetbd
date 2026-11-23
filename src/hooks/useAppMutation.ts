@@ -1,16 +1,16 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "../context/toast-context";
 
-export interface MutationOptions<TData, TResult = any> {
+export interface MutationOptions<TData, TResult = unknown> {
   mutationFn: (data: TData) => Promise<TResult>;
   invalidateKeys?: readonly (readonly unknown[])[];
   successMessage?: string | ((result: TResult) => string);
   errorMessage?: string;
   onSuccess?: (result: TResult, variables: TData) => void;
-  onError?: (error: any, variables: TData) => void;
+  onError?: (error: Error, variables: TData) => void;
 }
 
-export function useAppMutation<TData, TResult = any>({
+export function useAppMutation<TData, TResult = unknown>({
   mutationFn,
   invalidateKeys = [],
   successMessage,
@@ -37,7 +37,7 @@ export function useAppMutation<TData, TResult = any>({
         onSuccess(result, variables);
       }
     },
-    onError: (error: any, variables: TData) => {
+    onError: (error: Error & { response?: { data?: { detail?: string; message?: string } } }, variables: TData) => {
       const message =
         error?.message || error?.response?.data?.detail || error?.response?.data?.message || errorMessage || "Something went wrong";
 

@@ -16,10 +16,7 @@ export interface LanguageSwitcherProps {
   showIcon?: boolean;
 }
 
-export function LanguageSwitcher({
-  variant = "footer",
-  showIcon = true,
-}: LanguageSwitcherProps) {
+export function LanguageSwitcher({ variant = "footer", showIcon: _showIcon = true }: LanguageSwitcherProps) {
   const currentLocale = useLocale() as Locale;
   const router = useRouter();
   const pathname = usePathname();
@@ -45,11 +42,11 @@ export function LanguageSwitcher({
       }}
     >
       <Select
-        size="small"
+        size='small'
         value={currentLocale || "en"}
         onChange={(e) => handleLocaleChange(String(e.target.value))}
         IconComponent={KeyboardArrowDownRoundedIcon}
-        aria-label="Language selector"
+        aria-label='Language selector'
         MenuProps={{
           disableScrollLock: true,
         }}
@@ -67,9 +64,7 @@ export function LanguageSwitcher({
             gap: 1,
           },
           "& .MuiOutlinedInput-notchedOutline": {
-            borderColor: isFooter
-              ? "rgba(0, 191, 166, 0.3)"
-              : tokens.borderDefault,
+            borderColor: isFooter ? "rgba(0, 191, 166, 0.3)" : tokens.borderDefault,
           },
           "&:hover .MuiOutlinedInput-notchedOutline": {
             borderColor: tokens.primary,
@@ -95,10 +90,7 @@ export function LanguageSwitcher({
               }}
             >
               <span>{item.flag}</span>
-              <Typography
-                component="span"
-                sx={{ fontSize: "0.8125rem", fontWeight: "inherit" }}
-              >
+              <Typography component='span' sx={{ fontSize: "0.8125rem", fontWeight: "inherit" }}>
                 {item.nativeName}
               </Typography>
             </MenuItem>

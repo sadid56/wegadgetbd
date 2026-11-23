@@ -66,7 +66,7 @@ function AvatarImage({
         borderRadius: "50%",
         ...sx,
       }}
-      {...(props as any)}
+      {...(props as Record<string, unknown>)}
     />
   );
 }

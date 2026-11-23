@@ -46,7 +46,8 @@ export default function PaymentsPage() {
   // Dialog states
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedPayment, setSelectedPayment] = useState<any>(null);
+  type PaymentRow = NonNullable<typeof data>["payments"][number];
+  const [selectedPayment, setSelectedPayment] = useState<PaymentRow | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const confirmDelete = () => {
@@ -60,7 +61,7 @@ export default function PaymentsPage() {
     }
   };
 
-  const columns: DataTableColumn<any>[] = useMemo(
+  const columns: DataTableColumn<PaymentRow>[] = useMemo(
     () => [
       {
         id: "date",
@@ -143,29 +144,55 @@ export default function PaymentsPage() {
   );
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: { xs: 2, sm: 3 } }}>
       {/* Dashboard Header */}
       <DashboardHeader
         title='Payments'
         description='Track incoming and outgoing payment records.'
         action={
-          <Button variant='primary' onClick={() => setIsAddDialogOpen(true)} startIcon={<AddIcon sx={{ fontSize: 16 }} />}>
+          <Button
+            variant='primary'
+            size='sm'
+            onClick={() => setIsAddDialogOpen(true)}
+            startIcon={<AddIcon sx={{ fontSize: 16 }} />}
+            sx={{ display: { xs: "none", sm: "inline-flex" }, whiteSpace: "nowrap" }}
+          >
             Record Payment
           </Button>
         }
       />
 
       {/* Search Bar */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, maxWidth: 384 }}>
-        <InputBase
-          placeholder='Search payments...'
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(0);
+      <Box sx={{ display: "flex", alignItems: "center", gap: { xs: 1, sm: 1.5 }, width: "100%" }}>
+        <Box sx={{ flex: 1, minWidth: 0, maxWidth: { sm: 384 } }}>
+          <InputBase
+            size='small'
+            placeholder='Search payments...'
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(0);
+            }}
+            startIcon={<SearchIcon sx={{ fontSize: 18 }} />}
+          />
+        </Box>
+        <Button
+          variant='primary'
+          size='sm'
+          onClick={() => setIsAddDialogOpen(true)}
+          startIcon={<AddIcon sx={{ fontSize: 15 }} />}
+          sx={{
+            display: { xs: "inline-flex", sm: "none" },
+            whiteSpace: "nowrap",
+            flexShrink: 0,
+            px: 1.5,
+            py: 0.7,
+            minHeight: 38,
+            fontSize: "0.78rem",
           }}
-          startIcon={<SearchIcon sx={{ fontSize: 18 }} />}
-        />
+        >
+          Record
+        </Button>
       </Box>
 
       {/* Reusable DataTable */}

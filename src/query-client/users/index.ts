@@ -2,13 +2,17 @@ import { useAppMutation } from "@/hooks/useAppMutation";
 import { orpcClient, orpc } from "@/lib/orpc/client";
 import { useQuery } from "@tanstack/react-query";
 
+type ListUsersParams = Parameters<typeof orpcClient.admin.users.list>[0];
+type UpdateUserPayload = Parameters<typeof orpcClient.admin.users.update>[0];
+
 export const UserEndpoints = {
-  getUsers: (params?: any) => orpcClient.admin.users.list(params ?? {}),
+  getUsers: (params?: ListUsersParams) => orpcClient.admin.users.list(params ?? {}),
   getUser: (id: string) => orpcClient.admin.users.get({ id }),
-  updateUser: ({ id, data }: { id: string; data: any }) => orpcClient.admin.users.update({ id, ...data }),
+  updateUser: ({ id, data }: { id: string; data: Omit<UpdateUserPayload, "id"> }) =>
+    orpcClient.admin.users.update({ id, ...data }),
 };
 
-export const useUsers = (params?: any) => {
+export const useUsers = (params?: ListUsersParams) => {
   return useQuery(orpc.admin.users.list.queryOptions({ input: params ?? {} }));
 };
 
@@ -22,6 +26,6 @@ export const useUser = (id: string) => {
 export const useUpdateUser = () =>
   useAppMutation({
     mutationFn: UserEndpoints.updateUser,
-    invalidateKeys: [["users"], ["user"]],
+    invalidateKeys: [orpc.admin.users.key()],
     successMessage: "User updated successfully",
   });

@@ -88,30 +88,34 @@ export function Dropdown({
   const horizontal = isRight ? "right" : isCenter ? "center" : "left";
 
   const isHover = triggerOn === "hover";
+  const triggerElement = React.isValidElement(trigger)
+    ? (trigger as React.ReactElement<React.HTMLAttributes<HTMLElement> & { disabled?: boolean }>)
+    : null;
+  const triggerProps = triggerElement?.props;
 
   return (
     <>
       {trigger ? (
-        React.isValidElement(trigger) ? (
-          React.cloneElement(trigger as React.ReactElement<any>, {
+        triggerElement ? (
+          React.cloneElement(triggerElement, {
             onClick: (e: React.MouseEvent<HTMLElement>) => {
               e.preventDefault();
-              (trigger.props as any)?.onClick?.(e);
+              triggerProps?.onClick?.(e);
               handleOpen(e);
             },
             onMouseEnter: isHover
               ? (e: React.MouseEvent<HTMLElement>) => {
-                  (trigger.props as any)?.onMouseEnter?.(e);
+                  triggerProps?.onMouseEnter?.(e);
                   handleOpen(e);
                 }
-              : (trigger.props as any)?.onMouseEnter,
+              : triggerProps?.onMouseEnter,
             onMouseLeave: isHover
               ? (e: React.MouseEvent<HTMLElement>) => {
-                  (trigger.props as any)?.onMouseLeave?.(e);
+                  triggerProps?.onMouseLeave?.(e);
                   scheduleClose();
                 }
-              : (trigger.props as any)?.onMouseLeave,
-            disabled: disabled || (trigger.props as any)?.disabled,
+              : triggerProps?.onMouseLeave,
+            disabled: disabled || triggerProps?.disabled,
           })
         ) : (
           <span
@@ -238,13 +242,14 @@ export function Dropdown({
             }
           };
 
+          const linkProps: { component?: typeof NextLink; href?: string; target?: string } =
+            !hasChildren && item.href ? { component: NextLink, href: item.href, target: item.target } : {};
+
           return (
             <React.Fragment key={index}>
               {item.divider && <Divider sx={{ my: 0.5, borderColor: tokens.borderDefault }} />}
               <MenuItem
-                {...(!hasChildren && item.href
-                  ? ({ component: NextLink, href: item.href, target: item.target } as any)
-                  : {})}
+                {...linkProps}
                 onClick={handleClick}
                 onMouseEnter={isHover ? handleItemMouseEnter : undefined}
                 disabled={item.disabled}
@@ -363,11 +368,15 @@ export function Dropdown({
               else if (sub.onClick) sub.onClick();
             };
 
+            const subLinkProps: { component?: typeof NextLink; href?: string; target?: string } = sub.href
+              ? { component: NextLink, href: sub.href, target: sub.target }
+              : {};
+
             return (
               <React.Fragment key={sIdx}>
                 {sub.divider && <Divider sx={{ my: 0.5, borderColor: tokens.borderDefault }} />}
                 <MenuItem
-                  {...(sub.href ? ({ component: NextLink, href: sub.href, target: sub.target } as any) : {})}
+                  {...subLinkProps}
                   onClick={handleSubClick}
                   disabled={sub.disabled}
                   sx={{

@@ -1,9 +1,9 @@
 "use client";
 
 import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
 import { Button } from "@/components/ui/button";
-import { CircularProgress } from "@/components/ui/spinner";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import NextLink from "next/link";
 import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
 import LocalMallOutlinedIcon from "@mui/icons-material/LocalMallOutlined";
@@ -20,9 +20,9 @@ import { StatsCard } from "@/components/common/StatsCard";
 
 const statGridSx = {
   display: "grid",
-  gap: { xs: 2, sm: 2.5 },
+  gap: { xs: 1.25, sm: 2.5 },
   gridTemplateColumns: {
-    xs: "1fr",
+    xs: "repeat(2, minmax(0, 1fr))",
     sm: "repeat(2, minmax(0, 1fr))",
     lg: "repeat(4, minmax(0, 1fr))",
   },
@@ -43,20 +43,40 @@ export default function AdminDashboard() {
 
   if (isLoading) {
     return (
-      <Box
-        sx={{
-          minHeight: "60vh",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 2,
-        }}
-      >
-        <CircularProgress size={36} sx={{ color: "primary.main" }} />
-        <Typography sx={{ color: "text.secondary", fontSize: 14 }}>
-          Loading dashboard metrics...
-        </Typography>
+      <Box sx={{ display: "flex", flexDirection: "column", gap: { xs: 2.5, sm: 3 }, pb: { xs: 6, sm: 8, md: 10 } }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+            <Skeleton variant="rounded" animation="wave" width={160} height={32} />
+            <Skeleton variant="rounded" animation="wave" width={260} height={18} />
+          </Box>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Skeleton variant="rounded" animation="wave" width={110} height={34} sx={{ borderRadius: "999px" }} />
+            <Skeleton variant="rounded" animation="wave" width={110} height={34} sx={{ borderRadius: "999px" }} />
+          </Box>
+        </Box>
+        <Box sx={statGridSx}>
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i} sx={{ p: { xs: 1.75, sm: 2.5 }, display: "flex", flexDirection: "column", gap: 1 }}>
+              <Skeleton variant="rounded" animation="wave" width="60%" height={16} />
+              <Skeleton variant="rounded" animation="wave" width="45%" height={30} />
+              <Skeleton variant="rounded" animation="wave" width="75%" height={14} />
+            </Card>
+          ))}
+        </Box>
+        <Box sx={sevenColGridSx}>
+          <Card sx={{ gridColumn: { md: "span 2", lg: "span 4" }, p: 2.5 }}>
+            <Skeleton variant="rounded" animation="wave" width="40%" height={22} sx={{ mb: 2 }} />
+            <Skeleton variant="rounded" animation="wave" width="100%" height={240} />
+          </Card>
+          <Card sx={{ gridColumn: { md: "span 2", lg: "span 3" }, p: 2.5 }}>
+            <Skeleton variant="rounded" animation="wave" width="45%" height={22} sx={{ mb: 2 }} />
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} variant="rounded" animation="wave" width="100%" height={44} />
+              ))}
+            </Box>
+          </Card>
+        </Box>
       </Box>
     );
   }
@@ -75,13 +95,29 @@ export default function AdminDashboard() {
         title='Dashboard'
         description='Welcome to We Gadget BD admin overview and real-time business metrics.'
         action={
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.25, flexWrap: "wrap" }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: { xs: 0.65, sm: 1.25 },
+              width: { xs: "100%", sm: "auto" },
+            }}
+          >
             <Button
               component={NextLink}
               href='/admin/products/new'
               variant='primary'
               size='sm'
-              startIcon={<AddIcon sx={{ fontSize: 16 }} />}
+              startIcon={<AddIcon sx={{ fontSize: { xs: 14, sm: 16 } }} />}
+              sx={{
+                whiteSpace: "nowrap",
+                px: { xs: 1.1, sm: 2 },
+                py: { xs: 0.55, sm: 0.75 },
+                minHeight: { xs: 32, sm: 36 },
+                fontSize: { xs: "0.72rem", sm: "0.8125rem" },
+                "& .MuiButton-startIcon": { mr: { xs: 0.4, sm: 0.75 }, ml: 0 },
+              }}
             >
               Add Product
             </Button>
@@ -90,7 +126,15 @@ export default function AdminDashboard() {
               href='/admin/orders'
               variant='outline'
               size='sm'
-              endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
+              endIcon={<ArrowForwardIcon sx={{ fontSize: { xs: 13, sm: 14 } }} />}
+              sx={{
+                whiteSpace: "nowrap",
+                px: { xs: 1.1, sm: 2 },
+                py: { xs: 0.55, sm: 0.75 },
+                minHeight: { xs: 32, sm: 36 },
+                fontSize: { xs: "0.72rem", sm: "0.8125rem" },
+                "& .MuiButton-endIcon": { ml: { xs: 0.4, sm: 0.75 }, mr: 0 },
+              }}
             >
               View Orders
             </Button>
@@ -99,7 +143,15 @@ export default function AdminDashboard() {
               href='/admin/categories'
               variant='outline'
               size='sm'
-              endIcon={<ArrowForwardIcon sx={{ fontSize: 14 }} />}
+              endIcon={<ArrowForwardIcon sx={{ fontSize: { xs: 13, sm: 14 } }} />}
+              sx={{
+                whiteSpace: "nowrap",
+                px: { xs: 1.1, sm: 2 },
+                py: { xs: 0.55, sm: 0.75 },
+                minHeight: { xs: 32, sm: 36 },
+                fontSize: { xs: "0.72rem", sm: "0.8125rem" },
+                "& .MuiButton-endIcon": { ml: { xs: 0.4, sm: 0.75 }, mr: 0 },
+              }}
             >
               Categories
             </Button>

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { format } from "date-fns";
-import { useQueryState, parseAsInteger } from "nuqs";
+import { useListQuery } from "@/hooks/use-list-query";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -19,9 +19,7 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import { useUsers } from "@/query-client/users";
 
 export default function UsersPage() {
-  const [search, setSearch] = useQueryState("search", { defaultValue: "", shallow: false });
-  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [rowsPerPage, setRowsPerPage] = useQueryState("limit", parseAsInteger.withDefault(10));
+  const { search, page, rowsPerPage, setSearch, setPage, setRowsPerPage } = useListQuery();
 
   const { data, isLoading } = useUsers({
     search: search.trim() || undefined,
@@ -29,7 +27,8 @@ export default function UsersPage() {
     limit: rowsPerPage,
   });
 
-  const columns: DataTableColumn<any>[] = useMemo(
+  type UserRow = NonNullable<typeof data>["users"][number];
+  const columns: DataTableColumn<UserRow>[] = useMemo(
     () => [
       {
         id: "user",

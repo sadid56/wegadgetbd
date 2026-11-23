@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { CircularProgress } from "@/components/ui/spinner";
+import { EmptyState, Skeleton } from "@/components/ui";
 
 import { ProductForm } from "@/components/admin/product-form";
 import { orpc } from "@/lib/orpc/client";
@@ -26,14 +26,19 @@ export default function EditProductPage() {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-        <CircularProgress size={32} sx={{ color: "primary.main" }} />
+      <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+        <Skeleton variant="rounded" animation="wave" width={180} height={32} />
+        <Box sx={{ bgcolor: "background.paper", borderRadius: "12px", p: 3, display: "flex", flexDirection: "column", gap: 2 }}>
+          <Skeleton variant="rounded" animation="wave" width="100%" height={42} />
+          <Skeleton variant="rounded" animation="wave" width="100%" height={42} />
+          <Skeleton variant="rounded" animation="wave" width="100%" height={140} />
+        </Box>
       </Box>
     );
   }
 
   if (!data) {
-    return <Box sx={{ py: 6, textAlign: "center", color: "text.secondary", fontSize: 14 }}>Product not found</Box>;
+    return <EmptyState title="Product not found" />;
   }
 
   return (

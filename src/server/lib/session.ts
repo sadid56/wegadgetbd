@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { session as sessionTable, auditLog, user as userTable, type Role, type AuditAction } from "@/db/schema";
+import { session as sessionTable, user as userTable, type Role } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { headers as getHeaders } from "next/headers";
 
@@ -40,9 +40,9 @@ export async function getClientInfo(reqHeaders?: Headers) {
 export async function recordSession({
   userId,
   token,
-  role = "USER",
+  role: _role = "USER",
   expiresAt,
-  method = "password",
+  method: _method = "password",
   reqHeaders,
 }: RecordSessionOptions) {
   try {
@@ -85,26 +85,6 @@ export async function recordSession({
         },
       })
       .returning();
-
-    // Record login audit log if this is a login/signup event
-    if (method !== "sync") {
-      await db
-        .insert(auditLog)
-        .values({
-          action: "LOGIN" as AuditAction,
-          actorId: userId,
-          actorType: existingUser.role === "ADMIN" ? "ADMIN" : "USER",
-          metadata: {
-            method,
-            ipAddress,
-            userAgent,
-            email: existingUser.email,
-          },
-        })
-        .catch((err) => {
-          console.error("[recordSession] Failed to record login audit log:", err);
-        });
-    }
 
     return savedSession;
   } catch (err) {

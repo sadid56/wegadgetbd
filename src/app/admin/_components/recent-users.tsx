@@ -5,7 +5,6 @@ import Typography from "@mui/material/Typography";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { IMAGES } from "@/constant/images";
-import { tokens } from "@/theme/theme";
 
 interface RecentUsersProps {
   users: {

@@ -3,14 +3,20 @@ import CheckIcon from "@mui/icons-material/Check";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import ImageIcon from "@mui/icons-material/Image";
 import React, { useState } from "react";
+import type { Components } from "react-markdown";
 import { useToast } from "@/context/toast-context";
 import { tokens } from "@/theme/theme";
 
-const CodeBlock = ({ className, children }: any) => {
+interface CodeBlockProps {
+  className?: string;
+  children?: React.ReactNode;
+}
+
+const CodeBlock = ({ className, children }: CodeBlockProps) => {
   const [copied, setCopied] = useState(false);
   const toast = useToast();
 
-  const codeText = String(children).replace(/\n$/, "");
+  const codeText = String(children ?? "").replace(/\n$/, "");
   const language = className?.replace("language-", "") || "code";
 
   const handleCopy = async () => {
@@ -64,20 +70,21 @@ const CodeBlock = ({ className, children }: any) => {
   );
 };
 
-export const useMarkdownComponents = () => {
+export const useMarkdownComponents = (): Components => {
   return {
     // Headings
-    h1: ({ ...props }: any) => <h1 className='text-3xl md:text-4xl font-black tracking-tight mb-6 text-foreground' {...props} />,
-    h2: ({ ...props }: any) => <h2 className='text-2xl md:text-3xl font-extrabold tracking-tight mt-10 mb-4 text-foreground' {...props} />,
-    h3: ({ ...props }: any) => <h3 className='text-xl md:text-2xl font-bold mt-8 mb-3 text-foreground' {...props} />,
-    h4: ({ ...props }: any) => <h4 className='text-lg md:text-xl font-bold mt-6 mb-3 text-foreground' {...props} />,
-    h5: ({ ...props }: any) => <h5 className='text-base md:text-lg font-semibold mt-5 mb-2 text-foreground' {...props} />,
-    h6: ({ ...props }: any) => <h6 className='text-sm md:text-base font-semibold mt-4 mb-2 text-foreground' {...props} />,
+    h1: ({ node: _node, ...props }) => <h1 className='text-3xl md:text-4xl font-black tracking-tight mb-6 text-foreground' {...props} />,
+    h2: ({ node: _node, ...props }) => <h2 className='text-2xl md:text-3xl font-extrabold tracking-tight mt-10 mb-4 text-foreground' {...props} />,
+    h3: ({ node: _node, ...props }) => <h3 className='text-xl md:text-2xl font-bold mt-8 mb-3 text-foreground' {...props} />,
+    h4: ({ node: _node, ...props }) => <h4 className='text-lg md:text-xl font-bold mt-6 mb-3 text-foreground' {...props} />,
+    h5: ({ node: _node, ...props }) => <h5 className='text-base md:text-lg font-semibold mt-5 mb-2 text-foreground' {...props} />,
+    h6: ({ node: _node, ...props }) => <h6 className='text-sm md:text-base font-semibold mt-4 mb-2 text-foreground' {...props} />,
 
     // Paragraph
-    p: ({ node, children, ...props }: any) => {
+    p: ({ node, children, ...props }) => {
       // keep behavior: if paragraph only contains a code element, return children directly
-      if (node.children?.length === 1 && node.children[0].type === "element" && node.children[0].tagName === "code") {
+      const nodeChildren = (node as { children?: Array<{ type?: string; tagName?: string }> } | undefined)?.children;
+      if (nodeChildren?.length === 1 && nodeChildren[0].type === "element" && nodeChildren[0].tagName === "code") {
         return <>{children}</>;
       }
 
@@ -89,7 +96,7 @@ export const useMarkdownComponents = () => {
     },
 
     // Link
-    a: ({ href, children, ...props }: any) => (
+    a: ({ href, children, node: _node, ...props }) => (
       <a
         href={href}
         className='group inline-flex items-center gap-1 text-primary font-semibold underline-offset-4 hover:underline transition'
@@ -103,9 +110,9 @@ export const useMarkdownComponents = () => {
     ),
 
     // Lists
-    ul: ({ ...props }: any) => <ul className='space-y-2 mb-6 pl-6' {...props} />,
-    ol: ({ ...props }: any) => <ol className='space-y-2 mb-6 pl-6' {...props} />,
-    li: ({ children, ...props }: any) => (
+    ul: ({ node: _node, ...props }) => <ul className='space-y-2 mb-6 pl-6' {...props} />,
+    ol: ({ node: _node, ...props }) => <ol className='space-y-2 mb-6 pl-6' {...props} />,
+    li: ({ children, node: _node, ...props }) => (
       <li
         className='text-foreground/80 leading-relaxed relative pl-2 before:absolute before:-left-4 before:content-["→"] before:text-primary/60 before:font-bold'
         {...props}
@@ -115,11 +122,13 @@ export const useMarkdownComponents = () => {
     ),
 
     // Blockquote (INFO/WARNING/ERROR/TIPS)
-    blockquote: ({ children, ...props }: any) => {
+    blockquote: ({ children, node: _node, ...props }) => {
       const textContent = React.Children.toArray(children)
-        .map((child: any) => {
+        .map((child) => {
           if (typeof child === "string") return child;
-          if (child.props?.children) return child.props.children;
+          if (React.isValidElement<{ children?: React.ReactNode }>(child) && child.props.children) {
+            return String(child.props.children);
+          }
           return "";
         })
         .join(" ");
@@ -136,15 +145,17 @@ export const useMarkdownComponents = () => {
       };
 
       return (
-        <div className={`border-l-4 p-4 mb-4 italic ${typeClasses[type] || typeClasses.INFO}`} {...props}>
+        <blockquote className={`border-l-4 p-4 mb-4 italic ${typeClasses[type] || typeClasses.INFO}`} {...props}>
           {content}
-        </div>
+        </blockquote>
       );
     },
 
     // Code
-    code: ({ inline, className, children, ...props }: any) => {
-      if (inline) {
+    code: ({ className, children, node: _node, ...props }) => {
+      // In react-markdown, inline code doesn't have multi-line or block language class usually
+      const isInline = !className?.startsWith("language-") && !String(children).includes("\n");
+      if (isInline) {
         return (
           <code
             className='bg-muted/60 border border-muted rounded-md px-2 py-0.5 text-sm font-mono text-foreground/90 font-semibold'
@@ -158,22 +169,22 @@ export const useMarkdownComponents = () => {
     },
 
     // HR
-    hr: ({ ...props }: any) => <hr className='border-0 h-px bg-linear-to-r from-transparent via-muted to-transparent my-12' {...props} />,
+    hr: ({ node: _node, ...props }) => <hr className='border-0 h-px bg-linear-to-r from-transparent via-muted to-transparent my-12' {...props} />,
 
     // Tables
-    table: ({ ...props }: any) => (
+    table: ({ node: _node, ...props }) => (
       <div className='overflow-x-auto mb-8 rounded-xl border border-muted/50 shadow'>
         <table className='w-full border-collapse bg-background/50 backdrop-blur-sm' {...props} />
       </div>
     ),
-    thead: ({ ...props }: any) => <thead className='bg-linear-to-r from-muted/80 to-muted/40 backdrop-blur-sm' {...props} />,
-    th: ({ ...props }: any) => (
+    thead: ({ node: _node, ...props }) => <thead className='bg-linear-to-r from-muted/80 to-muted/40 backdrop-blur-sm' {...props} />,
+    th: ({ node: _node, ...props }) => (
       <th className='border-b border-muted px-6 py-4 text-left font-bold text-foreground text-sm uppercase tracking-wide' {...props} />
     ),
-    td: ({ ...props }: any) => <td className='border-b border-muted/30 px-6 py-4 text-foreground/80' {...props} />,
+    td: ({ node: _node, ...props }) => <td className='border-b border-muted/30 px-6 py-4 text-foreground/80' {...props} />,
 
     // Images
-    img: ({ src, alt, ...props }: any) => (
+    img: ({ src, alt, node: _node, ...props }) => (
       <div className='group relative my-8 rounded-2xl overflow-hidden border border-muted/50 shadow-xl hover:shadow-2xl transition-all duration-300'>
         <img
           src={src}
@@ -193,7 +204,7 @@ export const useMarkdownComponents = () => {
     ),
 
     // Inputs (checkboxes in markdown)
-    input: ({ type, checked, ...props }: any) => (
+    input: ({ type, checked, node: _node, ...props }) => (
       <input
         type={type}
         checked={checked}
@@ -203,7 +214,7 @@ export const useMarkdownComponents = () => {
     ),
 
     // Emphasis
-    em: ({ ...props }: any) => <em className='italic text-foreground/80 font-medium' {...props} />,
-    strong: ({ ...props }: any) => <strong className='font-bold text-foreground' {...props} />,
+    em: ({ node: _node, ...props }) => <em className='italic text-foreground/80 font-medium' {...props} />,
+    strong: ({ node: _node, ...props }) => <strong className='font-bold text-foreground' {...props} />,
   };
 };

@@ -49,12 +49,12 @@ export function CheckoutStepperHeader({
           bgcolor: tokens.bgPanel,
           border: `1px solid ${tokens.borderDefault}`,
           borderRadius: "14px",
-          py: 1.5,
-          px: { xs: 2, sm: 2.5 },
+          py: { xs: 1.15, sm: 1.5 },
+          px: { xs: 1.5, sm: 2.5 },
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          gap: 2,
+          gap: { xs: 1, sm: 2 },
         }}
       >
         {/* Back Link */}
@@ -64,18 +64,28 @@ export function CheckoutStepperHeader({
           sx={{
             display: "inline-flex",
             alignItems: "center",
-            gap: 0.75,
-            fontSize: 13,
+            gap: { xs: 0.5, sm: 0.75 },
+            fontSize: { xs: 12, sm: 13 },
             fontWeight: 600,
             color: tokens.textSecondary,
             textDecoration: "none",
             transition: "color 150ms ease",
-            flexShrink: 0,
+            minWidth: 0,
+            flexShrink: 1,
             "&:hover": { color: tokens.textPrimary },
           }}
         >
-          <ArrowBackIcon sx={{ fontSize: 16 }} />
-          <span>{backLabel || (currentStep === "checkout" ? t("backToCart") : t("backToProduct"))}</span>
+          <ArrowBackIcon sx={{ fontSize: { xs: 15, sm: 16 }, flexShrink: 0 }} />
+          <Box
+            component="span"
+            sx={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {backLabel || (currentStep === "checkout" ? t("backToCart") : t("backToProduct"))}
+          </Box>
         </Box>
 
         {/* Desktop Stepper */}
@@ -136,15 +146,21 @@ export function CheckoutStepperHeader({
         {/* Mobile Step Badge */}
         <Box
           sx={{
-            display: { xs: "flex", sm: "none" },
+            display: { xs: "inline-flex", sm: "none" },
             alignItems: "center",
             gap: 0.5,
-            fontSize: 12,
+            px: 1.15,
+            py: 0.35,
+            borderRadius: "999px",
+            bgcolor: tokens.primaryLight,
+            fontSize: 11.5,
             fontWeight: 700,
-            color: tokens.primary,
+            color: tokens.primaryDark,
+            whiteSpace: "nowrap",
+            flexShrink: 0,
           }}
         >
-          <span>Step {stepIndex + 1}/3:</span>
+          <span>{stepIndex + 1}/3 ·</span>
           <span style={{ textTransform: "capitalize" }}>{currentStep}</span>
         </Box>
 

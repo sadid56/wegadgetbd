@@ -15,9 +15,18 @@ export interface MenuItemProps extends MuiMenuItemProps {
 export type FormControlProps = MuiFormControlProps;
 export type FormControlLabelProps = MuiFormControlLabelProps;
 
-export function Select<Value = unknown>({ sx, MenuProps, ...props }: SelectProps<Value>) {
+export function Select<Value = unknown>({ sx, MenuProps, onOpen, ...props }: SelectProps<Value>) {
+  const [menuMaxWidth, setMenuMaxWidth] = React.useState<number | undefined>(undefined);
+
   return (
     <MuiSelect
+      onOpen={(e) => {
+        const target = e.currentTarget as HTMLElement | null;
+        if (target?.clientWidth) {
+          setMenuMaxWidth(target.clientWidth);
+        }
+        onOpen?.(e);
+      }}
       MenuProps={{
         disableScrollLock: true,
         slotProps: {
@@ -28,6 +37,19 @@ export function Select<Value = unknown>({ sx, MenuProps, ...props }: SelectProps
               borderRadius: `${tokens.radiusMd}px`,
               boxShadow: tokens.shadowPopover,
               mt: 0.5,
+              maxWidth: menuMaxWidth ? `${menuMaxWidth}px` : "calc(100vw - 32px)",
+              maxHeight: 320,
+              "& .MuiMenuItem-root": {
+                display: "block",
+                minHeight: 36,
+                height: 36,
+                lineHeight: "36px",
+                py: 0,
+                px: 1.5,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              },
             },
           },
         },
@@ -72,8 +94,9 @@ export const MenuItem = React.forwardRef<HTMLLIElement, MenuItemProps>(function 
           fontWeight: variant !== "default" ? 600 : 500,
           color: variant === "danger" ? tokens.danger : tokens.textPrimary,
           borderRadius: `${tokens.radiusPill}px`,
-          py: 0.85,
-          px: 1.75,
+          minHeight: 36,
+          py: { xs: 0.65, sm: 0.75 },
+          px: 1.5,
           my: 0.25,
           gap: 1.5,
           transition: "all 0.15s ease",

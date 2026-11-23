@@ -12,19 +12,20 @@ import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import { getAssetUrl } from "@/lib/storage";
 import { tokens } from "@/theme/theme";
 import { formatPrice, toBengaliNumber } from "@/lib/i18n-utils";
+import type { CartItem } from "@/hooks/useCart";
 
 type CartItemRowProps = {
-  item: any;
+  item: CartItem & { name?: string; thumbnail?: string | null };
   isLast: boolean;
-  onUpdateQty: (id: any, qty: number) => void;
-  onRemove: (item: any) => void;
+  onUpdateQty: (id: string, qty: number) => void;
+  onRemove: (item: CartItem) => void;
 };
 
 export default function CartItemRow({ item, isLast, onUpdateQty, onRemove }: CartItemRowProps) {
   const t = useTranslations("cart");
   const locale = useLocale();
-  const itemTitle = item.title || (item as any).name || "Product";
-  const rawImg = item.images?.[0] || (item as any).image;
+  const itemTitle = item.title || item.name || "Product";
+  const rawImg = item.thumbnail || item.images?.[0] || "";
   const imgSrc = rawImg ? getAssetUrl(rawImg) : null;
   const unitPrice = Number(item.discountPrice || item.price || 0);
   const origPrice = Number(item.price || 0);
@@ -35,7 +36,7 @@ export default function CartItemRow({ item, isLast, onUpdateQty, onRemove }: Car
   return (
     <Box
       sx={{
-        p: { xs: 2, sm: 2.5 },
+        p: { xs: 1.5, sm: 2.5 },
         borderBottom: isLast ? "none" : `1px solid ${tokens.borderSubtle}`,
       }}
     >

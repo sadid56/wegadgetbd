@@ -1,13 +1,21 @@
 "use client";
 
 import * as React from "react";
+import dayjs, { type Dayjs } from "dayjs";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
-import ButtonBase from "@mui/material/ButtonBase";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import Popover from "@mui/material/Popover";
+import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
+import CloseIcon from "@mui/icons-material/Close";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import { type SxProps, type Theme } from "@mui/material/styles";
+import { format } from "date-fns";
+import { TextField, InputAdornment } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Select, MenuItem } from "@/components/ui/select";
 import { tokens } from "@/theme/theme";
 
 export interface CalendarProps {
@@ -20,156 +28,332 @@ export interface CalendarProps {
   disabled?: (date: Date) => boolean;
 }
 
-const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
-
-function isSameDay(d1?: Date | null, d2?: Date | null) {
-  if (!d1 || !d2) return false;
-  return (
-    d1.getFullYear() === d2.getFullYear() &&
-    d1.getMonth() === d2.getMonth() &&
-    d1.getDate() === d2.getDate()
-  );
-}
-
 export function Calendar({
   selected,
   onSelect,
   sx,
   disabled,
 }: CalendarProps) {
-  const initialDate = Array.isArray(selected) ? selected[0] ?? new Date() : selected ?? new Date();
-  const [currentMonth, setCurrentMonth] = React.useState(
-    new Date(initialDate.getFullYear(), initialDate.getMonth(), 1),
-  );
-
-  const prevMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
-  };
-
-  const nextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
-  };
-
-  const year = currentMonth.getFullYear();
-  const month = currentMonth.getMonth();
-
-  const firstDayIndex = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const daysInPrevMonth = new Date(year, month, 0).getDate();
-
-  const days: { date: Date; isCurrentMonth: boolean }[] = [];
-
-  // Previous month trailing days
-  for (let i = firstDayIndex - 1; i >= 0; i--) {
-    days.push({
-      date: new Date(year, month - 1, daysInPrevMonth - i),
-      isCurrentMonth: false,
-    });
-  }
-
-  // Current month days
-  for (let i = 1; i <= daysInMonth; i++) {
-    days.push({
-      date: new Date(year, month, i),
-      isCurrentMonth: true,
-    });
-  }
-
-  // Next month leading days (fill to multiple of 7)
-  const remaining = 42 - days.length;
-  for (let i = 1; i <= (remaining >= 7 ? remaining - 7 : remaining); i++) {
-    days.push({
-      date: new Date(year, month + 1, i),
-      isCurrentMonth: false,
-    });
-  }
-
-  const monthLabel = currentMonth.toLocaleString("default", { month: "long", year: "numeric" });
-  const today = new Date();
+  const selectedDate = Array.isArray(selected) ? selected[0] : selected;
+  const dayjsValue: Dayjs | null = selectedDate ? dayjs(selectedDate) : null;
 
   return (
     <Box
-      sx={{
-        p: 2,
-        borderRadius: `${tokens.radiusMd}px`,
-        border: "1px solid",
-        borderColor: "divider",
-        bgcolor: "background.paper",
-        width: "fit-content",
-        userSelect: "none",
-        ...sx,
-      }}
+      sx={[
+        {
+          borderRadius: `${tokens.radiusMd}px`,
+          border: "1px solid",
+          borderColor: "divider",
+          bgcolor: "background.paper",
+          width: "fit-content",
+          overflow: "hidden",
+        },
+        ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
+      ]}
     >
-      {/* Month Navigation Header */}
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
-        <Typography sx={{ fontSize: "0.95rem", fontWeight: 700, color: "text.primary" }}>{monthLabel}</Typography>
-        <Box sx={{ display: "flex", gap: 0.5 }}>
-          <IconButton size='small' onClick={prevMonth} sx={{ p: 0.5, color: "text.secondary" }}>
-            <ChevronLeftIcon sx={{ fontSize: 20 }} />
-          </IconButton>
-          <IconButton size='small' onClick={nextMonth} sx={{ p: 0.5, color: "text.secondary" }}>
-            <ChevronRightIcon sx={{ fontSize: 20 }} />
-          </IconButton>
-        </Box>
-      </Box>
-
-      {/* Weekdays Row */}
-      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(7, 36px)", gap: 0.5, mb: 1, textAlign: "center" }}>
-        {WEEKDAYS.map((w) => (
-          <Typography
-            key={w}
-            variant='caption'
-            sx={{
-              fontSize: "0.75rem",
-              fontWeight: 600,
-              color: "text.disabled",
-              lineHeight: "24px",
-            }}
-          >
-            {w}
-          </Typography>
-        ))}
-      </Box>
-
-      {/* Days Grid */}
-      <Box sx={{ display: "grid", gridTemplateColumns: "repeat(7, 36px)", gap: 0.5 }}>
-        {days.map(({ date, isCurrentMonth }, idx) => {
-          const isSelected = Array.isArray(selected) ? selected.some((s) => isSameDay(s, date)) : isSameDay(selected, date);
-
-          const isToday = isSameDay(date, today);
-          const isDisabled = disabled ? disabled(date) : false;
-
-          return (
-            <ButtonBase
-              key={idx}
-              disabled={isDisabled}
-              onClick={() => {
-                if (!isDisabled) {
-                  onSelect?.(date);
-                }
-              }}
-              sx={{
-                width: 36,
-                height: 36,
-                borderRadius: `${tokens.radiusSm}px`,
-                fontSize: "0.82rem",
-                fontWeight: isSelected || isToday ? 700 : 500,
-                color: isSelected ? tokens.textWhite : !isCurrentMonth ? "text.disabled" : isToday ? "primary.main" : "text.primary",
-                bgcolor: isSelected ? "primary.main" : isToday ? "action.hover" : "transparent",
-                border: isToday && !isSelected ? "1px solid" : "none",
-                borderColor: isToday && !isSelected ? "primary.main" : "transparent",
-                opacity: isDisabled ? 0.35 : 1,
-                transition: "all 0.15s ease",
-                "&:hover": {
-                  bgcolor: isSelected ? "primary.dark" : "action.hover",
-                },
-              }}
-            >
-              {date.getDate()}
-            </ButtonBase>
-          );
-        })}
-      </Box>
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <DateCalendar
+          value={dayjsValue}
+          onChange={(newValue) => onSelect?.(newValue ? newValue.toDate() : undefined)}
+          shouldDisableDate={disabled ? (day) => disabled(day.toDate()) : undefined}
+          sx={{
+            width: 300,
+            maxHeight: 310,
+            "& .MuiPickersDay-root.Mui-selected": {
+              bgcolor: tokens.primary,
+              color: tokens.onPrimary,
+              "&:hover, &:focus": {
+                bgcolor: tokens.primaryHover,
+              },
+            },
+          }}
+        />
+      </LocalizationProvider>
     </Box>
+  );
+}
+
+export interface DatePickerProps {
+  value?: Date | string | null;
+  onChange: (date: Date | undefined) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  maxDate?: Date;
+  minDate?: Date;
+}
+
+export function DatePicker({
+  value,
+  onChange,
+  placeholder = "Select date",
+  disabled = false,
+  maxDate,
+  minDate,
+}: DatePickerProps) {
+  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
+
+  const parsedDate = React.useMemo(() => {
+    if (!value) return undefined;
+    const d = value instanceof Date ? value : new Date(value);
+    return Number.isNaN(d.getTime()) ? undefined : d;
+  }, [value]);
+
+  const isDateDisabled = (date: Date) => {
+    if (maxDate) {
+      const maxDay = new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate());
+      const curDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      if (curDay > maxDay) return true;
+    }
+    if (minDate) {
+      const minDay = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate());
+      const curDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      if (curDay < minDay) return true;
+    }
+    return false;
+  };
+
+  const displayText = parsedDate ? format(parsedDate, "MMM d, yyyy") : "";
+
+  return (
+    <>
+      <TextField
+        size="small"
+        fullWidth
+        value={displayText}
+        placeholder={placeholder}
+        disabled={disabled}
+        onClick={(e) => !disabled && setAnchorEl(e.currentTarget)}
+        slotProps={{
+          input: {
+            readOnly: true,
+            sx: { cursor: disabled ? "not-allowed" : "pointer" },
+            endAdornment: (
+              <InputAdornment position="end" sx={{ gap: 0.25 }}>
+                {parsedDate && !disabled && (
+                  <IconButton
+                    size="small"
+                    aria-label="Clear date"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onChange(undefined);
+                    }}
+                    sx={{ p: 0.35, color: "text.secondary" }}
+                  >
+                    <CloseIcon sx={{ fontSize: 15 }} />
+                  </IconButton>
+                )}
+                <CalendarTodayOutlinedIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+              </InputAdornment>
+            ),
+          },
+        }}
+      />
+
+      <Popover
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        transformOrigin={{ vertical: "top", horizontal: "left" }}
+        slotProps={{
+          paper: {
+            sx: {
+              mt: 0.75,
+              borderRadius: `${tokens.radiusLg}px`,
+              border: `1px solid ${tokens.borderDefault}`,
+              boxShadow: tokens.shadowPopover,
+              bgcolor: tokens.bgPanel,
+              p: 0.5,
+            },
+          },
+        }}
+      >
+        <Calendar
+          selected={parsedDate}
+          disabled={isDateDisabled}
+          onSelect={(date) => {
+            onChange(date);
+            setAnchorEl(null);
+          }}
+          sx={{ border: "none" }}
+        />
+      </Popover>
+    </>
+  );
+}
+
+export interface DateTimePickerProps {
+  value?: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  disabled?: boolean;
+}
+
+function toLocalIsoMinute(d: Date): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+export function DateTimePicker({
+  value = "",
+  onChange,
+  placeholder = "Select date & time",
+  disabled = false,
+}: DateTimePickerProps) {
+  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
+
+  const parsedDate = React.useMemo(() => {
+    if (!value) return undefined;
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? undefined : d;
+  }, [value]);
+
+  const activeDate = parsedDate ?? new Date();
+  const hours = activeDate.getHours();
+  const minutes = activeDate.getMinutes();
+
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+    const next = new Date(date);
+    next.setHours(parsedDate ? hours : 12, parsedDate ? minutes : 0, 0, 0);
+    onChange(toLocalIsoMinute(next));
+  };
+
+  const handleTimeChange = (newHours: number, newMinutes: number) => {
+    const next = new Date(parsedDate ?? new Date());
+    next.setHours(newHours, newMinutes, 0, 0);
+    onChange(toLocalIsoMinute(next));
+  };
+
+  const displayText = parsedDate ? format(parsedDate, "MMM d, yyyy · hh:mm a") : "";
+
+  return (
+    <>
+      <TextField
+        size="small"
+        fullWidth
+        value={displayText}
+        placeholder={placeholder}
+        disabled={disabled}
+        onClick={(e) => !disabled && setAnchorEl(e.currentTarget)}
+        slotProps={{
+          input: {
+            readOnly: true,
+            sx: { cursor: disabled ? "not-allowed" : "pointer" },
+            endAdornment: (
+              <InputAdornment position="end" sx={{ gap: 0.25 }}>
+                {value && !disabled && (
+                  <IconButton
+                    size="small"
+                    aria-label="Clear date"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onChange("");
+                    }}
+                    sx={{ p: 0.35, color: "text.secondary" }}
+                  >
+                    <CloseIcon sx={{ fontSize: 15 }} />
+                  </IconButton>
+                )}
+                <CalendarTodayOutlinedIcon sx={{ fontSize: 16, color: "text.secondary" }} />
+              </InputAdornment>
+            ),
+          },
+        }}
+      />
+
+      <Popover
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={() => setAnchorEl(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        transformOrigin={{ vertical: "top", horizontal: "left" }}
+        slotProps={{
+          paper: {
+            sx: {
+              mt: 0.75,
+              borderRadius: `${tokens.radiusLg}px`,
+              border: `1px solid ${tokens.borderDefault}`,
+              boxShadow: tokens.shadowPopover,
+              bgcolor: tokens.bgPanel,
+              p: 1,
+            },
+          },
+        }}
+      >
+        <Calendar
+          selected={parsedDate}
+          onSelect={handleDateSelect}
+          sx={{ border: "none" }}
+        />
+
+        {/* Time Selector Row */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 1,
+            pt: 1.25,
+            mt: 0.5,
+            px: 1,
+            pb: 0.5,
+            borderTop: `1px solid ${tokens.borderSubtle}`,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+            <Select
+              size="small"
+              value={hours}
+              onChange={(e) => handleTimeChange(Number(e.target.value), minutes)}
+              sx={{ minWidth: 68, "& .MuiSelect-select": { py: 0.5, px: 1.25, fontSize: 13 } }}
+            >
+              {Array.from({ length: 24 }).map((_, h) => (
+                <MenuItem key={h} value={h}>
+                  {String(h).padStart(2, "0")}
+                </MenuItem>
+              ))}
+            </Select>
+            <Typography sx={{ fontWeight: 700, color: tokens.textSecondary }}>:</Typography>
+            <Select
+              size="small"
+              value={minutes}
+              onChange={(e) => handleTimeChange(hours, Number(e.target.value))}
+              sx={{ minWidth: 68, "& .MuiSelect-select": { py: 0.5, px: 1.25, fontSize: 13 } }}
+            >
+              {Array.from({ length: 60 }).map((_, m) => (
+                <MenuItem key={m} value={m}>
+                  {String(m).padStart(2, "0")}
+                </MenuItem>
+              ))}
+            </Select>
+          </Box>
+
+          <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
+            {value && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  onChange("");
+                  setAnchorEl(null);
+                }}
+                sx={{ minHeight: 30, px: 1.25, py: 0.35, fontSize: 12 }}
+              >
+                Clear
+              </Button>
+            )}
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => setAnchorEl(null)}
+              sx={{ minHeight: 30, px: 1.5, py: 0.35, fontSize: 12 }}
+            >
+              Done
+            </Button>
+          </Box>
+        </Box>
+      </Popover>
+    </>
   );
 }

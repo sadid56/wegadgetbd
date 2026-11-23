@@ -135,8 +135,8 @@ export function TopPicksSection({ products: passedProducts }: { products?: Produ
         sx={{
           display: "grid",
           gridTemplateColumns: {
-            xs: "repeat(2, 1fr)",
-            md: "repeat(4, 1fr)",
+            xs: "repeat(2, minmax(0, 1fr))",
+            md: "repeat(4, minmax(0, 1fr))",
           },
           gap: { xs: 1.5, sm: 2, md: 2.5 },
         }}

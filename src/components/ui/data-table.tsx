@@ -9,9 +9,10 @@ import MuiTableHead from "@mui/material/TableHead";
 import MuiTableRow from "@mui/material/TableRow";
 import MuiTablePagination from "@mui/material/TablePagination";
 import Box from "@mui/material/Box";
-import CircularProgress from "@mui/material/CircularProgress";
 import { type SxProps, type Theme } from "@mui/material/styles";
 import { tokens } from "@/theme/theme";
+import { EmptyState } from "./empty-state";
+import { Skeleton } from "./skeleton";
 
 export interface DataTableColumn<T> {
   id: string;
@@ -58,16 +59,19 @@ const defaultHeadSx: SxProps<Theme> = {
   borderBottom: "1px solid",
   borderColor: "divider",
   py: 1.25,
+  px: { xs: 1.5, sm: 2 },
   whiteSpace: "nowrap",
 };
 
-const defaultCellSx: SxProps<Theme> = {
+const defaultCellSx = {
   borderBottom: "1px solid",
   borderColor: "divider",
-  py: 1.5,
-  fontSize: 14,
+  py: { xs: 1.25, sm: 1.5 },
+  px: { xs: 1.5, sm: 2 },
+  fontSize: { xs: 13, sm: 14 },
   color: "text.primary",
-};
+  whiteSpace: "nowrap",
+} as const;
 
 export function DataTable<T>({
   columns,
@@ -129,8 +133,8 @@ export function DataTable<T>({
         {
           width: "100%",
           borderRadius: `${tokens.radiusMd}px`,
-          border: "1px solid",
-          borderColor: "divider",
+          border: "none",
+          boxShadow: "none",
           bgcolor: "background.paper",
           overflow: "hidden",
         },
@@ -160,36 +164,25 @@ export function DataTable<T>({
 
           <MuiTableBody>
             {isLoading ? (
-              <MuiTableRow>
-                <MuiTableCell
-                  colSpan={columns.length}
-                  sx={{
-                    height: 140,
-                    textAlign: "center",
-                    borderBottom: "none",
-                  }}
-                >
-                  <CircularProgress size={28} sx={{ color: "primary.main" }} />
-                </MuiTableCell>
-              </MuiTableRow>
-            ) : displayedData.length === 0 ? (
-              <MuiTableRow>
-                <MuiTableCell
-                  colSpan={columns.length}
-                  sx={{
-                    height: 120,
-                    textAlign: "center",
-                    color: "text.secondary",
-                    fontSize: 14,
-                    borderBottom: "none",
-                  }}
-                >
-                  {emptyMessage}
-                </MuiTableCell>
-              </MuiTableRow>
+              Array.from({ length: 5 }).map((_, rowIdx) => (
+                <MuiTableRow key={`skeleton-row-${rowIdx}`}>
+                  {columns.map((column) => (
+                    <MuiTableCell
+                      key={`skeleton-cell-${rowIdx}-${column.id}`}
+                      sx={[
+                        defaultCellSx,
+                        rowIdx === 4 ? { borderBottom: "none" } : {},
+                      ]}
+                    >
+                      <Skeleton variant="rounded" animation="wave" height={20} width="80%" />
+                    </MuiTableCell>
+                  ))}
+                </MuiTableRow>
+              ))
             ) : (
               displayedData.map((row, index) => {
-                const key = keyExtractor ? keyExtractor(row, index) : ((row as any).id ?? index);
+                const rowObj = row as Record<string, unknown>;
+                const key = keyExtractor ? keyExtractor(row, index) : ((rowObj.id as React.Key) ?? index);
 
                 return (
                   <MuiTableRow
@@ -233,6 +226,14 @@ export function DataTable<T>({
           </MuiTableBody>
         </MuiTable>
       </MuiTableContainer>
+
+      {!isLoading && displayedData.length === 0 && (
+        <EmptyState
+          card={false}
+          title={emptyMessage}
+          sx={{ py: 5, px: 2 }}
+        />
+      )}
 
       {pagination && (
         <MuiTablePagination

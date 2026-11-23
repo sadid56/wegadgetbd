@@ -2,24 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { format } from "date-fns";
-import { useQueryState, parseAsInteger } from "nuqs";
-import { useToast } from "@/context/toast-context";
+import { parseAsStringLiteral } from "nuqs";
+import { useListQuery } from "@/hooks/use-list-query";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
-import Chip from "@mui/material/Chip";
 
-import {
-  Button,
-  IconButton,
-  InputBase,
-  Badge,
-  Avatar,
-  DataTable,
-  type DataTableColumn,
-  AlertDialog,
-} from "@/components/ui";
+import { Button, InputBase, Badge, Avatar, Select, MenuItem, DataTable, type DataTableColumn, AlertDialog } from "@/components/ui";
 import { DashboardHeader } from "@/components/admin/dashboard-header";
 
 import SearchIcon from "@mui/icons-material/Search";
@@ -42,12 +32,21 @@ const TYPE_CONFIG: Record<
   ORDER: { label: "Order", variant: "success" },
 };
 
+const TRASH_TYPES = ["ALL", "PRODUCT", "CATEGORY", "REVIEW", "ORDER"] as const;
+
 export default function TrashPage() {
-  const toast = useToast();
-  const [search, setSearch] = useQueryState("search", { defaultValue: "", shallow: false });
-  const [selectedType, setSelectedType] = useQueryState("type", { defaultValue: "ALL", shallow: false });
-  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
-  const [rowsPerPage, setRowsPerPage] = useQueryState("limit", parseAsInteger.withDefault(10));
+  const {
+    search,
+    page,
+    rowsPerPage,
+    type: selectedType,
+    setSearch,
+    setPage,
+    setRowsPerPage,
+    setQuery,
+  } = useListQuery({
+    type: parseAsStringLiteral(TRASH_TYPES).withDefault("ALL").withOptions({ shallow: false }),
+  });
 
   const [itemToRestore, setItemToRestore] = useState<TrashItem | null>(null);
   const [itemToDelete, setItemToDelete] = useState<TrashItem | null>(null);
@@ -55,7 +54,7 @@ export default function TrashPage() {
   const { data, isLoading } = useTrash({
     page,
     limit: rowsPerPage,
-    type: selectedType as any,
+    type: selectedType === "ALL" ? undefined : selectedType,
     search: search.trim() || undefined,
   });
 
@@ -64,34 +63,12 @@ export default function TrashPage() {
 
   const handleConfirmRestore = () => {
     if (!itemToRestore) return;
-    restoreItem(
-      { id: itemToRestore.id, itemType: itemToRestore.itemType },
-      {
-        onSuccess: () => {
-          toast.success(`"${itemToRestore.title}" has been restored successfully.`);
-          setItemToRestore(null);
-        },
-        onError: (err: any) => {
-          toast.error(err?.message || "Failed to restore item");
-        },
-      },
-    );
+    restoreItem({ id: itemToRestore.id, itemType: itemToRestore.itemType }, { onSuccess: () => setItemToRestore(null) });
   };
 
   const handleConfirmPermanentDelete = () => {
     if (!itemToDelete) return;
-    permanentDelete(
-      { id: itemToDelete.id, itemType: itemToDelete.itemType },
-      {
-        onSuccess: () => {
-          toast.success(`"${itemToDelete.title}" and its storage files were permanently deleted.`);
-          setItemToDelete(null);
-        },
-        onError: (err: any) => {
-          toast.error(err?.message || "Failed to permanently delete item");
-        },
-      },
-    );
+    permanentDelete({ id: itemToDelete.id, itemType: itemToDelete.itemType }, { onSuccess: () => setItemToDelete(null) });
   };
 
   const columns: DataTableColumn<TrashItem>[] = useMemo(
@@ -246,44 +223,27 @@ export default function TrashPage() {
   ];
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+    <Box sx={{ display: "flex", flexDirection: "column", gap: { xs: 2, sm: 3 } }}>
       {/* Dashboard Header */}
       <DashboardHeader
-        title="Trash & Recycle Bin"
-        description="Soft-deleted products, categories, reviews, and orders are held here. Restore them back to active state or permanently remove them along with their storage files."
+        title='Trash & Recycle Bin'
+        description='Soft-deleted products, categories, reviews, and orders are held here. Restore them back to active state or permanently remove them along with their storage files.'
       />
 
-      {/* Filter Tabs & Search Bar */}
-      <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", gap: 1 }}>
-          {filterTabs.map((tab) => {
-            const isSelected = selectedType === tab.type;
-            return (
-              <Chip
-                key={tab.type}
-                label={`${tab.label} (${tab.count})`}
-                onClick={() => {
-                  setSelectedType(tab.type);
-                  setPage(1);
-                }}
-                color={isSelected ? "primary" : "default"}
-                variant={isSelected ? "filled" : "outlined"}
-                sx={{
-                  fontWeight: isSelected ? 600 : 500,
-                  cursor: "pointer",
-                  borderRadius: "8px",
-                  "&:hover": {
-                    bgcolor: isSelected ? "primary.dark" : "action.hover",
-                  },
-                }}
-              />
-            );
-          })}
-        </Stack>
-
-        <Box sx={{ display: "flex", alignItems: "center", maxWidth: 384 }}>
+      {/* Search & Filter Dropdown Bar */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: { xs: 1, sm: 1.5 },
+          flexWrap: "nowrap",
+          width: "100%",
+        }}
+      >
+        <Box sx={{ flex: 1, minWidth: 0, maxWidth: { sm: 384 } }}>
           <InputBase
-            placeholder="Search deleted items..."
+            size='small'
+            placeholder='Search deleted items...'
             value={search}
             onChange={(e) => {
               setSearch(e.target.value || null);
@@ -292,6 +252,27 @@ export default function TrashPage() {
             startIcon={<SearchIcon sx={{ fontSize: 18 }} />}
           />
         </Box>
+
+        <Select
+          size='small'
+          value={selectedType}
+          onChange={(e) => {
+            setQuery({
+              type: String(e.target.value) as TrashItemType | "ALL",
+              page: 1,
+            });
+          }}
+          sx={{
+            minWidth: { xs: 135, sm: 165 },
+            flexShrink: 0,
+          }}
+        >
+          {filterTabs.map((tab) => (
+            <MenuItem key={tab.type} value={tab.type}>
+              {tab.label} ({tab.count})
+            </MenuItem>
+          ))}
+        </Select>
       </Box>
 
       {/* Trash Data Table */}
@@ -307,7 +288,7 @@ export default function TrashPage() {
           setRowsPerPage(parseInt(e.target.value, 10));
           setPage(1);
         }}
-        emptyMessage="Trash is empty. No deleted items found."
+        emptyMessage='Trash is empty. No deleted items found.'
       />
 
       {/* Restore Confirmation Dialog */}
@@ -318,12 +299,10 @@ export default function TrashPage() {
         loading={isRestoring}
         title={`Restore ${itemToRestore ? TYPE_CONFIG[itemToRestore.itemType]?.label : "Item"}?`}
         description={
-          itemToRestore
-            ? `Are you sure you want to restore "${itemToRestore.title}"? It will become active again in its collection.`
-            : ""
+          itemToRestore ? `Are you sure you want to restore "${itemToRestore.title}"? It will become active again in its collection.` : ""
         }
-        confirmText="Restore Item"
-        confirmVariant="default"
+        confirmText='Restore Item'
+        confirmVariant='default'
       />
 
       {/* Permanent Delete Confirmation Dialog */}
@@ -332,14 +311,14 @@ export default function TrashPage() {
         onClose={() => !isDeleting && setItemToDelete(null)}
         onConfirm={handleConfirmPermanentDelete}
         loading={isDeleting}
-        title="Permanently Delete Item?"
+        title='Permanently Delete Item?'
         description={
           itemToDelete
             ? `WARNING: This will PERMANENTLY remove "${itemToDelete.title}" from the database AND delete any associated files/images from Supabase Storage. This action CANNOT be undone.`
             : ""
         }
-        confirmText="Yes, Permanently Delete"
-        confirmVariant="destructive"
+        confirmText='Yes, Permanently Delete'
+        confirmVariant='destructive'
       />
     </Box>
   );

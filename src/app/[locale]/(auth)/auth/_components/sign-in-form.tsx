@@ -19,6 +19,7 @@ import { IconButton } from "@/components/ui/icon-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
+import { Form, FormControl, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/context/toast-context";
 import { signInAction } from "@/server/actions/auth.action";
 import { supabase } from "@/lib/supabase";
@@ -55,11 +56,7 @@ export function SignInForm() {
   const next = searchParams.get("next") || "/";
   const isAnyLoading = isLoading || isSocialLoading;
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormValues>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: { email: "", password: "" },
   });
@@ -88,8 +85,8 @@ export function SignInForm() {
       const target = next && next !== "/" ? next : defaultDest;
       router.push(target);
       router.refresh();
-    } catch (err: any) {
-      toast.error(err?.message || "An error occurred");
+    } catch (err: unknown) {
+      toast.error((err as { message?: string })?.message || "An error occurred");
       setIsLoading(false);
     }
   }
@@ -107,48 +104,66 @@ export function SignInForm() {
 
       <SocialAuth mode='signin' next={next} disabled={isLoading} onLoadingChange={setIsSocialLoading} dividerLabel={t("or")} />
 
-      <Box component='form' onSubmit={handleSubmit(onSubmit)} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <Input
-          id='email'
-          type='email'
-          label={t("email")}
-          placeholder={t("emailPlaceholder")}
-          fullWidth
-          disabled={isAnyLoading}
-          startIcon={<MailOutlinedIcon sx={{ fontSize: 18, color: tokens.textMuted }} />}
-          error={!!errors.email}
-          helperText={errors.email?.message}
-          {...register("email")}
-        />
+      <Form {...form}>
+        <Box component='form' onSubmit={form.handleSubmit(onSubmit)} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+          <FormField
+            control={form.control}
+            name='email'
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    type='email'
+                    label={t("email")}
+                    placeholder={t("emailPlaceholder")}
+                    fullWidth
+                    disabled={isAnyLoading}
+                    startIcon={<MailOutlinedIcon sx={{ fontSize: 18, color: tokens.textMuted }} />}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <Input
-          id='password'
-          type={showPassword ? "text" : "password"}
-          label={t("password")}
-          placeholder={t("passwordPlaceholder")}
-          fullWidth
-          disabled={isAnyLoading}
-          startIcon={<LockOutlinedIcon sx={{ fontSize: 18, color: tokens.textMuted }} />}
-          endIcon={
-            <IconButton
-              size='small'
-              onClick={() => setShowPassword((prev) => !prev)}
-              edge='end'
-              disabled={isAnyLoading}
-              sx={{ color: tokens.textMuted, "&:hover": { color: tokens.textPrimary } }}
-            >
-              {showPassword ? <VisibilityOffOutlined sx={{ fontSize: 18 }} /> : <VisibilityOutlined sx={{ fontSize: 18 }} />}
-            </IconButton>
-          }
-          error={!!errors.password}
-          helperText={errors.password?.message}
-          {...register("password")}
-        />
+          <FormField
+            control={form.control}
+            name='password'
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    label={t("password")}
+                    placeholder={t("passwordPlaceholder")}
+                    fullWidth
+                    disabled={isAnyLoading}
+                    startIcon={<LockOutlinedIcon sx={{ fontSize: 18, color: tokens.textMuted }} />}
+                    endIcon={
+                      <IconButton
+                        size='small'
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        edge='end'
+                        disabled={isAnyLoading}
+                        sx={{ color: tokens.textMuted, "&:hover": { color: tokens.textPrimary } }}
+                      >
+                        {showPassword ? <VisibilityOffOutlined sx={{ fontSize: 18 }} /> : <VisibilityOutlined sx={{ fontSize: 18 }} />}
+                      </IconButton>
+                    }
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <Button type='submit' variant='primary' fullWidth loading={isLoading} disabled={isAnyLoading} size='large'>
-          {t("signIn")}
-        </Button>
-      </Box>
+          <Button type='submit' variant='primary' fullWidth loading={isLoading} disabled={isAnyLoading} size='large'>
+            {t("signIn")}
+          </Button>
+        </Box>
+      </Form>
 
       <Box
         sx={{

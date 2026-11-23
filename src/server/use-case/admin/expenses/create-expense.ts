@@ -29,9 +29,9 @@ export class CreateExpenseUseCase {
           amount: Number(newExpense.amount),
         },
       };
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("CreateExpenseUseCase failed:", err);
-      const msg = err?.message || "Failed to create expense";
+      const msg = err instanceof Error ? err.message : "Failed to create expense";
       return { success: false as const, error: msg, message: msg };
     }
   }

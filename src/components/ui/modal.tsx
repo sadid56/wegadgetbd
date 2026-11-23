@@ -11,6 +11,8 @@ import MuiSlide, { type SlideProps as MuiSlideProps } from "@mui/material/Slide"
 import MuiCollapse, { type CollapseProps as MuiCollapseProps } from "@mui/material/Collapse";
 import Box, { type BoxProps } from "@mui/material/Box";
 import CloseIcon from "@mui/icons-material/Close";
+import { useTheme } from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 import { IconButton } from "./icon-button";
 import { tokens } from "@/theme/theme";
 
@@ -21,18 +23,23 @@ export interface ModalProps extends MuiDialogProps {
 export function Modal({
   maxWidth = "sm",
   fullWidth = true,
+  fullScreen,
   slotProps,
   showCloseButton = false,
   onClose,
   children,
   ...props
 }: ModalProps) {
-  const paperProps = (slotProps?.paper as Record<string, any>) ?? {};
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isFullScreen = fullScreen ?? isMobile;
+  const paperProps = (slotProps?.paper as Record<string, unknown>) ?? {};
 
   return (
     <MuiDialog
       maxWidth={maxWidth}
       fullWidth={fullWidth}
+      fullScreen={isFullScreen}
       onClose={onClose}
       slotProps={{
         ...slotProps,
@@ -40,16 +47,25 @@ export function Modal({
           ...paperProps,
           sx: [
             {
-              borderRadius: `${tokens.radiusXxl}px`,
-              p: 2,
+              borderRadius: isFullScreen ? "0px !important" : `${tokens.radiusXxl}px`,
+              p: { xs: 0, sm: 2 },
               bgcolor: tokens.bgPanel,
               color: tokens.textPrimary,
               backgroundImage: "none",
-              border: `1px solid ${tokens.borderDefault}`,
-              boxShadow: tokens.elevation3,
+              border: isFullScreen ? "none" : `1px solid ${tokens.borderDefault}`,
+              boxShadow: isFullScreen ? "none" : tokens.elevation3,
               position: "relative",
+              display: "flex",
+              flexDirection: "column",
+              "& > form": {
+                display: "flex",
+                flexDirection: "column",
+                flex: 1,
+                minHeight: 0,
+              },
             },
             ...(Array.isArray(paperProps.sx) ? paperProps.sx : paperProps.sx ? [paperProps.sx] : []),
+            ...(isFullScreen ? [{ borderRadius: "0px !important" }] : []),
           ],
         },
       }}
@@ -102,6 +118,15 @@ export function ModalContent({ sx, dividers, children, ...props }: MuiDialogCont
           borderColor: tokens.borderDefault,
           color: tokens.textPrimary,
           p: 1.5,
+          flex: 1,
+          overflowY: "auto",
+          scrollbarWidth: { xs: "none", sm: "auto" },
+          "&::-webkit-scrollbar": {
+            display: { xs: "none", sm: "block" },
+          },
+          "&:last-child": {
+            borderBottom: "none",
+          },
         },
         ...(Array.isArray(sx) ? sx : sx ? [sx] : []),
       ]}

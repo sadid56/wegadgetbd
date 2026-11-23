@@ -177,13 +177,13 @@ export default async function ProductDetails({ params }: ProductPageProps) {
             "@type": "Product",
             "@id": `${productUrl}#product`,
             name: foundProduct.title,
-            description: (foundProduct as any).markdown_description || `Buy ${foundProduct.title} online in Bangladesh with official warranty from We Gadget BD.`,
+            description: foundProduct.markdown_description || `Buy ${foundProduct.title} online in Bangladesh with official warranty from We Gadget BD.`,
             image: foundProduct.images && foundProduct.images.length > 0 ? foundProduct.images.map(getAssetUrl) : [`${siteUrl}/images/default.png`],
             sku: foundProduct.id,
-            mpn: (foundProduct as any).model || foundProduct.id,
+            mpn: foundProduct.id,
             brand: {
               "@type": "Brand",
-              name: (foundProduct as any).brand || "We Gadget BD",
+              name: "We Gadget BD",
             },
             category: foundProduct.category?.name || "Gadgets",
             offers: {
@@ -220,13 +220,15 @@ export default async function ProductDetails({ params }: ProductPageProps) {
                 },
               },
             },
-            aggregateRating: {
-              "@type": "AggregateRating",
-              ratingValue: foundProduct.rating || 5.0,
-              reviewCount: Math.max(1, foundProduct.reviews.length || foundProduct.soldCount || 10),
-              bestRating: 5,
-              worstRating: 1,
-            },
+            ...(foundProduct.reviews.length > 0 && {
+              aggregateRating: {
+                "@type": "AggregateRating",
+                ratingValue: foundProduct.rating || 5.0,
+                reviewCount: foundProduct.reviews.length,
+                bestRating: 5,
+                worstRating: 1,
+              },
+            }),
             ...(foundProduct.reviews.length > 0 && {
               review: foundProduct.reviews.map((r) => ({
                 "@type": "Review",

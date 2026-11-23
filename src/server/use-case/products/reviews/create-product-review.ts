@@ -1,4 +1,4 @@
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { product, productReview } from "@/db/schema";
 import type { Context } from "@/server/context";
 import { ORPCError } from "@orpc/server";

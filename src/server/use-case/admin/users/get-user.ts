@@ -1,5 +1,5 @@
-import { desc, eq } from "drizzle-orm";
-import { auditLog, user } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { user } from "@/db/schema";
 import type { Context } from "@/server/context";
 
 export class GetUserUseCase {
@@ -10,10 +10,9 @@ export class GetUserUseCase {
       where: eq(user.id, id),
       with: {
         sessions: true,
-        auditLogs: { orderBy: [desc(auditLog.timestamp)], limit: 10 },
       },
     });
     if (!found) throw new Error("User not found");
-    return found as any;
+    return found;
   }
 }

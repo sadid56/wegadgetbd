@@ -5,7 +5,7 @@ import { PRODUCT_COLUMNS } from "./_shared";
 
 interface FieldRule {
   include: "truthy" | "defined";
-  cast?: (v: any) => unknown;
+  cast?: (v: unknown) => unknown;
 }
 
 const FIELD_RULES: Record<string, FieldRule> = {
@@ -20,13 +20,15 @@ const FIELD_RULES: Record<string, FieldRule> = {
 export class UpdateReviewUseCase {
   constructor(private readonly db: Context["db"]) {}
 
-  async execute({ id, ...data }: any) {
+  async execute({ id, ...data }: { id: string } & Record<string, unknown>) {
     const payload = this.buildUpdatePayload(data);
     await this.persistUpdate(id, payload);
-    return this.findWithProduct(id) as any;
+    const updated = await this.findWithProduct(id);
+    if (!updated) throw new Error("Review not found");
+    return updated;
   }
 
-  private buildUpdatePayload(data: any) {
+  private buildUpdatePayload(data: Record<string, unknown>) {
     const payload: Record<string, unknown> = {};
     for (const [key, { include, cast }] of Object.entries(FIELD_RULES)) {
       const value = data[key];
@@ -40,7 +42,7 @@ export class UpdateReviewUseCase {
   private persistUpdate(id: string, payload: Record<string, unknown>) {
     return this.db
       .update(customerReview)
-      .set(payload as any)
+      .set(payload)
       .where(eq(customerReview.id, id));
   }
 

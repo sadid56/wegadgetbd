@@ -10,6 +10,7 @@ export * from "./divider";
 export * from "./drawer";
 export * from "./dropdown";
 export * from "./empty-state";
+export * from "./file-dropdown";
 export * from "./form";
 export * from "./icon-button";
 export * from "./input";

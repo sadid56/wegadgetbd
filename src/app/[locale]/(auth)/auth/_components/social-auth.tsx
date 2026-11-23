@@ -95,8 +95,8 @@ export function SocialAuth({ mode, next, disabled = false, onLoadingChange, divi
         return;
       }
       window.location.href = res.data.url;
-    } catch (err: any) {
-      toast.error(err?.message || `${provider.name} ${noun} failed`);
+    } catch (err: unknown) {
+      toast.error((err as { message?: string })?.message || `${provider.name} ${noun} failed`);
       setLoadingId(null);
       onLoadingChange?.(false);
     }

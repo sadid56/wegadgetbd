@@ -99,8 +99,8 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
               ? {
                   bgcolor: tokens.bgPanel,
                   borderRadius: `${tokens.radiusXl}px`,
-                  border: `1px solid ${tokens.borderDefault}`,
-                  boxShadow: tokens.elevation1,
+                  border: "none",
+                  boxShadow: "none",
                   py: { xs: 8, md: 10 },
                   px: 3,
                 }
@@ -120,7 +120,7 @@ export const EmptyState = React.forwardRef<HTMLDivElement, EmptyStateProps>(
               height: 64,
               borderRadius: "50%",
               bgcolor: tokens.bgSubtle,
-              border: `1px solid ${tokens.borderDefault}`,
+              border: "none",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",

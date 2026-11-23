@@ -4,7 +4,6 @@ import { normalizeVideoInput } from "@/lib/video-links";
 import type { Context } from "@/server/context";
 import type { CreateProductInput } from "@/server/schemas/products.schema";
 import { formatProduct } from "./_shared";
-import { writeAudit } from "@/server/lib/orm";
 import { revalidateProductPaths } from "@/server/lib/revalidate";
 
 const DEFAULT_STATUS: ProductStatus = "PENDING";
@@ -13,13 +12,14 @@ const DEFAULT_SOLD_COUNT = 360;
 export class CreateProductUseCase {
   constructor(
     private readonly db: Context["db"],
-    private readonly actorId: string,
+    private readonly _actorId: string,
   ) {}
 
   async execute(input: CreateProductInput) {
     const [created] = await this.persistCreate(input);
 
-    const [full] = await Promise.all([this.findWithCategory(created.id), this.recordAudit(created.id, created.title)]);
+    const full = await this.findWithCategory(created.id);
+    if (!full) throw new Error("Failed to load created product");
 
     revalidateProductPaths([created.slug]);
 
@@ -58,14 +58,6 @@ export class CreateProductUseCase {
     return this.db.query.product.findFirst({
       where: eq(product.id, id),
       with: { category: true },
-    });
-  }
-
-  private async recordAudit(productId: string, title: string) {
-    return writeAudit(this.db, {
-      action: "CREATE_PRODUCT",
-      actorId: this.actorId,
-      metadata: { productId, title },
     });
   }
 }
