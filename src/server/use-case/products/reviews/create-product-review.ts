@@ -1,6 +1,7 @@
 import { eq, and } from "drizzle-orm";
 import { product, productReview } from "@/db/schema";
 import type { Context } from "@/server/context";
+import { revalidateProductPaths } from "@/server/lib/revalidate";
 import { ORPCError } from "@orpc/server";
 
 export interface CreateProductReviewOptions {
@@ -31,7 +32,7 @@ export class CreateInteractiveProductReviewUseCase {
     // 1. Verify target product exists and is active
     const existingProduct = await this.db.query.product.findFirst({
       where: and(eq(product.id, productId), eq(product.isDeleted, false)),
-      columns: { id: true, title: true, rating: true, soldCount: true },
+      columns: { id: true, slug: true, title: true, rating: true, soldCount: true },
     });
 
     if (!existingProduct) {
@@ -77,6 +78,8 @@ export class CreateInteractiveProductReviewUseCase {
         rating: avg,
       })
       .where(eq(product.id, productId));
+
+    revalidateProductPaths([existingProduct.slug]);
 
     return created;
   }

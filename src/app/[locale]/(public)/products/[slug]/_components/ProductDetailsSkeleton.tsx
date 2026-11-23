@@ -5,7 +5,16 @@ import { tokens } from "@/theme/theme";
 
 export function ProductDetailsSkeleton() {
   return (
-    <Box sx={{ bgcolor: tokens.bgCanvas, minHeight: "100vh", pb: { xs: 11, md: 6 } }}>
+    <Box
+      sx={{
+        bgcolor: tokens.bgCanvas,
+        minHeight: "100vh",
+        pb: { xs: 11, md: 6 },
+        "& .MuiSkeleton-root": {
+          bgcolor: tokens.bgSurfaceContainerHigh,
+        },
+      }}
+    >
       <SectionContainer sx={{ py: { xs: 2.5, md: 4 } }}>
         {/* Breadcrumb Skeleton */}
         <Box sx={{ display: "flex", gap: 1, mb: 2.5, alignItems: "center" }}>
@@ -16,11 +25,11 @@ export function ProductDetailsSkeleton() {
           <Skeleton variant="rounded" width={180} height={16} />
         </Box>
 
-        {/* Top Main Grid: 1.15fr Left Gallery + 1fr Right Buy Box */}
+        {/* Top Main Grid: 1.45fr Left Gallery + 1fr Right Buy Box */}
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: { xs: "1fr", lg: "1.15fr 1fr" },
+            gridTemplateColumns: { xs: "1fr", lg: "1.45fr 1fr" },
             gap: { xs: 3, lg: 3.5 },
             alignItems: "start",
             mb: 4,

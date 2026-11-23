@@ -6,7 +6,10 @@ import { CircularProgress } from "@/components/ui/spinner";
 
 import { requireAdmin } from "@/lib/auth";
 import { AdminDashboardLayout } from "../../components/layouts/admin-dashboard-layout";
+import { RootDocumentShell, rootViewport } from "@/components/layouts/root-document-shell";
 import { tokens } from "@/theme/theme";
+
+export const viewport = rootViewport;
 
 export const metadata: Metadata = {
   title: "Admin Dashboard | We Gadget BD",
@@ -28,24 +31,26 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   }
 
   return (
-    <React.Suspense
-      fallback={
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            minHeight: "100vh",
-            bgcolor: tokens.bgCanvas,
-          }}
-        >
-          <CircularProgress size={36} sx={{ color: tokens.primary }} />
-        </Box>
-      }
-    >
-      <AdminDashboardLayout user={session.user}>
-        {children}
-      </AdminDashboardLayout>
-    </React.Suspense>
+    <RootDocumentShell locale="en">
+      <React.Suspense
+        fallback={
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              minHeight: "100vh",
+              bgcolor: tokens.bgCanvas,
+            }}
+          >
+            <CircularProgress size={36} sx={{ color: tokens.primary }} />
+          </Box>
+        }
+      >
+        <AdminDashboardLayout user={session.user}>
+          {children}
+        </AdminDashboardLayout>
+      </React.Suspense>
+    </RootDocumentShell>
   );
 }

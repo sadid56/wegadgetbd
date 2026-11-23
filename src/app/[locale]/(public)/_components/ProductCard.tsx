@@ -127,7 +127,6 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
         <Box
           component={Link}
           href={href}
-          prefetch={false}
           sx={{ display: "block", width: "100%", height: "100%" }}
         >
           <Box

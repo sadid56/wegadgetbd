@@ -1,5 +1,5 @@
 import { revalidatePath } from "next/cache";
-import { routing } from "@/i18n/routing";
+import { routing } from "@/i18n/routing-config";
 
 /**
  * Revalidates SSG/ISR product listing and detail pages across all locales

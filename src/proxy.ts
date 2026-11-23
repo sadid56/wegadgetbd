@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import createMiddleware from "next-intl/middleware";
-import { routing } from "./i18n/routing";
+import { routing } from "./i18n/routing-config";
 
 const AUTH_ROUTES = ["/auth/sign-in", "/auth/sign-up"] as const;
 const CLOCK_SKEW_SEC = 30;

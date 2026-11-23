@@ -11,6 +11,7 @@ import TableCell from "@mui/material/TableCell";
 import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import NextImage from "next/image";
+import dynamic from "next/dynamic";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -22,7 +23,6 @@ import StarIcon from "@mui/icons-material/Star";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 
-import { useMarkdownComponents } from "@/components/common/MarkdownContent";
 import type { Locale } from "@/i18n/config";
 import { formatPrice, toBengaliNumber } from "@/lib/i18n-utils";
 import { getWhatsAppUrl } from "@/lib/contact";
@@ -30,13 +30,31 @@ import { getAssetUrl } from "@/lib/storage";
 import { toVideoEmbedUrl } from "@/lib/video-links";
 import { useProduct, useProducts, type ProductsResponse, type SingleProductResponse } from "@/query-client/products";
 import { tokens } from "@/theme/theme";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useLocale, useTranslations } from "next-intl";
-import Markdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 import { ProductCard } from "../../../_components/ProductCard";
 import { ProductAskAiBox } from "./ProductAskAiBox";
 import { ProductDetailsSkeleton } from "./ProductDetailsSkeleton";
-import { ProductReviews } from "./ProductReviews";
+
+const ProductReviews = dynamic(() => import("./ProductReviews").then((m) => m.ProductReviews), {
+  loading: () => (
+    <Box sx={{ py: 4, display: "flex", flexDirection: "column", gap: 2 }}>
+      {[1, 2].map((i) => (
+        <Skeleton key={i} variant="rounded" height={120} sx={{ borderRadius: "14px" }} />
+      ))}
+    </Box>
+  ),
+});
+
+const ProductDescriptionMarkdown = dynamic(() => import("./ProductDescriptionMarkdown"), {
+  loading: () => (
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
+      <Skeleton variant="rounded" width="60%" height={24} />
+      <Skeleton variant="rounded" width="100%" height={18} />
+      <Skeleton variant="rounded" width="90%" height={18} />
+    </Box>
+  ),
+});
 
 type TabKey = "specs" | "desc" | "packaging" | "video" | "reviews";
 
@@ -91,15 +109,17 @@ const stepperBtnSx = {
 };
 
 interface ProductDetailsPageProps {
+  slug?: string;
   initialProduct?: SingleProductResponse | null;
   initialRelated?: ProductsResponse;
 }
 
-export default function ProductDetailsPage({ initialProduct, initialRelated }: ProductDetailsPageProps) {
+export default function ProductDetailsPage({ slug: propSlug, initialProduct, initialRelated }: ProductDetailsPageProps) {
   const t = useTranslations("products");
   const tCommon = useTranslations("common");
   const locale = useLocale() as Locale;
-  const { slug } = useParams<{ slug: string }>();
+  const routeParams = useParams<{ slug: string }>();
+  const slug = propSlug || routeParams.slug;
   const router = useRouter();
 
   const [qty, setQty] = useState(1);
@@ -150,7 +170,8 @@ export default function ProductDetailsPage({ initialProduct, initialRelated }: P
     setIsZoomed(false);
   };
 
-  const { data: product, isLoading } = useProduct(slug as string, { initialData: initialProduct });
+  const { data: queriedProduct, isLoading } = useProduct(slug, { initialData: initialProduct });
+  const product = queriedProduct !== undefined ? queriedProduct : initialProduct;
   const { data: relatedData } = useProducts(
     {
       category: product?.category?.slug,
@@ -161,7 +182,6 @@ export default function ProductDetailsPage({ initialProduct, initialRelated }: P
       initialData: initialRelated,
     },
   );
-  const markdownComponents = useMarkdownComponents();
 
   const formatNumber = useCallback(
     (val: number | string | null | undefined) => {
@@ -289,7 +309,7 @@ export default function ProductDetailsPage({ initialProduct, initialRelated }: P
     return getWhatsAppUrl(t("whatsappMessage", { title: product.title }));
   }, [product, t]);
 
-  if (isLoading) return <ProductDetailsSkeleton />;
+  if (isLoading && product === undefined) return <ProductDetailsSkeleton />;
 
   if (!product) {
     return (
@@ -1248,9 +1268,7 @@ export default function ProductDetailsPage({ initialProduct, initialRelated }: P
                 }}
               >
                 {product.markdown_description ? (
-                  <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-                    {product.markdown_description}
-                  </Markdown>
+                  <ProductDescriptionMarkdown content={product.markdown_description} />
                 ) : (
                   <Typography sx={{ color: tokens.textMuted, fontSize: 14 }}>{t("noDescAvailable")}</Typography>
                 )}

@@ -1,10 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Hind_Siliguri } from "next/font/google";
-import { routing } from "@/i18n/routing";
-import { AppProvider } from "@/providers/app-provider";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
+import { AppProvider } from "@/providers/app-provider";
 import { getSiteUrl } from "@/lib/seo";
-import "../styles/globals.css";
+import "@/styles/globals.css";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -21,14 +20,14 @@ const hindSiliguri = Hind_Siliguri({
 
 const siteUrl = getSiteUrl();
 
-export const viewport: Viewport = {
+export const rootViewport: Viewport = {
   themeColor: "#08120e",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
 };
 
-export const metadata: Metadata = {
+export const rootMetadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
     default: "We Gadget BD | Smarter Tech • Brighter Days",
@@ -175,8 +174,15 @@ const rootJsonLd = {
   ],
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const locale = routing.defaultLocale;
+export function RootDocumentShell({
+  locale,
+  includeRootJsonLd = false,
+  children,
+}: {
+  locale: string;
+  includeRootJsonLd?: boolean;
+  children: React.ReactNode;
+}) {
   const isBn = locale === "bn";
   const fontApp = isBn ? "var(--font-hind-siliguri)" : "var(--font-inter)";
 
@@ -189,7 +195,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       suppressHydrationWarning
     >
       <body className={`antialiased ${isBn ? "font-bn" : "font-en"}`}>
-        <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(rootJsonLd) }} />
+        {includeRootJsonLd && (
+          <script type='application/ld+json' dangerouslySetInnerHTML={{ __html: JSON.stringify(rootJsonLd) }} />
+        )}
         <AppRouterCacheProvider>
           <AppProvider>{children}</AppProvider>
         </AppRouterCacheProvider>

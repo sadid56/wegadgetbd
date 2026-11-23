@@ -32,7 +32,8 @@ export async function generateStaticParams() {
       columns: { slug: true },
     });
     return activeProducts.map((p) => ({ slug: p.slug }));
-  } catch {
+  } catch (err) {
+    console.error("[generateStaticParams] Failed to load product slugs:", err);
     return [];
   }
 }
@@ -141,7 +142,7 @@ export default async function ProductDetails({ params }: ProductPageProps) {
               limit: 5,
             })
           : Promise.resolve(undefined),
-        new ListProductReviewsUseCase(db).execute(foundProduct.id),
+        new ListProductReviewsUseCase(db).execute(foundProduct.id, 5),
       ])
     : [undefined, []];
   const topReviews = reviews.slice(0, 5);
@@ -304,7 +305,7 @@ export default async function ProductDetails({ params }: ProductPageProps) {
   return (
     <>
       {jsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />}
-      <ProductDetailsPage initialProduct={foundProduct} initialRelated={initialRelated} />
+      <ProductDetailsPage key={slug} slug={slug} initialProduct={foundProduct} initialRelated={initialRelated} />
     </>
   );
 }

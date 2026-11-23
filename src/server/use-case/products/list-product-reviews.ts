@@ -5,10 +5,11 @@ import type { Context } from "@/server/context";
 export class ListProductReviewsUseCase {
   constructor(private readonly db: Context["db"]) {}
 
-  async execute(productId: string) {
+  async execute(productId: string, limit?: number) {
     const reviews = await this.db.query.customerReview.findMany({
       where: and(eq(customerReview.productId, productId), eq(customerReview.status, "APPROVED"), eq(customerReview.isDeleted, false)),
       orderBy: [desc(customerReview.createdAt)],
+      ...(limit ? { limit } : {}),
     });
 
     return reviews;
