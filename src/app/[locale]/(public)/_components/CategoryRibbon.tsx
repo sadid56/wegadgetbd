@@ -200,6 +200,7 @@ export function CategoryRibbon() {
                   <Box
                     component={Link}
                     href={`/products?category=${cat.slug}`}
+                    prefetch={false}
                     aria-label={cat.name}
                     sx={{
                       display: "inline-flex",

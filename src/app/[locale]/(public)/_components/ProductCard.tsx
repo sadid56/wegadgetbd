@@ -85,14 +85,16 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
         (!rawBadge && discountLabel ? "sale" : "default")
     ] || tokens.primary;
 
-  const handleCardClick = (_e: React.MouseEvent) => {
-    // Navigate to details page if not clicking a button
+  const handleCardClick = (e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest("a, button")) return;
     router.push(href);
   };
 
   return (
     <Box
       onClick={handleCardClick}
+      onMouseEnter={() => router.prefetch(href)}
+      onTouchStart={() => router.prefetch(href)}
       sx={{
         cursor: "pointer",
         bgcolor: tokens.bgPanel,
@@ -125,6 +127,7 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
         <Box
           component={Link}
           href={href}
+          prefetch={false}
           sx={{ display: "block", width: "100%", height: "100%" }}
         >
           <Box
@@ -249,6 +252,7 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
         <Typography
           component={Link}
           href={href}
+          prefetch={false}
           sx={{
             fontSize: { xs: 13.5, sm: 15 },
             fontWeight: 700,

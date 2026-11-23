@@ -14,6 +14,10 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
+    staleTimes: {
+      dynamic: 300,
+      static: 300,
+    },
     optimizePackageImports: [
       "@mui/material",
       "@mui/icons-material",

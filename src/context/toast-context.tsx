@@ -103,7 +103,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           onMouseLeave={() => setIsHovered(false)}
           sx={{
             position: "fixed",
-            bottom: { xs: 16, sm: 24 },
+            bottom: { xs: "calc(76px + env(safe-area-inset-bottom))", md: 24 },
             right: { xs: 16, sm: 24 },
             zIndex: 1400,
             width: { xs: "calc(100vw - 32px)", sm: "380px" },

@@ -565,6 +565,7 @@ export function Hero() {
             <Box
               component={Link}
               href='/products?sort=best-selling'
+              prefetch={false}
               sx={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -600,6 +601,7 @@ export function Hero() {
             <Box
               component={Link}
               href='/products?category=winter-comfort-gadgets'
+              prefetch={false}
               sx={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -635,6 +637,7 @@ export function Hero() {
             <Box
               component={Link}
               href='/products?sort=price-asc'
+              prefetch={false}
               sx={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -670,6 +673,7 @@ export function Hero() {
             <IconButton
               component={Link}
               href='/products'
+              prefetch={false}
               aria-label='Browse all products'
               size='small'
               sx={{
