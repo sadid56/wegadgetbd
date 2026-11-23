@@ -145,6 +145,77 @@ export function FloatingAiChat() {
   const isLoadingRef = useRef(false);
   isLoadingRef.current = isLoading;
 
+  const pendingTextRef = useRef("");
+  const rafIdRef = useRef<number | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const streamDonePayloadRef = useRef<{
+    reply: string;
+    products: AiProductCardData[];
+    followUps: string[];
+  } | null>(null);
+
+  const stopStreamingEffects = useCallback(() => {
+    if (rafIdRef.current !== null) {
+      cancelAnimationFrame(rafIdRef.current);
+      rafIdRef.current = null;
+    }
+    pendingTextRef.current = "";
+    streamDonePayloadRef.current = null;
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => stopStreamingEffects, [stopStreamingEffects]);
+
+  const startDrainLoop = useCallback(() => {
+    if (rafIdRef.current !== null) return;
+
+    const tick = () => {
+      const pending = pendingTextRef.current;
+      if (pending.length > 0) {
+        const step = Math.max(2, Math.ceil(pending.length / 6));
+        const slice = pending.slice(0, step);
+        pendingTextRef.current = pending.slice(step);
+
+        setMessages((prev) => {
+          if (prev.length === 0) return prev;
+          const next = [...prev];
+          const last = next[next.length - 1];
+          next[next.length - 1] = { ...last, text: last.text + slice };
+          return next;
+        });
+
+        rafIdRef.current = requestAnimationFrame(tick);
+        return;
+      }
+
+      rafIdRef.current = null;
+      const donePayload = streamDonePayloadRef.current;
+      if (donePayload) {
+        streamDonePayloadRef.current = null;
+        setMessages((prev) => {
+          if (prev.length === 0) return prev;
+          const next = [...prev];
+          const last = next[next.length - 1];
+          next[next.length - 1] = {
+            ...last,
+            text: donePayload.reply || last.text,
+            products: donePayload.products,
+            followUps: donePayload.followUps,
+          };
+          return next;
+        });
+        setIsLoading(false);
+        setIsStreamingText(false);
+        setStatusText(null);
+      }
+    };
+
+    rafIdRef.current = requestAnimationFrame(tick);
+  }, []);
+
   useEffect(() => {
     if (isOpen) {
       messagesEndRef.current?.scrollIntoView({ behavior: isStreamingText ? "auto" : "smooth" });
@@ -168,6 +239,11 @@ export function FloatingAiChat() {
       const trimmed = textToSend.trim();
       if (!trimmed || isLoadingRef.current) return;
 
+      stopStreamingEffects();
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
       const historySnapshot = messagesRef.current.map((m) => ({
         role: m.role,
         text: m.text,
@@ -179,6 +255,8 @@ export function FloatingAiChat() {
       setIsLoading(true);
       setIsStreamingText(false);
       setStatusText(null);
+
+      let keepDrainAlive = false;
 
       try {
         const res = await fetch("/api/ai-assistant", {
@@ -193,7 +271,7 @@ export function FloatingAiChat() {
             stream: true,
             ...(productContextToSend ? { productContext: productContextToSend } : {}),
           }),
-          signal: AbortSignal.timeout(30000),
+          signal: controller.signal,
         });
 
         const contentType = res.headers.get("content-type") ?? "";
@@ -203,16 +281,29 @@ export function FloatingAiChat() {
           let buffer = "";
           let hasStarted = false;
 
+          const ensureModelMessageStarted = () => {
+            if (hasStarted) return;
+            hasStarted = true;
+            setIsStreamingText(true);
+            setMessages((prev) => [...prev, { role: "model", text: "", products: [], followUps: [] }]);
+          };
+
           const handleStreamEvent = (rawLine: string) => {
             if (!rawLine.trim()) return;
-            const evt = JSON.parse(rawLine) as {
-              type?: "status" | "delta" | "done" | "error";
+            let evt: {
+              type?: "status" | "delta" | "product" | "done" | "error";
               text?: string;
               reply?: string;
               error?: string;
+              product?: AiProductCardData;
               products?: AiProductCardData[];
               followUps?: string[];
             };
+            try {
+              evt = JSON.parse(rawLine);
+            } catch {
+              return;
+            }
 
             if (evt.type === "status" && evt.text) {
               setStatusText(evt.text);
@@ -220,20 +311,27 @@ export function FloatingAiChat() {
             }
 
             if (evt.type === "delta" && evt.text) {
-              const delta = evt.text;
-              if (!hasStarted) {
-                hasStarted = true;
-                setIsStreamingText(true);
-                setMessages((prev) => [...prev, { role: "model", text: delta, products: [], followUps: [] }]);
-              } else {
-                setMessages((prev) => {
-                  if (prev.length === 0) return prev;
-                  const next = [...prev];
-                  const last = next[next.length - 1];
-                  next[next.length - 1] = { ...last, text: last.text + delta };
-                  return next;
-                });
-              }
+              ensureModelMessageStarted();
+              pendingTextRef.current += evt.text;
+              startDrainLoop();
+              return;
+            }
+
+            if (evt.type === "product" && evt.product) {
+              const incoming = evt.product;
+              ensureModelMessageStarted();
+              setMessages((prev) => {
+                if (prev.length === 0) return prev;
+                const next = [...prev];
+                const last = next[next.length - 1];
+                const existing = last.products ?? [];
+                if (existing.some((p) => p.id === incoming.id)) return prev;
+                next[next.length - 1] = {
+                  ...last,
+                  products: [...existing, incoming].slice(0, 4),
+                };
+                return next;
+              });
               return;
             }
 
@@ -253,7 +351,7 @@ export function FloatingAiChat() {
                     followUps: finalFollowUps,
                   },
                 ]);
-              } else {
+              } else if (pendingTextRef.current.length === 0 && rafIdRef.current === null) {
                 setMessages((prev) => {
                   if (prev.length === 0) return prev;
                   const next = [...prev];
@@ -266,6 +364,14 @@ export function FloatingAiChat() {
                   };
                   return next;
                 });
+              } else {
+                streamDonePayloadRef.current = {
+                  reply: finalText,
+                  products: finalProducts,
+                  followUps: finalFollowUps,
+                };
+                keepDrainAlive = true;
+                startDrainLoop();
               }
               return;
             }
@@ -275,7 +381,7 @@ export function FloatingAiChat() {
               if (!hasStarted) {
                 hasStarted = true;
                 setMessages((prev) => [...prev, { role: "model", text: errMsg }]);
-              } else {
+              } else if (pendingTextRef.current.length === 0 && rafIdRef.current === null) {
                 setMessages((prev) => {
                   if (prev.length === 0) return prev;
                   const next = [...prev];
@@ -283,6 +389,14 @@ export function FloatingAiChat() {
                   next[next.length - 1] = { ...last, text: last.text || errMsg };
                   return next;
                 });
+              } else {
+                streamDonePayloadRef.current = {
+                  reply: errMsg,
+                  products: [],
+                  followUps: [],
+                };
+                keepDrainAlive = true;
+                startDrainLoop();
               }
             }
           };
@@ -321,7 +435,10 @@ export function FloatingAiChat() {
             followUps: Array.isArray(data.followUps) ? data.followUps : [],
           },
         ]);
-      } catch {
+      } catch (err) {
+        if ((err as { name?: string })?.name === "AbortError") {
+          return;
+        }
         setMessages((prev) => [
           ...prev,
           {
@@ -332,12 +449,18 @@ export function FloatingAiChat() {
           },
         ]);
       } finally {
-        setIsLoading(false);
-        setIsStreamingText(false);
-        setStatusText(null);
+        clearTimeout(timeoutId);
+        if (abortControllerRef.current === controller) {
+          abortControllerRef.current = null;
+        }
+        if (!keepDrainAlive) {
+          setIsLoading(false);
+          setIsStreamingText(false);
+          setStatusText(null);
+        }
       }
     },
-    [isBn],
+    [isBn, startDrainLoop, stopStreamingEffects],
   );
 
   // Listen for Hero AI, Product Ask AI, or external triggers to open the AI Shopping Drawer
@@ -585,6 +708,10 @@ export function FloatingAiChat() {
               <IconButton
                 size='small'
                 onClick={() => {
+                  stopStreamingEffects();
+                  setIsLoading(false);
+                  setIsStreamingText(false);
+                  setStatusText(null);
                   setMessages([]);
                   setActiveProductContext(null);
                   activeProductContextRef.current = null;
@@ -757,6 +884,7 @@ export function FloatingAiChat() {
           ) : (
             messages.map((msg, idx) => {
               const isLastModel = msg.role === "model" && idx === messages.length - 1;
+              const isActivelyStreaming = isLastModel && isStreamingText;
               return (
                 <Box
                   key={idx}
@@ -783,49 +911,88 @@ export function FloatingAiChat() {
                       "& ul, & ol": { m: 0, mb: 0.75, pl: 2.25, "&:last-child": { mb: 0 } },
                       "& li": { mb: 0.35, "&:last-child": { mb: 0 } },
                       "& strong": { fontWeight: 700 },
+                      ...(isActivelyStreaming
+                        ? {
+                            "@keyframes aiCursorBlink": {
+                              "0%, 49%": { opacity: 1 },
+                              "50%, 100%": { opacity: 0 },
+                            },
+                            "& > p:last-child::after, & > ul:last-child > li:last-child::after, & > ol:last-child > li:last-child::after":
+                              {
+                                content: '""',
+                                display: "inline-block",
+                                width: "7px",
+                                height: "14px",
+                                ml: "4px",
+                                verticalAlign: "-2px",
+                                borderRadius: "2px",
+                                bgcolor: tokens.primary,
+                                animation: "aiCursorBlink 0.85s step-end infinite",
+                              },
+                          }
+                        : {}),
                     }}
                   >
                     {msg.role === "model" ? (
-                      <Markdown
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          a: ({ href = "", children }) => {
-                            const isExternal = href.startsWith("http");
-                            return isExternal ? (
-                              <Box
-                                component='a'
-                                href={href}
-                                target='_blank'
-                                rel='noopener noreferrer'
-                                sx={{
-                                  color: tokens.primaryDark,
-                                  fontWeight: 700,
-                                  textDecoration: "underline",
-                                  textUnderlineOffset: "2px",
-                                }}
-                              >
-                                {children}
-                              </Box>
-                            ) : (
-                              <Box
-                                component={Link}
-                                href={href || "/products"}
-                                onClick={() => setIsOpen(false)}
-                                sx={{
-                                  color: tokens.primaryDark,
-                                  fontWeight: 700,
-                                  textDecoration: "underline",
-                                  textUnderlineOffset: "2px",
-                                }}
-                              >
-                                {children}
-                              </Box>
-                            );
-                          },
-                        }}
-                      >
-                        {msg.text}
-                      </Markdown>
+                      msg.text.length === 0 && isActivelyStreaming ? (
+                        <Box
+                          component='span'
+                          sx={{
+                            display: "inline-block",
+                            width: "7px",
+                            height: "14px",
+                            verticalAlign: "-2px",
+                            borderRadius: "2px",
+                            bgcolor: tokens.primary,
+                            "@keyframes aiCursorBlink": {
+                              "0%, 49%": { opacity: 1 },
+                              "50%, 100%": { opacity: 0 },
+                            },
+                            animation: "aiCursorBlink 0.85s step-end infinite",
+                          }}
+                        />
+                      ) : (
+                        <Markdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            a: ({ href = "", children }) => {
+                              const isExternal = href.startsWith("http");
+                              return isExternal ? (
+                                <Box
+                                  component='a'
+                                  href={href}
+                                  target='_blank'
+                                  rel='noopener noreferrer'
+                                  sx={{
+                                    color: tokens.primaryDark,
+                                    fontWeight: 700,
+                                    textDecoration: "underline",
+                                    textUnderlineOffset: "2px",
+                                  }}
+                                >
+                                  {children}
+                                </Box>
+                              ) : (
+                                <Box
+                                  component={Link}
+                                  href={href || "/products"}
+                                  onClick={() => setIsOpen(false)}
+                                  sx={{
+                                    color: tokens.primaryDark,
+                                    fontWeight: 700,
+                                    textDecoration: "underline",
+                                    textUnderlineOffset: "2px",
+                                  }}
+                                >
+                                  {children}
+                                </Box>
+                              );
+                            },
+                          }}
+                        >
+                          {msg.text}
+                        </Markdown>
+                      )
                     ) : (
                       msg.text
                     )}

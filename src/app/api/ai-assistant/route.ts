@@ -6,6 +6,7 @@ import { product, category, order } from "@/db/schema";
 import { CONTACT_PHONE, getWhatsAppUrl } from "@/lib/contact";
 import type { AiProductCardData } from "@/lib/ai-drawer";
 
+export const dynamic = "force-dynamic";
 export const maxDuration = 30;
 
 interface ChatMessage {
@@ -46,6 +47,7 @@ const CATALOG_CACHE_TTL_MS = 60_000;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 30;
 const MODEL_NAME = process.env.GEMINI_MODEL?.trim() || "gemini-3.5-flash-lite";
+const FALLBACK_MODELS = ["gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-3.8-flash"] as const;
 
 let cachedCatalog: CachedCatalogData | null = null;
 let catalogFetchPromise: Promise<CachedCatalogData> | null = null;
@@ -55,7 +57,12 @@ function getGenAIClient(apiKey: string): GoogleGenAI {
   if (cachedAiClient && cachedAiClient.apiKey === apiKey) {
     return cachedAiClient.client;
   }
-  const client = new GoogleGenAI({ apiKey });
+  const client = new GoogleGenAI({
+    apiKey,
+    httpOptions: {
+      fetch: (input, init) => globalThis.fetch(input, init),
+    },
+  });
   cachedAiClient = { apiKey, client };
   return client;
 }
@@ -64,10 +71,42 @@ function getThinkingConfig(model: string) {
   if (model.includes("2.5")) {
     return { thinkingBudget: 0 };
   }
-  if (model.includes("3.") || model.includes("3-")) {
+  if ((model.includes("3.") || model.includes("3-")) && model.includes("flash-lite")) {
     return { thinkingLevel: ThinkingLevel.MINIMAL };
   }
+  if (model.includes("3.") || model.includes("3-")) {
+    return { thinkingLevel: ThinkingLevel.LOW };
+  }
   return undefined;
+}
+
+function isRetryableModelError(err: unknown): boolean {
+  const errObj = err as { name?: string; status?: number; message?: string } | null;
+  const name = errObj?.name ?? "";
+  if (name === "AbortError" || name === "TimeoutError") {
+    return true;
+  }
+  const status = errObj?.status;
+  if (status === 429 || status === 500 || status === 502 || status === 503 || status === 504) {
+    return true;
+  }
+  const msg = String(errObj?.message ?? err ?? "").toLowerCase();
+  return (
+    msg.includes("503") ||
+    msg.includes("unavailable") ||
+    msg.includes("high demand") ||
+    msg.includes("429") ||
+    msg.includes("overloaded") ||
+    msg.includes("aborted") ||
+    msg.includes("timeout")
+  );
+}
+
+function cleanTruncatedMarkdown(text: string): string {
+  return text
+    .replace(/\[[^\]]*(?:\]\([^)]*)?$/, "")
+    .replace(/\n[-*•]\s*$/, "")
+    .trim();
 }
 
 async function getCachedCatalogData(): Promise<CachedCatalogData> {
@@ -258,6 +297,7 @@ function normalizeHistory(input: unknown): ChatMessage[] {
 
 class ShoppingAssistant {
   private readonly collected = new Map<string, AiProductCardData>();
+  private catalogProducts: CatalogSnapshotItem[] = [];
   private catalogBySlug = new Map<string, AiProductCardData>();
   private hasMoreProducts = false;
   private systemPrompt = "";
@@ -273,6 +313,7 @@ class ShoppingAssistant {
       this.loadProductContext(productContextSlug),
       getCachedCatalogData(),
     ]);
+    this.catalogProducts = catalog.products;
     this.catalogBySlug = catalog.bySlug;
     this.hasMoreProducts = catalog.hasMoreProducts;
     this.systemPrompt = this.buildSystemPrompt(context, catalog);
@@ -280,58 +321,249 @@ class ShoppingAssistant {
     return this;
   }
 
-  async streamReply(input: {
-    message: string;
-    history: ChatMessage[];
-    onDelta?: (text: string) => void;
-    onStatus?: (text: string) => void;
-  }): Promise<{ reply: string; products: AiProductCardData[] }> {
-    const contents: Content[] = [
+  private buildGenerateConfig(
+    model: string,
+    allowTools: boolean,
+    activeTools: FunctionDeclaration[],
+    timeoutMs: number = 12_000,
+  ) {
+    const thinkingConfig = getThinkingConfig(model);
+    return {
+      systemInstruction: this.systemPrompt,
+      ...(allowTools ? { tools: [{ functionDeclarations: activeTools }] } : {}),
+      ...(thinkingConfig ? { thinkingConfig } : {}),
+      temperature: 0.5,
+      maxOutputTokens: 1024,
+      abortSignal: AbortSignal.timeout(timeoutMs),
+    };
+  }
+
+  private async generateUnaryTurn(
+    contents: Content[],
+    allowTools: boolean,
+    activeTools: FunctionDeclaration[],
+    excludeModels: string[] = [],
+    timeoutMs: number = 10_000,
+  ) {
+    const candidates = [this.model, ...FALLBACK_MODELS].filter(
+      (m, idx, arr) => arr.indexOf(m) === idx && !excludeModels.includes(m),
+    );
+    for (let i = 0; i < candidates.length; i++) {
+      const model = candidates[i];
+      try {
+        return await this.ai.models.generateContent({
+          model,
+          contents,
+          config: this.buildGenerateConfig(model, allowTools, activeTools, timeoutMs),
+        });
+      } catch (err) {
+        const hasNext = i < candidates.length - 1;
+        if (hasNext && isRetryableModelError(err)) {
+          console.warn(`[AI fallback] Model "${model}" returned retryable error, trying "${candidates[i + 1]}"`);
+          await new Promise((resolve) => setTimeout(resolve, 200));
+          continue;
+        }
+        throw err;
+      }
+    }
+    throw new Error("All candidate models failed");
+  }
+
+  private buildLocalCatalogFallback(userMessage: string): string {
+    const isBn = /[\u0980-\u09FF]/.test(userMessage);
+    const normalizedDigits = userMessage
+      .replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d)))
+      .replace(/,/g, "");
+    const budgetMatch = normalizedDigits.match(/\b(\d{3,6})\b/);
+    const maxBudget = budgetMatch ? Number(budgetMatch[1]) : null;
+
+    const getEffectivePrice = (p: CatalogSnapshotItem) =>
+      p.discountPrice != null && p.discountPrice > 0 && p.discountPrice < p.price ? p.discountPrice : p.price;
+
+    const filtered = maxBudget
+      ? this.catalogProducts.filter((p) => getEffectivePrice(p) <= maxBudget)
+      : this.catalogProducts;
+    const picks = (filtered.length > 0 ? filtered : this.catalogProducts).slice(0, 3);
+
+    for (const item of picks) {
+      if (!this.collected.has(item.id)) {
+        const card = this.catalogBySlug.get(item.slug);
+        if (card) this.collected.set(card.id, card);
+      }
+    }
+
+    const phoneNoteEn = CONTACT_PHONE ? ` or message us on WhatsApp at ${CONTACT_PHONE}` : "";
+    const phoneNoteBn = CONTACT_PHONE ? ` অথবা হোয়াটসঅ্যাপ করুন: ${CONTACT_PHONE}` : "";
+
+    if (picks.length === 0) {
+      return isBn
+        ? `দুঃখিত, এই মুহূর্তে আমাদের AI সার্ভারে সাময়িক ব্যস্ততা রয়েছে। সরাসরি অর্ডার বা সাহায্যের জন্য আমাদের ক্যাটালগ দেখুন${phoneNoteBn}।`
+        : `Our AI assistant is experiencing high traffic right now. Please browse [All Products](/products)${phoneNoteEn}!`;
+    }
+
+    const lines = picks.map((p) => {
+      const price = getEffectivePrice(p);
+      const priceText =
+        p.discountPrice != null && p.discountPrice > 0 && p.discountPrice < p.price
+          ? `৳${price} (was ৳${p.price})`
+          : `৳${price}`;
+      return `- [${p.title}](/products/${p.slug}) — **${priceText}**`;
+    });
+
+    if (isBn) {
+      const intro = maxBudget
+        ? `৳${maxBudget} বাজেটের মধ্যে আমাদের সেরা কিছু ইন-স্টক গ্যাজেট:`
+        : `আমাদের স্টকের জনপ্রিয় কিছু ইন-স্টক গ্যাজেট:`;
+      return `${intro}\n\n${lines.join("\n")}\n\nবিস্তারিত জানতে প্রোডাক্ট কার্ডে ক্লিক করুন${phoneNoteBn}।`;
+    }
+
+    const intro = maxBudget
+      ? `Here are our top in-stock gadgets under ৳${maxBudget.toLocaleString("en-US")}:`
+      : `Here are some of our most popular in-stock gadgets right now:`;
+    return `${intro}\n\n${lines.join("\n")}\n\nTap any product card below to view full specs${phoneNoteEn}!`;
+  }
+
+  private getActiveTools(): FunctionDeclaration[] {
+    return this.hasMoreProducts ? TOOL_DECLARATIONS : TOOL_DECLARATIONS.filter((t) => t.name !== "searchProducts");
+  }
+
+  private buildContents(input: { message: string; history: ChatMessage[] }): Content[] {
+    return [
       ...input.history.map((m) => ({
         role: m.role === "model" ? ("model" as const) : ("user" as const),
         parts: [{ text: m.text }],
       })),
       { role: "user", parts: [{ text: input.message }] },
     ];
+  }
 
-    const activeTools = this.hasMoreProducts
-      ? TOOL_DECLARATIONS
-      : TOOL_DECLARATIONS.filter((t) => t.name !== "searchProducts");
-    const thinkingConfig = getThinkingConfig(this.model);
-
+  async streamReply(input: {
+    message: string;
+    history: ChatMessage[];
+    onDelta?: (text: string) => void;
+    onStatus?: (text: string) => void;
+    onProduct?: (product: AiProductCardData) => void;
+  }): Promise<{ reply: string; products: AiProductCardData[] }> {
+    const contents = this.buildContents(input);
+    const activeTools = this.getActiveTools();
+    const candidates = [this.model, ...FALLBACK_MODELS.filter((m) => m !== this.model)];
     let finalReply = "";
+
+    const emitNewMentionedCards = (text: string) => {
+      if (this.collected.size >= 4) return;
+      for (const match of text.matchAll(/\/products\/([a-zA-Z0-9_-]+)\)/g)) {
+        const card = this.catalogBySlug.get(match[1]);
+        if (card && !this.collected.has(card.id)) {
+          this.collected.set(card.id, card);
+          input.onProduct?.(card);
+        }
+        if (this.collected.size >= 4) break;
+      }
+    };
 
     for (let turn = 0; turn < MAX_TURNS; turn++) {
       const allowTools = turn < MAX_TURNS - 1;
-      const stream = await this.ai.models.generateContentStream({
-        model: this.model,
-        contents,
-        config: {
-          systemInstruction: this.systemPrompt,
-          ...(allowTools ? { tools: [{ functionDeclarations: activeTools }] } : {}),
-          ...(thinkingConfig ? { thinkingConfig } : {}),
-          temperature: 0.5,
-          maxOutputTokens: 450,
-          abortSignal: AbortSignal.timeout(20_000),
-        },
-      });
-
       const calls: NonNullable<Awaited<ReturnType<typeof this.ai.models.generateContent>>["functionCalls"]> = [];
       const modelParts: NonNullable<Content["parts"]> = [];
       let turnText = "";
+      let abortedMidStream = false;
 
-      for await (const chunk of stream) {
-        if (chunk.functionCalls && chunk.functionCalls.length > 0) {
-          calls.push(...chunk.functionCalls);
+      for (let cIdx = 0; cIdx < candidates.length; cIdx++) {
+        const candidateModel = candidates[cIdx];
+        const timeoutMs = cIdx === 0 ? 10_000 : 8_000;
+        calls.length = 0;
+        modelParts.length = 0;
+        turnText = "";
+
+        try {
+          const stream = await this.ai.models.generateContentStream({
+            model: candidateModel,
+            contents,
+            config: this.buildGenerateConfig(candidateModel, allowTools, activeTools, timeoutMs),
+          });
+
+          for await (const chunk of stream) {
+            if (chunk.functionCalls && chunk.functionCalls.length > 0) {
+              calls.push(...chunk.functionCalls);
+            }
+            const chunkParts = chunk.candidates?.[0]?.content?.parts;
+            if (chunkParts) {
+              modelParts.push(...chunkParts);
+            }
+            if (chunk.text && calls.length === 0) {
+              turnText += chunk.text;
+              input.onDelta?.(chunk.text);
+              emitNewMentionedCards(turnText);
+            }
+          }
+          break;
+        } catch (streamErr) {
+          const errObj = streamErr as { name?: string; message?: string; status?: number; cause?: unknown };
+          console.error("[AI stream turn error]", {
+            model: candidateModel,
+            name: errObj?.name,
+            message: errObj?.message,
+            status: errObj?.status,
+            cause: errObj?.cause,
+          });
+
+          const canStreamNext =
+            turnText.length === 0 &&
+            calls.length === 0 &&
+            isRetryableModelError(streamErr) &&
+            cIdx < candidates.length - 1;
+
+          if (canStreamNext) {
+            console.warn(`[AI stream failover] "${candidateModel}" failed, streaming from "${candidates[cIdx + 1]}"`);
+            continue;
+          }
+
+          if (turnText.length > 0 && isRetryableModelError(streamErr) && calls.length === 0) {
+            try {
+              const fallbackRes = await this.generateUnaryTurn(
+                contents,
+                allowTools,
+                activeTools,
+                [candidateModel],
+                8_000,
+              );
+              const fallbackCalls = fallbackRes.functionCalls ?? [];
+              const fallbackParts = fallbackRes.candidates?.[0]?.content?.parts ?? [];
+              if (fallbackCalls.length > 0) {
+                calls.push(...fallbackCalls);
+                modelParts.push(...fallbackParts);
+                break;
+              }
+              const recovered = (fallbackRes.text ?? "").trim();
+              if (recovered) {
+                emitNewMentionedCards(recovered);
+                finalReply = recovered;
+                abortedMidStream = true;
+                break;
+              }
+            } catch (fallbackErr) {
+              console.warn("[AI stream unary recovery failed]", (fallbackErr as Error)?.message ?? fallbackErr);
+            }
+          }
+
+          if (calls.length === 0) {
+            if (turnText.length > 0) {
+              finalReply = cleanTruncatedMarkdown(turnText);
+            } else {
+              finalReply = this.buildLocalCatalogFallback(input.message);
+              input.onDelta?.(finalReply);
+              for (const card of this.collected.values()) {
+                input.onProduct?.(card);
+              }
+            }
+            abortedMidStream = true;
+          }
+          break;
         }
-        const chunkParts = chunk.candidates?.[0]?.content?.parts;
-        if (chunkParts) {
-          modelParts.push(...chunkParts);
-        }
-        if (chunk.text && calls.length === 0) {
-          turnText += chunk.text;
-          input.onDelta?.(chunk.text);
-        }
+      }
+
+      if (abortedMidStream) {
+        break;
       }
 
       if (calls.length === 0) {
@@ -344,9 +576,17 @@ class ShoppingAssistant {
       }
 
       input.onStatus?.("Checking live store data...");
+      const prevSize = this.collected.size;
       const results = await Promise.all(
         calls.map((call) => this.executeToolCall(call.name ?? "", (call.args ?? {}) as Record<string, unknown>)),
       );
+      if (this.collected.size > prevSize) {
+        let idx = 0;
+        for (const card of this.collected.values()) {
+          if (idx >= prevSize && idx < 4) input.onProduct?.(card);
+          idx++;
+        }
+      }
 
       const parts = results.filter((r): r is NonNullable<typeof r> => r !== null);
       contents.push({ role: "user", parts });
@@ -361,7 +601,46 @@ class ShoppingAssistant {
   }
 
   async reply(input: { message: string; history: ChatMessage[] }): Promise<{ reply: string; products: AiProductCardData[] }> {
-    return this.streamReply(input);
+    const contents = this.buildContents(input);
+    const activeTools = this.getActiveTools();
+    let finalReply = "";
+
+    for (let turn = 0; turn < MAX_TURNS; turn++) {
+      const allowTools = turn < MAX_TURNS - 1;
+      let res;
+      try {
+        res = await this.generateUnaryTurn(contents, allowTools, activeTools);
+      } catch (err) {
+        if (isRetryableModelError(err)) {
+          finalReply = this.buildLocalCatalogFallback(input.message);
+          break;
+        }
+        throw err;
+      }
+      const calls = res.functionCalls ?? [];
+
+      if (calls.length === 0) {
+        finalReply = (res.text ?? "").trim();
+        break;
+      }
+
+      const modelContent = res.candidates?.[0]?.content;
+      if (modelContent) contents.push(modelContent);
+
+      const results = await Promise.all(
+        calls.map((call) => this.executeToolCall(call.name ?? "", (call.args ?? {}) as Record<string, unknown>)),
+      );
+
+      const parts = results.filter((r): r is NonNullable<typeof r> => r !== null);
+      contents.push({ role: "user", parts });
+    }
+
+    this.extractMentionedProducts(finalReply);
+
+    return {
+      reply: finalReply,
+      products: Array.from(this.collected.values()).slice(0, 4),
+    };
   }
 
   buildFollowUps(userMessage: string): string[] {
@@ -403,6 +682,23 @@ class ShoppingAssistant {
       const item = this.catalogBySlug.get(slug);
       if (item && !this.collected.has(item.id)) {
         this.collected.set(item.id, item);
+      }
+      if (this.collected.size >= 4) break;
+    }
+
+    if (this.collected.size >= 4) return;
+
+    const replyLower = replyText.toLowerCase();
+    for (const item of this.catalogProducts) {
+      if (this.collected.has(item.id)) continue;
+      const titleLower = item.title.toLowerCase();
+      const shortPrefix =
+        item.title.length > 35
+          ? item.title.split(/\s+/).slice(0, 4).join(" ").toLowerCase()
+          : "";
+      if (replyLower.includes(titleLower) || (shortPrefix && replyLower.includes(shortPrefix))) {
+        const card = this.catalogBySlug.get(item.slug);
+        if (card) this.collected.set(card.id, card);
       }
       if (this.collected.size >= 4) break;
     }
@@ -714,7 +1010,7 @@ BEHAVIOUR & TONE:
 4. LANGUAGE: Reply in Bengali ONLY if the user writes in Bengali script (বাংলা অক্ষর). For English or Latin-script Banglish, reply in crisp, friendly English.
 5. TOOL USE & PRODUCT LINKS:
    - Answer directly WITHOUT calling any tool for recommendations, gift ideas, budget picks, best sellers, store policies, or questions about the current product page whenever the answer is already in the snapshot or \`<product_page_context>\`.
-   - Whenever you recommend or mention a product from the snapshot, ALWAYS format its name as a markdown link using its exact path: \`[Product Title](/products/exact-slug)\` so product cards appear automatically.
+   - Whenever you recommend or mention a product from the snapshot, ALWAYS format its name as a markdown link using its exact path: \`[Product Title](/products/exact-slug)\` so product cards appear automatically. Keep each product description concise (1 short sentence per product).
    ${searchToolRule}
    - Call \`compareProducts\` only when the user explicitly asks to compare detailed specs of 2–3 specific items.
    - Call \`lookupOrderStatus\` when the user asks about their order status.
@@ -792,6 +1088,7 @@ export async function POST(request: Request) {
       });
     }
 
+    const isBn = /[\u0980-\u09FF]/.test(userMessage);
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
@@ -800,11 +1097,13 @@ export async function POST(request: Request) {
         };
 
         try {
+          emit({ type: "status", text: isBn ? "উত্তর তৈরি হচ্ছে..." : "Thinking..." });
           const { reply, products } = await assistant.streamReply({
             message: userMessage,
             history,
             onStatus: (text) => emit({ type: "status", text }),
             onDelta: (text) => emit({ type: "delta", text }),
+            onProduct: (product) => emit({ type: "product", product }),
           });
 
           emit({
@@ -831,6 +1130,8 @@ export async function POST(request: Request) {
       headers: {
         "Content-Type": "application/x-ndjson; charset=utf-8",
         "Cache-Control": "no-cache, no-transform",
+        "Content-Encoding": "none",
+        "X-Accel-Buffering": "no",
       },
     });
   } catch (err) {
