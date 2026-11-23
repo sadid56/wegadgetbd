@@ -145,76 +145,16 @@ export function FloatingAiChat() {
   const isLoadingRef = useRef(false);
   isLoadingRef.current = isLoading;
 
-  const pendingTextRef = useRef("");
-  const rafIdRef = useRef<number | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const streamDonePayloadRef = useRef<{
-    reply: string;
-    products: AiProductCardData[];
-    followUps: string[];
-  } | null>(null);
 
-  const stopStreamingEffects = useCallback(() => {
-    if (rafIdRef.current !== null) {
-      cancelAnimationFrame(rafIdRef.current);
-      rafIdRef.current = null;
-    }
-    pendingTextRef.current = "";
-    streamDonePayloadRef.current = null;
+  const abortActiveRequest = useCallback(() => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
       abortControllerRef.current = null;
     }
   }, []);
 
-  useEffect(() => stopStreamingEffects, [stopStreamingEffects]);
-
-  const startDrainLoop = useCallback(() => {
-    if (rafIdRef.current !== null) return;
-
-    const tick = () => {
-      const pending = pendingTextRef.current;
-      if (pending.length > 0) {
-        const step = Math.max(2, Math.ceil(pending.length / 6));
-        const slice = pending.slice(0, step);
-        pendingTextRef.current = pending.slice(step);
-
-        setMessages((prev) => {
-          if (prev.length === 0) return prev;
-          const next = [...prev];
-          const last = next[next.length - 1];
-          next[next.length - 1] = { ...last, text: last.text + slice };
-          return next;
-        });
-
-        rafIdRef.current = requestAnimationFrame(tick);
-        return;
-      }
-
-      rafIdRef.current = null;
-      const donePayload = streamDonePayloadRef.current;
-      if (donePayload) {
-        streamDonePayloadRef.current = null;
-        setMessages((prev) => {
-          if (prev.length === 0) return prev;
-          const next = [...prev];
-          const last = next[next.length - 1];
-          next[next.length - 1] = {
-            ...last,
-            text: donePayload.reply || last.text,
-            products: donePayload.products,
-            followUps: donePayload.followUps,
-          };
-          return next;
-        });
-        setIsLoading(false);
-        setIsStreamingText(false);
-        setStatusText(null);
-      }
-    };
-
-    rafIdRef.current = requestAnimationFrame(tick);
-  }, []);
+  useEffect(() => abortActiveRequest, [abortActiveRequest]);
 
   useEffect(() => {
     if (isOpen) {
@@ -239,10 +179,14 @@ export function FloatingAiChat() {
       const trimmed = textToSend.trim();
       if (!trimmed || isLoadingRef.current) return;
 
-      stopStreamingEffects();
+      abortActiveRequest();
       const controller = new AbortController();
       abortControllerRef.current = controller;
-      const timeoutId = setTimeout(() => controller.abort(), 30000);
+      let timedOut = false;
+      const timeoutId = setTimeout(() => {
+        timedOut = true;
+        controller.abort();
+      }, 30000);
 
       const historySnapshot = messagesRef.current.map((m) => ({
         role: m.role,
@@ -256,7 +200,18 @@ export function FloatingAiChat() {
       setIsStreamingText(false);
       setStatusText(null);
 
-      let keepDrainAlive = false;
+      let hasStarted = false;
+      const finishStream = () => {
+        setIsStreamingText(false);
+        setIsLoading(false);
+        setStatusText(null);
+      };
+
+      const ensureModelMessageStarted = () => {
+        if (hasStarted) return;
+        hasStarted = true;
+        setMessages((prev) => [...prev, { role: "model", text: "", products: [], followUps: [] }]);
+      };
 
       try {
         const res = await fetch("/api/ai-assistant", {
@@ -279,14 +234,6 @@ export function FloatingAiChat() {
           const reader = res.body.getReader();
           const decoder = new TextDecoder();
           let buffer = "";
-          let hasStarted = false;
-
-          const ensureModelMessageStarted = () => {
-            if (hasStarted) return;
-            hasStarted = true;
-            setIsStreamingText(true);
-            setMessages((prev) => [...prev, { role: "model", text: "", products: [], followUps: [] }]);
-          };
 
           const handleStreamEvent = (rawLine: string) => {
             if (!rawLine.trim()) return;
@@ -311,9 +258,16 @@ export function FloatingAiChat() {
             }
 
             if (evt.type === "delta" && evt.text) {
+              const deltaText = evt.text;
               ensureModelMessageStarted();
-              pendingTextRef.current += evt.text;
-              startDrainLoop();
+              setIsStreamingText(true);
+              setMessages((prev) => {
+                if (prev.length === 0) return prev;
+                const next = [...prev];
+                const last = next[next.length - 1];
+                next[next.length - 1] = { ...last, text: last.text + deltaText };
+                return next;
+              });
               return;
             }
 
@@ -351,7 +305,7 @@ export function FloatingAiChat() {
                     followUps: finalFollowUps,
                   },
                 ]);
-              } else if (pendingTextRef.current.length === 0 && rafIdRef.current === null) {
+              } else {
                 setMessages((prev) => {
                   if (prev.length === 0) return prev;
                   const next = [...prev];
@@ -364,15 +318,8 @@ export function FloatingAiChat() {
                   };
                   return next;
                 });
-              } else {
-                streamDonePayloadRef.current = {
-                  reply: finalText,
-                  products: finalProducts,
-                  followUps: finalFollowUps,
-                };
-                keepDrainAlive = true;
-                startDrainLoop();
               }
+              finishStream();
               return;
             }
 
@@ -381,7 +328,7 @@ export function FloatingAiChat() {
               if (!hasStarted) {
                 hasStarted = true;
                 setMessages((prev) => [...prev, { role: "model", text: errMsg }]);
-              } else if (pendingTextRef.current.length === 0 && rafIdRef.current === null) {
+              } else {
                 setMessages((prev) => {
                   if (prev.length === 0) return prev;
                   const next = [...prev];
@@ -389,15 +336,8 @@ export function FloatingAiChat() {
                   next[next.length - 1] = { ...last, text: last.text || errMsg };
                   return next;
                 });
-              } else {
-                streamDonePayloadRef.current = {
-                  reply: errMsg,
-                  products: [],
-                  followUps: [],
-                };
-                keepDrainAlive = true;
-                startDrainLoop();
               }
+              finishStream();
             }
           };
 
@@ -437,6 +377,17 @@ export function FloatingAiChat() {
         ]);
       } catch (err) {
         if ((err as { name?: string })?.name === "AbortError") {
+          if (timedOut && !hasStarted) {
+            setMessages((prev) => [
+              ...prev,
+              {
+                role: "model",
+                text: isBn
+                  ? `উত্তর আসতে দেরি হচ্ছে। অনুগ্রহ করে আবার চেষ্টা করুন বা হোয়াটসঅ্যাপ করুন: ${CONTACT_PHONE}`
+                  : `Response timed out. Please try again or message us on WhatsApp at ${CONTACT_PHONE}.`,
+              },
+            ]);
+          }
           return;
         }
         setMessages((prev) => [
@@ -452,15 +403,11 @@ export function FloatingAiChat() {
         clearTimeout(timeoutId);
         if (abortControllerRef.current === controller) {
           abortControllerRef.current = null;
-        }
-        if (!keepDrainAlive) {
-          setIsLoading(false);
-          setIsStreamingText(false);
-          setStatusText(null);
+          finishStream();
         }
       }
     },
-    [isBn, startDrainLoop, stopStreamingEffects],
+    [abortActiveRequest, isBn],
   );
 
   // Listen for Hero AI, Product Ask AI, or external triggers to open the AI Shopping Drawer
@@ -526,7 +473,6 @@ export function FloatingAiChat() {
 
   return (
     <>
-      {/* ── FLOATING LAUNCHER BUTTON (hidden when drawer is open so it never overlaps the send button) ── */}
       {/* ── FLOATING AI LAUNCHER + PERIODIC HELPFUL HINT (hidden when drawer is open) ── */}
       {!isOpen && (
         <Box
@@ -708,7 +654,7 @@ export function FloatingAiChat() {
               <IconButton
                 size='small'
                 onClick={() => {
-                  stopStreamingEffects();
+                  abortActiveRequest();
                   setIsLoading(false);
                   setIsStreamingText(false);
                   setStatusText(null);
@@ -895,63 +841,46 @@ export function FloatingAiChat() {
                     gap: 1,
                   }}
                 >
-                  <Box
-                    sx={{
-                      maxWidth: msg.role === "user" ? "84%" : "100%",
-                      px: 1.85,
-                      py: 1.25,
-                      borderRadius: "20px",
-                      bgcolor: msg.role === "user" ? tokens.bgDark : tokens.bgPanel,
-                      color: msg.role === "user" ? tokens.textWhite : tokens.textPrimary,
-                      border: "none",
-                      fontSize: 13,
-                      lineHeight: 1.55,
-                      wordBreak: "break-word",
-                      "& p": { m: 0, mb: 0.75, "&:last-child": { mb: 0 } },
-                      "& ul, & ol": { m: 0, mb: 0.75, pl: 2.25, "&:last-child": { mb: 0 } },
-                      "& li": { mb: 0.35, "&:last-child": { mb: 0 } },
-                      "& strong": { fontWeight: 700 },
-                      ...(isActivelyStreaming
-                        ? {
-                            "@keyframes aiCursorBlink": {
-                              "0%, 49%": { opacity: 1 },
-                              "50%, 100%": { opacity: 0 },
-                            },
-                            "& > p:last-child::after, & > ul:last-child > li:last-child::after, & > ol:last-child > li:last-child::after":
-                              {
-                                content: '""',
-                                display: "inline-block",
-                                width: "7px",
-                                height: "14px",
-                                ml: "4px",
-                                verticalAlign: "-2px",
-                                borderRadius: "2px",
-                                bgcolor: tokens.primary,
-                                animation: "aiCursorBlink 0.85s step-end infinite",
+                  {(msg.role === "user" || msg.text.length > 0) && (
+                    <Box
+                      sx={{
+                        maxWidth: msg.role === "user" ? "84%" : "100%",
+                        px: 1.85,
+                        py: 1.25,
+                        borderRadius: "20px",
+                        bgcolor: msg.role === "user" ? tokens.bgDark : tokens.bgPanel,
+                        color: msg.role === "user" ? tokens.textWhite : tokens.textPrimary,
+                        border: "none",
+                        fontSize: 13,
+                        lineHeight: 1.55,
+                        wordBreak: "break-word",
+                        "& p": { m: 0, mb: 0.75, "&:last-child": { mb: 0 } },
+                        "& ul, & ol": { m: 0, mb: 0.75, pl: 2.25, "&:last-child": { mb: 0 } },
+                        "& li": { mb: 0.35, "&:last-child": { mb: 0 } },
+                        "& strong": { fontWeight: 700 },
+                        ...(isActivelyStreaming
+                          ? {
+                              "@keyframes aiCursorBlink": {
+                                "0%, 49%": { opacity: 1 },
+                                "50%, 100%": { opacity: 0 },
                               },
-                          }
-                        : {}),
-                    }}
-                  >
-                    {msg.role === "model" ? (
-                      msg.text.length === 0 && isActivelyStreaming ? (
-                        <Box
-                          component='span'
-                          sx={{
-                            display: "inline-block",
-                            width: "7px",
-                            height: "14px",
-                            verticalAlign: "-2px",
-                            borderRadius: "2px",
-                            bgcolor: tokens.primary,
-                            "@keyframes aiCursorBlink": {
-                              "0%, 49%": { opacity: 1 },
-                              "50%, 100%": { opacity: 0 },
-                            },
-                            animation: "aiCursorBlink 0.85s step-end infinite",
-                          }}
-                        />
-                      ) : (
+                              "& > p:last-child::after, & > ul:last-child > li:last-child::after, & > ol:last-child > li:last-child::after":
+                                {
+                                  content: '""',
+                                  display: "inline-block",
+                                  width: "7px",
+                                  height: "14px",
+                                  ml: "4px",
+                                  verticalAlign: "-2px",
+                                  borderRadius: "2px",
+                                  bgcolor: tokens.primary,
+                                  animation: "aiCursorBlink 0.85s step-end infinite",
+                                },
+                            }
+                          : {}),
+                      }}
+                    >
+                      {msg.role === "model" ? (
                         <Markdown
                           remarkPlugins={[remarkGfm]}
                           components={{
@@ -992,11 +921,11 @@ export function FloatingAiChat() {
                         >
                           {msg.text}
                         </Markdown>
-                      )
-                    ) : (
-                      msg.text
-                    )}
-                  </Box>
+                      ) : (
+                        msg.text
+                      )}
+                    </Box>
+                  )}
 
                   {/* Rich Mini Product Cards (Generative UI from tool calling) */}
                   {msg.role === "model" && msg.products && msg.products.length > 0 && (
