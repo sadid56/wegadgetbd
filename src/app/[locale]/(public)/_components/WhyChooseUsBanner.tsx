@@ -91,6 +91,8 @@ export function WhyChooseUsBanner() {
             component="img"
             src={getAssetUrl("banners/hero-slide-2.png")}
             alt="Workspace"
+            loading="lazy"
+            decoding="async"
             sx={{
               width: "100%",
               height: "100%",

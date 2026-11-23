@@ -25,6 +25,7 @@ import { openAiShoppingDrawer } from "@/lib/ai-drawer";
 import { getAssetUrl } from "@/lib/storage";
 import { formatPrice } from "@/lib/i18n-utils";
 import { tokens } from "@/theme/theme";
+import heroBgImg from "../../../../../public/images/hero-bg-gadgets.jpg";
 
 const TRENDING_TAGS = ["Smart Watch", "TWS Earbuds", "Cleaning Kit", "Mini Blower", "Lint Remover"] as const;
 
@@ -105,12 +106,16 @@ export function Hero() {
           }}
         >
           <NextImage
-            src={getAssetUrl("hero/hero-bg-gadgets.jpg")}
+            src={heroBgImg}
             alt='We Gadget BD Smart Gear'
             fill
-            priority
-            quality={95}
-            sizes='(max-width: 1440px) 100vw, 1440px'
+            preload
+            loading='eager'
+            decoding='sync'
+            fetchPriority='high'
+            placeholder='blur'
+            quality={85}
+            sizes='(max-width: 768px) 100vw, (max-width: 1440px) 95vw, 1360px'
             style={{
               objectFit: "cover",
               objectPosition: "center",
