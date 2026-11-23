@@ -6,7 +6,6 @@ import { product, category, order } from "@/db/schema";
 import { CONTACT_PHONE, getWhatsAppUrl } from "@/lib/contact";
 import type { AiProductCardData } from "@/lib/ai-drawer";
 
-export const preferredRegion = ["bom1", "sin1"];
 export const maxDuration = 30;
 
 interface ChatMessage {
