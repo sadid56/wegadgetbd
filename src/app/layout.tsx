@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Hind_Siliguri } from "next/font/google";
-import { getLocale } from "next-intl/server";
+import { routing } from "@/i18n/routing";
 import { AppProvider } from "@/providers/app-provider";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import { getSiteUrl } from "@/lib/seo";
@@ -111,12 +111,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/icon.svg", type: "image/svg+xml" },
       { url: "/favicon.ico", sizes: "any" },
-      { url: "/logo.png", sizes: "192x192", type: "image/png" },
+      { url: "/brand-logo.png", sizes: "192x192", type: "image/png" },
     ],
-    shortcut: "/icon.svg",
-    apple: [{ url: "/logo.png", sizes: "180x180", type: "image/png" }],
+    shortcut: "/favicon.ico",
+    apple: [{ url: "/brand-logo.png", sizes: "180x180", type: "image/png" }],
   },
 };
 
@@ -176,8 +175,8 @@ const rootJsonLd = {
   ],
 };
 
-export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const locale = await getLocale();
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const locale = routing.defaultLocale;
   const isBn = locale === "bn";
   const fontApp = isBn ? "var(--font-hind-siliguri)" : "var(--font-inter)";
 

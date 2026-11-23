@@ -34,7 +34,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const cardSx = {
-  p: { xs: 3, sm: 4.25 },
+  p: { xs: 2.25, sm: 4.25 },
   borderRadius: `${tokens.radiusLg}px`,
   bgcolor: tokens.bgPanel,
   border: `1px solid ${tokens.borderDefault}`,
@@ -93,7 +93,7 @@ export function SignInForm() {
 
   return (
     <Card sx={cardSx}>
-      <Box sx={{ mb: 3.5, textAlign: "center" }}>
+      <Box sx={{ mb: { xs: 2.25, sm: 3.5 }, textAlign: "center" }}>
         <Typography component="h1" sx={{ fontSize: { xs: 22, sm: 25 }, fontWeight: 800, letterSpacing: "-0.02em", color: tokens.textPrimary }}>
           {t("signInTitle")}
         </Typography>

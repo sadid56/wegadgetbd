@@ -26,13 +26,13 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
   return (
     <Box
       sx={{
-        minHeight: "100vh",
+        minHeight: "100dvh",
         display: "flex",
         flexDirection: "column",
         bgcolor: tokens.bgCanvas,
         position: "relative",
-        px: 2,
-        py: { xs: 3, sm: 5 },
+        px: { xs: 1.5, sm: 2 },
+        py: { xs: 2, sm: 5 },
       }}
     >
       {/* Top Floating Controls: Back to Home + Language Switcher */}
@@ -45,7 +45,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          mb: { xs: 3, sm: 0 },
+          mb: { xs: 2, sm: 0 },
           zIndex: 10,
         }}
       >
@@ -91,9 +91,9 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: { xs: "flex-start", sm: "center" },
           width: "100%",
-          my: "auto",
+          my: { xs: 0, sm: "auto" },
         }}
       >
         <Box
@@ -106,7 +106,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
           }}
         >
           {/* Brand Logo Above Card */}
-          <Box sx={{ mb: 3 }}>
+          <Box sx={{ mb: { xs: 1.75, sm: 3 } }}>
             <BrandLogo variant="light" size="md" href="/" />
           </Box>
 

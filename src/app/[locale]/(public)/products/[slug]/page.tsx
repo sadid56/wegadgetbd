@@ -1,11 +1,15 @@
+import { cache } from "react";
 import type { Metadata } from "next";
 import { db } from "@/db";
-import { product, customerReview } from "@/db/schema";
-import { eq, or, and, desc } from "drizzle-orm";
+import { product } from "@/db/schema";
+import { and, eq } from "drizzle-orm";
 import { getSiteUrl } from "@/lib/seo";
 import { getAssetUrl } from "@/lib/storage";
 import ProductDetailsPage from "./_components/product-details-page-client";
 import { toBengaliNumber } from "@/lib/i18n-utils";
+import { GetProductBySlugUseCase } from "@/server/use-case/products/get-product-by-slug";
+import { ListProductsUseCase } from "@/server/use-case/products/list-products";
+import { ListProductReviewsUseCase } from "@/server/use-case/products/list-product-reviews";
 
 type ProductPageProps = {
   params: Promise<{
@@ -17,6 +21,9 @@ type ProductPageProps = {
 const siteUrl = getSiteUrl();
 
 export const dynamicParams = true;
+export const revalidate = 300;
+
+const getCachedProduct = cache(async (slug: string) => new GetProductBySlugUseCase(db).execute(slug));
 
 export async function generateStaticParams() {
   try {
@@ -33,21 +40,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { locale, slug } = await params;
 
-  const foundProduct = await db.query.product.findFirst({
-    where: and(
-      or(eq(product.slug, slug), eq(product.id, slug)),
-      eq(product.status, "ACTIVE"),
-      eq(product.isDeleted, false)
-    ),
-    with: {
-      category: {
-        columns: {
-          name: true,
-          slug: true,
-        },
-      },
-    },
-  });
+  const foundProduct = await getCachedProduct(slug);
 
   if (!foundProduct) {
     return {
@@ -139,21 +132,19 @@ export default async function ProductDetails({ params }: ProductPageProps) {
   const { locale, slug } = await params;
   const isBn = locale === "bn";
 
-  const foundProduct = await db.query.product.findFirst({
-    where: and(
-      or(eq(product.slug, slug), eq(product.id, slug)),
-      eq(product.status, "ACTIVE"),
-      eq(product.isDeleted, false)
-    ),
-    with: {
-      category: true,
-      reviews: {
-        where: eq(customerReview.status, "APPROVED"),
-        orderBy: [desc(customerReview.createdAt)],
-        limit: 5,
-      },
-    },
-  });
+  const foundProduct = await getCachedProduct(slug);
+  const [initialRelated, reviews] = foundProduct
+    ? await Promise.all([
+        foundProduct.category?.slug
+          ? new ListProductsUseCase(db).execute({
+              category: foundProduct.category.slug,
+              limit: 5,
+            })
+          : Promise.resolve(undefined),
+        new ListProductReviewsUseCase(db).execute(foundProduct.id),
+      ])
+    : [undefined, []];
+  const topReviews = reviews.slice(0, 5);
 
   const effectivePrice = foundProduct
     ? foundProduct.discountPrice
@@ -220,23 +211,23 @@ export default async function ProductDetails({ params }: ProductPageProps) {
                 },
               },
             },
-            ...(foundProduct.reviews.length > 0 && {
+            ...(topReviews.length > 0 && {
               aggregateRating: {
                 "@type": "AggregateRating",
                 ratingValue: foundProduct.rating || 5.0,
-                reviewCount: foundProduct.reviews.length,
+                reviewCount: foundProduct.reviewsCount || topReviews.length,
                 bestRating: 5,
                 worstRating: 1,
               },
             }),
-            ...(foundProduct.reviews.length > 0 && {
-              review: foundProduct.reviews.map((r) => ({
+            ...(topReviews.length > 0 && {
+              review: topReviews.map((r) => ({
                 "@type": "Review",
                 author: {
                   "@type": "Person",
                   name: r.customerName,
                 },
-                datePublished: r.createdAt.toISOString().split("T")[0],
+                datePublished: new Date(r.createdAt).toISOString().split("T")[0],
                 reviewBody: r.review,
                 reviewRating: {
                   "@type": "Rating",
@@ -313,7 +304,7 @@ export default async function ProductDetails({ params }: ProductPageProps) {
   return (
     <>
       {jsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />}
-      <ProductDetailsPage />
+      <ProductDetailsPage initialProduct={foundProduct} initialRelated={initialRelated} />
     </>
   );
 }

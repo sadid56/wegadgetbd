@@ -43,18 +43,25 @@ export const useTopPicks = (limit: number = 4, options?: { enabled?: boolean }) 
 export const useLatestArrivals = (limit: number = 4) =>
   useQuery(orpc.products.latestArrivals.queryOptions({ input: { limit } }));
 
-export const useProducts = (params?: ListParams, options?: { enabled?: boolean }) =>
+export const useProducts = (
+  params?: ListParams,
+  options?: { enabled?: boolean; initialData?: ProductsResponse },
+) =>
   useQuery({
     ...orpc.products.list.queryOptions({ input: params ?? {} }),
     enabled: options?.enabled ?? true,
+    initialData: options?.initialData,
+    staleTime: options?.initialData !== undefined ? 60_000 : undefined,
   });
 
 export const useBrands = () => useQuery(orpc.products.brands.queryOptions({ input: undefined }));
 
-export const useProduct = (slug: string) =>
+export const useProduct = (slug: string, options?: { initialData?: SingleProductResponse | null }) =>
   useQuery({
     ...orpc.products.bySlug.queryOptions({ input: { slug } }),
     enabled: !!slug,
+    initialData: options?.initialData,
+    staleTime: options?.initialData !== undefined ? 60_000 : undefined,
   });
 
 export const useAdminProducts = (params?: AdminListParams) => useQuery(orpc.products.adminList.queryOptions({ input: params ?? {} }));

@@ -17,6 +17,7 @@ import ArrowForwardRoundedIcon from "@mui/icons-material/ArrowForwardRounded";
 import { tokens } from "@/theme/theme";
 import { BrandLogo } from "@/components/common/BrandLogo";
 import { LanguageSwitcher } from "@/components/common/LanguageSwitcher";
+import { useBodyScrollLock } from "@/hooks/use-body-scroll-lock";
 import { NAV_CATEGORIES } from "./nav-data";
 
 export interface NavLinkItem {
@@ -41,6 +42,7 @@ export interface NavbarMobileProps {
 export function NavbarMobile({ open, onClose }: NavbarMobileProps) {
   const locale = useLocale();
   const [expandedCategoryId, setExpandedCategoryId] = useState<string | null>(null);
+  useBodyScrollLock(open);
 
   const toggleCategory = (id: string) => {
     setExpandedCategoryId((prev) => (prev === id ? null : id));
@@ -51,6 +53,7 @@ export function NavbarMobile({ open, onClose }: NavbarMobileProps) {
       anchor="right"
       open={open}
       onClose={onClose}
+      disableScrollLock
       slotProps={{
         paper: {
           sx: {
@@ -62,6 +65,7 @@ export function NavbarMobile({ open, onClose }: NavbarMobileProps) {
             borderLeft: "1px solid rgba(0, 191, 166, 0.2)",
             display: "flex",
             flexDirection: "column",
+            overscrollBehavior: "contain",
           },
         },
       }}

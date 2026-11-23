@@ -28,7 +28,7 @@ import { formatPrice, toBengaliNumber } from "@/lib/i18n-utils";
 import { getWhatsAppUrl } from "@/lib/contact";
 import { getAssetUrl } from "@/lib/storage";
 import { toVideoEmbedUrl } from "@/lib/video-links";
-import { useProduct, useProducts } from "@/query-client/products";
+import { useProduct, useProducts, type ProductsResponse, type SingleProductResponse } from "@/query-client/products";
 import { tokens } from "@/theme/theme";
 import { useLocale, useTranslations } from "next-intl";
 import Markdown from "react-markdown";
@@ -90,7 +90,12 @@ const stepperBtnSx = {
   "&:hover": { bgcolor: tokens.borderSubtle },
 };
 
-export default function ProductDetailsPage() {
+interface ProductDetailsPageProps {
+  initialProduct?: SingleProductResponse | null;
+  initialRelated?: ProductsResponse;
+}
+
+export default function ProductDetailsPage({ initialProduct, initialRelated }: ProductDetailsPageProps) {
   const t = useTranslations("products");
   const tCommon = useTranslations("common");
   const locale = useLocale() as Locale;
@@ -145,11 +150,17 @@ export default function ProductDetailsPage() {
     setIsZoomed(false);
   };
 
-  const { data: product, isLoading } = useProduct(slug as string);
-  const { data: relatedData } = useProducts({
-    category: product?.category?.slug,
-    limit: 5,
-  });
+  const { data: product, isLoading } = useProduct(slug as string, { initialData: initialProduct });
+  const { data: relatedData } = useProducts(
+    {
+      category: product?.category?.slug,
+      limit: 5,
+    },
+    {
+      enabled: Boolean(product?.category?.slug),
+      initialData: initialRelated,
+    },
+  );
   const markdownComponents = useMarkdownComponents();
 
   const formatNumber = useCallback(
