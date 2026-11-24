@@ -3,7 +3,7 @@ import { db } from "@/db";
 import { order, product, promoCode, type OrderStatus } from "@/db/schema";
 import { and, eq, inArray, isNull, lt, or, sql } from "drizzle-orm";
 import type { Context } from "@/server/context";
-import { telegramNotifier, type NewOrderNotificationItem } from "@/server/lib/telegram";
+import { discordNotifier, type NewOrderNotificationItem } from "@/server/lib/discord";
 import { evaluatePromoCode } from "@/server/use-case/promo-codes/_shared";
 
 const PHONE_RE = /^\+?[\d\s()-]{7,20}$/;
@@ -123,13 +123,28 @@ export class CreateOrderUseCase {
         promoCode: appliedPromoCode,
         totalAmount: finalTotal,
         notes: newOrder.notes,
+        status: newOrder.status,
         items: totalCheck.resolvedItems,
       };
 
+      const syncDiscord = async () => {
+        try {
+          const messageId = await discordNotifier.notifyNewOrder(notificationPayload);
+          if (messageId) {
+            await this.dbInstance
+              .update(order)
+              .set({ discordMessageId: messageId })
+              .where(eq(order.id, newOrder.id));
+          }
+        } catch (err) {
+          console.error("Failed to persist Discord message ID:", err);
+        }
+      };
+
       try {
-        after(() => telegramNotifier.notifyNewOrder(notificationPayload));
+        after(syncDiscord);
       } catch {
-        void telegramNotifier.notifyNewOrder(notificationPayload);
+        void syncDiscord();
       }
 
       return {

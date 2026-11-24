@@ -13,7 +13,6 @@ import { CircularProgress } from "@/components/ui/spinner";
 
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import CheckCircleRoundedIcon from "@mui/icons-material/CheckCircleRounded";
-import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import SecurityOutlinedIcon from "@mui/icons-material/SecurityOutlined";
 
 import { useCart } from "@/hooks/useCart";
@@ -72,7 +71,7 @@ function ConfirmDialog({ open, onCancel, onConfirm, img, title, count, totalAmou
             🛒
           </Box>
           <Typography
-            component="span"
+            component='span'
             sx={{
               ...BN,
               fontWeight: 800,
@@ -87,7 +86,7 @@ function ConfirmDialog({ open, onCancel, onConfirm, img, title, count, totalAmou
       description={t("confirmOrderModalDesc")}
       cancelText={t("cancel")}
       confirmText={t("confirm")}
-      confirmVariant="primary"
+      confirmVariant='primary'
     >
       <Box sx={{ px: 3, pb: 1 }}>
         <Box
@@ -152,9 +151,7 @@ function ConfirmDialog({ open, onCancel, onConfirm, img, title, count, totalAmou
               {title}
             </Typography>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Typography sx={{ fontSize: 13, fontWeight: 800, color: tokens.primary }}>
-                {formatPrice(totalAmount, locale)}
-              </Typography>
+              <Typography sx={{ fontSize: 13, fontWeight: 800, color: tokens.primary }}>{formatPrice(totalAmount, locale)}</Typography>
               <Box
                 sx={{
                   ...BN,
@@ -193,16 +190,13 @@ function CheckoutPageContent() {
 
   const [isBuyNow] = useState(!!buyNowSlug);
   const [localQty, setLocalQty] = useState(buyNowQty);
-  const activeSubtotal =
-    isBuyNow && buyNowProduct
-      ? Number(buyNowProduct.discountPrice || buyNowProduct.price) * localQty
-      : cartTotal;
+  const activeSubtotal = isBuyNow && buyNowProduct ? Number(buyNowProduct.discountPrice || buyNowProduct.price) * localQty : cartTotal;
   const { appliedPromo, removePromoCode } = usePromoCode(activeSubtotal);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOrderConfirmed, setIsOrderConfirmed] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [pendingData, setPendingData] = useState<CheckoutValues | null>(null);
-  const [savedWhatsappUrl, setSavedWhatsappUrl] = useState("");
+  const [confirmedOrder, setConfirmedOrder] = useState<{ orderId: string; totalAmount: number } | null>(null);
   const { data: session } = authClient.useSession();
 
   const formatNumber = (val: number | string) => (locale === "bn" ? toBengaliNumber(val) : val.toString());
@@ -300,9 +294,7 @@ function CheckoutPageContent() {
         >
           {t("productNotFound")}
         </Typography>
-        <Typography sx={{ ...BN, color: tokens.textMuted, mb: 3, fontSize: 14 }}>
-          {t("productNotFoundDesc")}
-        </Typography>
+        <Typography sx={{ ...BN, color: tokens.textMuted, mb: 3, fontSize: 14 }}>{t("productNotFoundDesc")}</Typography>
         <Button
           component={Link}
           href='/products'
@@ -377,7 +369,6 @@ function CheckoutPageContent() {
     setShowConfirm(false);
     setIsSubmitting(true);
     try {
-      const whatsappNumber = "+8801576641142";
       const orderItems = productsToOrder.map((item) => ({
         id: item.id,
         title: item.title,
@@ -385,26 +376,6 @@ function CheckoutPageContent() {
         price: Number(item.discountPrice || item.price),
         image: item.images?.[0] || "",
       }));
-      const orderDetails = orderItems.map((i) => `• ${i.title} (x${i.qty}) - ৳${i.price * i.qty}`).join("\n");
-      const message = `🛍️ New Order (WE GADGET BD)
-━━━━━━━━━━━━━━━
-👤 Name: ${data.name}
-📞 Mobile: ${data.phone}
-📍 Address: ${data.address}
-🚚 Area: ${data.location === "inside_dhaka" ? "Inside Dhaka" : "Outside Dhaka"}
-
-📦 Items:
-${orderDetails}
-
-💰 Summary:
-Subtotal: ৳${subtotal}
-Discount: ৳${discountAmount}
-Delivery: ৳${deliveryCharge}
-━━━━━━━━━━━━━━━
-💵 Total: ৳${totalAmount}
-
-🛒 Type: ${isBuyNow ? "Buy Now" : "Cart"}
-🖥️ Source: ${window.location.host}`;
 
       const res = await createOrder({
         customerName: data.name,
@@ -423,9 +394,10 @@ Delivery: ৳${deliveryCharge}
         return;
       }
 
-      const encodedMessage = encodeURIComponent(message);
-      const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
-      setSavedWhatsappUrl(whatsappUrl);
+      setConfirmedOrder({
+        orderId: res.data?.orderId ?? "",
+        totalAmount: res.data?.totalAmount ?? totalAmount,
+      });
 
       if (!isBuyNow) {
         clearCart();
@@ -476,13 +448,14 @@ Delivery: ৳${deliveryCharge}
           router.push("/");
         }}
         title={
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
             <Box
               sx={{
-                width: 36,
-                height: 36,
+                width: 40,
+                height: 40,
                 borderRadius: "50%",
                 bgcolor: tokens.primaryLight,
+                border: `1px solid ${tokens.primaryBorder}`,
                 color: tokens.primary,
                 display: "flex",
                 alignItems: "center",
@@ -493,12 +466,13 @@ Delivery: ৳${deliveryCharge}
               <CheckCircleRoundedIcon sx={{ fontSize: 22 }} />
             </Box>
             <Typography
-              component="span"
+              component='span'
               sx={{
                 ...BN,
-                fontSize: 17,
+                fontSize: 18,
                 fontWeight: 800,
                 color: tokens.textPrimary,
+                letterSpacing: "-0.01em",
               }}
             >
               {t("orderSuccessTitle")}
@@ -508,70 +482,80 @@ Delivery: ৳${deliveryCharge}
         description={t("orderSuccessDesc")}
         cancelText={t("goToHome")}
         confirmText={t("continueShopping")}
-        confirmVariant="primary"
+        confirmVariant='primary'
         onConfirm={() => {
           setIsOrderConfirmed(false);
           router.push("/products");
         }}
       >
-        <Box sx={{ px: 3, pb: 1, display: "flex", flexDirection: "column", gap: 1.5 }}>
+        <Box sx={{ px: 3, pb: 0.5 }}>
           <Box
             sx={{
-              bgcolor: tokens.bgCanvas,
-              borderRadius: "8px",
-              p: 1.5,
-              border: "none",
+              bgcolor: tokens.bgSubtle,
+              borderRadius: "12px",
+              p: 2,
+              border: `1px solid ${tokens.borderSubtle}`,
               display: "flex",
               flexDirection: "column",
-              gap: 0.75,
+              gap: 1.1,
               fontSize: 13,
             }}
           >
+            {confirmedOrder?.orderId && (
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Box component='span' sx={{ ...BN, color: tokens.textMuted }}>
+                  Order ID
+                </Box>
+                <Box
+                  component='span'
+                  sx={{
+                    fontFamily: "monospace",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: tokens.textPrimary,
+                    bgcolor: tokens.bgPanel,
+                    border: `1px solid ${tokens.borderDefault}`,
+                    borderRadius: "6px",
+                    px: 1,
+                    py: 0.25,
+                  }}
+                >
+                  #{confirmedOrder.orderId.slice(0, 8).toUpperCase()}
+                </Box>
+              </Box>
+            )}
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <Box component="span" sx={{ ...BN, color: tokens.textMuted }}>
+              <Box component='span' sx={{ ...BN, color: tokens.textMuted }}>
                 {t("paymentMethodLabel")}
               </Box>
-              <Box component="span" sx={{ ...BN, fontWeight: 700, color: tokens.textPrimary }}>
+              <Box component='span' sx={{ ...BN, fontWeight: 700, color: tokens.textPrimary }}>
                 {t("paymentMethodValue")}
               </Box>
             </Box>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <Box component="span" sx={{ ...BN, color: tokens.textMuted }}>
+            <Box
+              sx={{
+                pt: 1.1,
+                mt: 0.25,
+                borderTop: `1px dashed ${tokens.borderDefault}`,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <Box component='span' sx={{ ...BN, fontWeight: 600, color: tokens.textSecondary }}>
                 {t("totalPayable")}
               </Box>
-              <Box component="span" sx={{ fontWeight: 800, color: tokens.primary, fontSize: 16 }}>
-                {formatPrice(totalAmount, locale)}
+              <Box component='span' sx={{ fontWeight: 800, color: tokens.primary, fontSize: 17 }}>
+                {formatPrice(confirmedOrder?.totalAmount ?? totalAmount, locale)}
               </Box>
             </Box>
           </Box>
-
-          {savedWhatsappUrl && (
-            <Button
-              fullWidth
-              onClick={() => window.open(savedWhatsappUrl, "_blank")}
-              startIcon={<WhatsAppIcon sx={{ fontSize: 18 }} />}
-              disableElevation
-              sx={{
-                ...BN,
-                bgcolor: "#25D366",
-                color: "#ffffff",
-                fontWeight: 700,
-                py: 1.25,
-                borderRadius: "8px",
-                fontSize: 13,
-                textTransform: "none",
-                "&:hover": { bgcolor: "#20BD5A" },
-              }}
-            >
-              {t("sendWhatsapp")}
-            </Button>
-          )}
         </Box>
       </AlertDialog>
 
       {/* Universal Stepper Header */}
       <CheckoutStepperHeader
-        currentStep="checkout"
+        currentStep='checkout'
         backHref={isBuyNow ? `/products/${buyNowProduct?.slug || ""}` : "/cart"}
         backLabel={isBuyNow ? t("backToProduct") : t("backToCart")}
       />

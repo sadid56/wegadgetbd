@@ -48,6 +48,7 @@ export const order = pgTable(
     userId: text("userId").references(() => user.id),
     notes: text("notes"),
     whatsappMessage: text("whatsappMessage"),
+    discordMessageId: text("discordMessageId"),
     isDeleted: boolean("isDeleted").default(false).notNull(),
     deletedAt: timestamp("deletedAt", { mode: "date" }),
     createdAt: timestamp("createdAt", { mode: "date" }).defaultNow().notNull(),
