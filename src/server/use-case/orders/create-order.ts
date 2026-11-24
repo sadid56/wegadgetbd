@@ -1,7 +1,9 @@
+import { after } from "next/server";
 import { db } from "@/db";
 import { order, product, promoCode, type OrderStatus } from "@/db/schema";
 import { and, eq, inArray, isNull, lt, or, sql } from "drizzle-orm";
 import type { Context } from "@/server/context";
+import { telegramNotifier, type NewOrderNotificationItem } from "@/server/lib/telegram";
 import { evaluatePromoCode } from "@/server/use-case/promo-codes/_shared";
 
 const PHONE_RE = /^\+?[\d\s()-]{7,20}$/;
@@ -49,8 +51,7 @@ export class CreateOrderUseCase {
     }
 
     try {
-      const shipping =
-        input.city === "Dhaka" ? 80 : input.city === "Outside Dhaka" ? 130 : Math.max(input.shippingCost ?? 0, 0);
+      const shipping = input.city === "Dhaka" ? 80 : input.city === "Outside Dhaka" ? 130 : Math.max(input.shippingCost ?? 0, 0);
       let promoDiscount = 0;
       let appliedPromoId: string | null = null;
       let appliedPromoCode: string | null = null;
@@ -71,12 +72,7 @@ export class CreateOrderUseCase {
         const [claimed] = await this.dbInstance
           .update(promoCode)
           .set({ usedCount: sql`${promoCode.usedCount} + 1` })
-          .where(
-            and(
-              eq(promoCode.id, appliedPromoId),
-              or(isNull(promoCode.usageLimit), lt(promoCode.usedCount, promoCode.usageLimit))
-            )
-          )
+          .where(and(eq(promoCode.id, appliedPromoId), or(isNull(promoCode.usageLimit), lt(promoCode.usedCount, promoCode.usageLimit))))
           .returning({ id: promoCode.id });
 
         if (!claimed) {
@@ -114,6 +110,28 @@ export class CreateOrderUseCase {
         })
         .returning();
 
+      const notificationPayload = {
+        orderId: newOrder.id,
+        customerName: newOrder.customerName,
+        phoneNumber: newOrder.phoneNumber,
+        address: newOrder.address,
+        city: newOrder.city,
+        area: newOrder.area,
+        paymentMethod: newOrder.paymentMethod,
+        shippingCost: shipping,
+        discountAmount: totalDiscount,
+        promoCode: appliedPromoCode,
+        totalAmount: finalTotal,
+        notes: newOrder.notes,
+        items: totalCheck.resolvedItems,
+      };
+
+      try {
+        after(() => telegramNotifier.notifyNewOrder(notificationPayload));
+      } catch {
+        void telegramNotifier.notifyNewOrder(notificationPayload);
+      }
+
       return {
         success: true as const,
         data: {
@@ -140,8 +158,10 @@ export class CreateOrderUseCase {
   }
 
   private async computeTotal(
-    items: OrderItem[]
-  ): Promise<{ ok: true; total: number; productDiscount: number } | { ok: false; error: string }> {
+    items: OrderItem[],
+  ): Promise<
+    { ok: true; total: number; productDiscount: number; resolvedItems: NewOrderNotificationItem[] } | { ok: false; error: string }
+  > {
     for (const item of items) {
       if (!item.id || !Number.isInteger(item.qty) || item.qty < 1) {
         return { ok: false, error: "Invalid item or quantity in order" };
@@ -150,21 +170,27 @@ export class CreateOrderUseCase {
 
     const productIds = Array.from(new Set(items.map((i) => i.id)));
     const products = await this.dbInstance
-      .select({ id: product.id, price: product.price, discountPrice: product.discountPrice })
+      .select({
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        discountPrice: product.discountPrice,
+      })
       .from(product)
       .where(inArray(product.id, productIds));
 
-    const priceMap = new Map<string, { regular: number; effective: number }>();
+    const priceMap = new Map<string, { title: string; regular: number; effective: number }>();
     for (const p of products) {
       const regular = Number(p.price);
       const effective = p.discountPrice != null ? Number(p.discountPrice) : regular;
       if (Number.isFinite(effective) && effective >= 0) {
-        priceMap.set(p.id, { regular, effective });
+        priceMap.set(p.id, { title: p.title, regular, effective });
       }
     }
 
     let total = 0;
     let productDiscount = 0;
+    const resolvedItems: NewOrderNotificationItem[] = [];
     for (const item of items) {
       const pricing = priceMap.get(item.id);
       if (pricing === undefined) {
@@ -174,9 +200,13 @@ export class CreateOrderUseCase {
       if (pricing.regular > pricing.effective) {
         productDiscount += (pricing.regular - pricing.effective) * item.qty;
       }
+      resolvedItems.push({
+        title: pricing.title,
+        qty: item.qty,
+        unitPrice: pricing.effective,
+      });
     }
 
-    return { ok: true, total, productDiscount };
+    return { ok: true, total, productDiscount, resolvedItems };
   }
 }
-
