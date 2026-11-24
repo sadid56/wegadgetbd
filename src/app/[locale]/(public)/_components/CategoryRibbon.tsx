@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import NextImage from "next/image";
 import { Link } from "@/i18n/routing";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -16,42 +17,22 @@ import { useCategories } from "@/query-client/categories";
 import { getAssetUrl } from "@/lib/storage";
 
 function CategoryIcon({ src, alt }: { src: string; alt: string }) {
-  const [isLoaded, setIsLoaded] = React.useState(false);
+  const [imgSrc, setImgSrc] = React.useState(src);
 
   return (
-    <>
-      {!isLoaded && (
-        <Skeleton
-          variant="rounded"
-          animation="wave"
-          sx={{
-            position: "absolute",
-            width: "65%",
-            height: "65%",
-            borderRadius: "12px",
-            bgcolor: "rgba(15, 23, 42, 0.05)",
-            pointerEvents: "none",
-          }}
-        />
-      )}
-      <Box
-        component="img"
-        src={src}
-        alt={alt}
-        loading="eager"
-        decoding="async"
-        onLoad={() => setIsLoaded(true)}
-        onError={() => setIsLoaded(true)}
-        sx={{
-          width: "100%",
-          height: "100%",
-          objectFit: "contain",
-          display: "block",
-          opacity: isLoaded ? 1 : 0,
-          transition: "opacity 0.25s cubic-bezier(0.22, 1, 0.36, 1)",
-        }}
-      />
-    </>
+    <NextImage
+      src={imgSrc}
+      alt={alt}
+      width={76}
+      height={76}
+      onError={() => setImgSrc("/images/default.png")}
+      style={{
+        width: "100%",
+        height: "100%",
+        objectFit: "contain",
+        display: "block",
+      }}
+    />
   );
 }
 
