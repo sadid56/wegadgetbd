@@ -1,3 +1,5 @@
+import dns from "node:dns";
+import https from "node:https";
 import axios, { type AxiosInstance } from "axios";
 
 export interface NewOrderNotificationItem {
@@ -51,6 +53,12 @@ export class TelegramNotifier {
           baseURL: `${TELEGRAM_API_BASE}/bot${this.token}`,
           timeout: REQUEST_TIMEOUT_MS,
           headers: { "Content-Type": "application/json" },
+          httpsAgent: new https.Agent({
+            keepAlive: true,
+            lookup: (hostname, options, callback) => {
+              dns.lookup(hostname, { ...options, family: 4 }, callback);
+            },
+          }),
         })
       : null;
   }
