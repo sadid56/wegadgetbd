@@ -119,7 +119,7 @@ export function WhyChooseUsBanner() {
           </Typography>
 
           <Typography
-            component="h3"
+            component="h2"
             sx={{
               fontWeight: 800,
               fontSize: { xs: "1.6rem", md: "2rem" },

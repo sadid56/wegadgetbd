@@ -73,7 +73,7 @@ export function NavbarMobile({ open, onClose }: NavbarMobileProps) {
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
         <BrandLogo variant="dark" size="sm" href="/" />
-        <IconButton onClick={onClose} sx={{ color: tokens.textWhite }}>
+        <IconButton onClick={onClose} aria-label="Close menu" sx={{ color: tokens.textWhite }}>
           <CloseIcon />
         </IconButton>
       </Box>

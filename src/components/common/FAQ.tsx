@@ -45,9 +45,9 @@ export function FAQ({ className }: FAQProps) {
             <ChatBubbleOutlineIcon sx={{ fontSize: 28 }} />
           </Box>
 
-          <Typography variant="h4" sx={{ fontWeight: 800, mb: 1.5, color: tokens.textPrimary }}>
+          <Typography variant="h4" component="h2" sx={{ fontWeight: 800, mb: 1.5, color: tokens.textPrimary }}>
             {t("faqTitlePart1")}{" "}
-            <Typography component="span" variant="inherit" sx={{ color: tokens.primary }}>
+            <Typography component="span" variant="inherit" sx={{ color: tokens.primaryDark }}>
               {t("faqTitleHighlight")}
             </Typography>
           </Typography>
@@ -103,7 +103,7 @@ export function FAQ({ className }: FAQProps) {
                         justifyContent: "center",
                         fontSize: "0.78rem",
                         fontWeight: 700,
-                        bgcolor: isOpen ? tokens.primary : tokens.bgSubtle,
+                        bgcolor: isOpen ? tokens.primaryDark : tokens.bgSubtle,
                         color: isOpen ? tokens.textWhite : tokens.textMuted,
                       }}
                     >
@@ -111,6 +111,7 @@ export function FAQ({ className }: FAQProps) {
                     </Box>
 
                     <Typography
+                      component="h3"
                       variant="subtitle1"
                       sx={{
                         fontWeight: 600,

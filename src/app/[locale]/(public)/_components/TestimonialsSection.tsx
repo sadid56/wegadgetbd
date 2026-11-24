@@ -98,7 +98,7 @@ export function TestimonialsSection() {
             sx={{
               fontSize: 11,
               fontWeight: 700,
-              color: tokens.accent,
+              color: tokens.primaryDark,
               letterSpacing: "0.15em",
               textTransform: "uppercase",
               mb: 0.5,
@@ -314,7 +314,7 @@ export function TestimonialsSection() {
                     <Typography
                       sx={{
                         fontSize: 11.5,
-                        color: tokens.textDisabled,
+                        color: tokens.textMuted,
                         fontWeight: 500,
                         flexShrink: 0,
                       }}

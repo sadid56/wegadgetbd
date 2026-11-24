@@ -83,6 +83,7 @@ export function Footer() {
                 target="_blank"
                 rel="noreferrer"
                 size="small"
+                aria-label="We Gadget BD on Facebook"
                 sx={{
                   color: tokens.textDarkMuted,
                   border: `1px solid ${tokens.borderDark}`,
@@ -97,6 +98,7 @@ export function Footer() {
                 target="_blank"
                 rel="noreferrer"
                 size="small"
+                aria-label="We Gadget BD on YouTube"
                 sx={{
                   color: tokens.textDarkMuted,
                   border: `1px solid ${tokens.borderDark}`,
@@ -111,6 +113,7 @@ export function Footer() {
                 target="_blank"
                 rel="noreferrer"
                 size="small"
+                aria-label="We Gadget BD on Instagram"
                 sx={{
                   color: tokens.textDarkMuted,
                   border: `1px solid ${tokens.borderDark}`,
@@ -125,6 +128,7 @@ export function Footer() {
                 target="_blank"
                 rel="noreferrer"
                 size="small"
+                aria-label="We Gadget BD on X"
                 sx={{
                   color: tokens.textDarkMuted,
                   border: `1px solid ${tokens.borderDark}`,

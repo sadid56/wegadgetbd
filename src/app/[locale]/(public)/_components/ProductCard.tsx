@@ -134,6 +134,8 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
             className="product-thumb"
             src={image}
             alt={title}
+            loading="lazy"
+            decoding="async"
             onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
               e.currentTarget.src = "/images/default.png";
             }}
@@ -295,7 +297,7 @@ export function ProductCard({ product }: { product: ProductCardItem }) {
               <Typography
                 sx={{
                   fontSize: 11.5,
-                  color: tokens.textDisabled,
+                  color: tokens.textMuted,
                   textDecoration: "line-through",
                 }}
               >

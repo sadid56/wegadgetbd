@@ -636,6 +636,7 @@ export function FloatingAiChat() {
               target='_blank'
               rel='noopener noreferrer'
               size='small'
+              aria-label='WhatsApp support'
               title='WhatsApp'
               sx={{ color: "#16A34A", "&:hover": { bgcolor: "rgba(22, 163, 74, 0.08)" } }}
             >
@@ -645,6 +646,7 @@ export function FloatingAiChat() {
               component='a'
               href={getTelUrl()}
               size='small'
+              aria-label={`Call ${CONTACT_PHONE}`}
               title={`Call ${CONTACT_PHONE}`}
               sx={{ color: tokens.textSecondary, "&:hover": { bgcolor: tokens.bgSubtle } }}
             >
@@ -662,6 +664,7 @@ export function FloatingAiChat() {
                   setActiveProductContext(null);
                   activeProductContextRef.current = null;
                 }}
+                aria-label={isBn ? "নতুন চ্যাট" : "New chat"}
                 title={isBn ? "নতুন চ্যাট" : "New chat"}
                 sx={{ color: tokens.textSecondary, "&:hover": { bgcolor: tokens.bgSubtle } }}
               >
@@ -671,6 +674,7 @@ export function FloatingAiChat() {
             <IconButton
               size='small'
               onClick={() => setIsOpen(false)}
+              aria-label={isBn ? "বন্ধ করুন" : "Close"}
               title={isBn ? "বন্ধ করুন" : "Close"}
               sx={{ color: tokens.textSecondary, "&:hover": { bgcolor: tokens.bgSubtle } }}
             >

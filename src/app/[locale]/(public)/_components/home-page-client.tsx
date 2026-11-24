@@ -14,7 +14,6 @@ import { FAQ } from "@/components/common/FAQ";
 export default function LandingPage() {
   return (
     <Box
-      component="main"
       sx={{
         display: "flex",
         flexDirection: "column",

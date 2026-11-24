@@ -225,7 +225,7 @@ export function Navbar() {
               <IconButton
                 component={Link}
                 href='/cart'
-                aria-label={t("cart")}
+                aria-label={`${t("cart")} (${totalCount})`}
                 sx={{
                   color: "#0F172A",
                   p: 1,
@@ -241,6 +241,7 @@ export function Navbar() {
                 }}
               >
                 <Badge
+                  aria-hidden='true'
                   badgeContent={totalCount}
                   sx={{
                     "& .MuiBadge-badge": {

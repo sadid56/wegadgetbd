@@ -47,7 +47,7 @@ export const tokens = {
   // MATERIAL YOU 3 (M3) PRIMARY & TONAL ROLES
   // =========================================================================
   primary: "#00BFA6", // Brand Seed Teal
-  primaryDark: "#008A77",
+  primaryDark: "#007968",
   primaryHover: "#00A892",
   primaryContainer: "#CCF6EE", // M3 Primary Container - soothing tonal pill background
   onPrimaryContainer: "#003831", // M3 On-Primary Container text
@@ -83,7 +83,7 @@ export const tokens = {
   // =========================================================================
   textPrimary: "#111817", // M3 High-contrast Neutral-10
   textSecondary: "#424D4C", // M3 Neutral Variant 30
-  textMuted: "#6B7776", // M3 Neutral Variant 50
+  textMuted: "#556160", // M3 Neutral Variant 50 (WCAG AA >= 4.5:1 on light surfaces)
   textDisabled: "#9EA7A6",
   textWhite: "#ffffff",
   textDarkMuted: "#94a3b8",

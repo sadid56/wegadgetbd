@@ -286,6 +286,7 @@ export function Hero() {
               <Box
                 component='input'
                 type='text'
+                aria-label={isBn ? "গ্যাজেট খুঁজুন" : "Search gadgets"}
                 value={searchQuery}
                 onFocus={() => {
                   setHasFocusedSearch(true);
@@ -409,6 +410,7 @@ export function Hero() {
                     </Typography>
                     <IconButton
                       size='small'
+                      aria-label={isBn ? "সার্চ বন্ধ করুন" : "Close search results"}
                       onClick={(e) => {
                         e.stopPropagation();
                         setIsNormalExpanded(false);

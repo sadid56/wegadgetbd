@@ -80,6 +80,18 @@ function formatPriceLabel(price: number, discountPrice: number | null): string {
   return effective < price ? `৳${effective} (was ৳${price})` : `৳${effective}`;
 }
 
+function isBengaliContext(message: string, history: ChatMessage[] = []): boolean {
+  const bengaliScriptRegex = /[\u0980-\u09FF]/;
+  if (bengaliScriptRegex.test(message)) return true;
+  if (history.some((m) => bengaliScriptRegex.test(m.text))) return true;
+
+  const banglishKeywords =
+    /\b(lagbe|koto|taka|valo|vai|bhai|keno|ki|na|tar|amar|apnar|dibo|dam|kine|dekhan|chai|koro|kore|hobe|ache|nai|ekta|kivabe|kmn|kemon|acho|assen|parchi|parbo|hoy|hoye|gulo|jonno|theke|sathe|de|dao|den)\b/i;
+  if (banglishKeywords.test(message)) return true;
+
+  return false;
+}
+
 let cachedCatalog: CachedCatalogData | null = null;
 let catalogFetchPromise: Promise<CachedCatalogData> | null = null;
 let cachedAiClient: { apiKey: string; client: GoogleGenAI } | null = null;
@@ -333,10 +345,7 @@ class ShoppingAssistant {
   ) {}
 
   async init(productContextSlug?: string): Promise<this> {
-    const [context, catalog] = await Promise.all([
-      this.loadProductContext(productContextSlug),
-      getCachedCatalogData(),
-    ]);
+    const [context, catalog] = await Promise.all([this.loadProductContext(productContextSlug), getCachedCatalogData()]);
     this.catalogProducts = catalog.products;
     this.catalogBySlug = catalog.bySlug;
     this.hasMoreProducts = catalog.hasMoreProducts;
@@ -345,12 +354,7 @@ class ShoppingAssistant {
     return this;
   }
 
-  private buildGenerateConfig(
-    model: string,
-    allowTools: boolean,
-    activeTools: FunctionDeclaration[],
-    timeoutMs: number = 12_000,
-  ) {
+  private buildGenerateConfig(model: string, allowTools: boolean, activeTools: FunctionDeclaration[], timeoutMs: number = 12_000) {
     const thinkingConfig = getThinkingConfig(model);
     return {
       systemInstruction: this.systemPrompt,
@@ -368,11 +372,13 @@ class ShoppingAssistant {
     onProduct?.(card);
   }
 
-  private buildLocalCatalogFallback(userMessage: string, onProduct?: (product: AiProductCardData) => void): string {
-    const isBn = /[\u0980-\u09FF]/.test(userMessage);
-    const normalizedDigits = userMessage
-      .replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d)))
-      .replace(/,/g, "");
+  private buildLocalCatalogFallback(
+    userMessage: string,
+    onProduct?: (product: AiProductCardData) => void,
+    history: ChatMessage[] = [],
+  ): string {
+    const isBn = isBengaliContext(userMessage, history);
+    const normalizedDigits = userMessage.replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d))).replace(/,/g, "");
     const budgetMatch = normalizedDigits.match(/\b(\d{3,6})\b/);
     const maxBudget = budgetMatch ? Number(budgetMatch[1]) : null;
 
@@ -483,10 +489,7 @@ class ShoppingAssistant {
           });
 
           const canFailover =
-            turnText.length === 0 &&
-            calls.length === 0 &&
-            isRetryableModelError(streamErr) &&
-            cIdx < candidates.length - 1;
+            turnText.length === 0 && calls.length === 0 && isRetryableModelError(streamErr) && cIdx < candidates.length - 1;
 
           if (canFailover) {
             console.warn(`[AI stream failover] "${candidateModel}" failed, streaming from "${candidates[cIdx + 1]}"`);
@@ -497,7 +500,7 @@ class ShoppingAssistant {
             if (turnText.length > 0) {
               finalReply = cleanTruncatedMarkdown(turnText);
             } else {
-              finalReply = this.buildLocalCatalogFallback(input.message, input.onProduct);
+              finalReply = this.buildLocalCatalogFallback(input.message, input.onProduct, input.history);
               input.onDelta?.(finalReply);
             }
             abortedMidStream = true;
@@ -540,8 +543,8 @@ class ShoppingAssistant {
     return this.streamReply(input);
   }
 
-  buildFollowUps(userMessage: string): string[] {
-    const isBn = /[\u0980-\u09FF]/.test(userMessage);
+  buildFollowUps(userMessage: string, history: ChatMessage[] = []): string[] {
+    const isBn = isBengaliContext(userMessage, history);
     const products = Array.from(this.collected.values());
 
     if (this.hasProductContext) {
@@ -590,8 +593,7 @@ class ShoppingAssistant {
       if (this.collected.size >= 4) break;
       if (this.collected.has(item.id)) continue;
       const titleLower = item.title.toLowerCase();
-      const shortPrefix =
-        item.title.length > 35 ? item.title.split(/\s+/).slice(0, 4).join(" ").toLowerCase() : "";
+      const shortPrefix = item.title.length > 35 ? item.title.split(/\s+/).slice(0, 4).join(" ").toLowerCase() : "";
       if (replyLower.includes(titleLower) || (shortPrefix && replyLower.includes(shortPrefix))) {
         const card = this.catalogBySlug.get(item.slug);
         if (card) this.addProductCard(card, options?.onProduct);
@@ -879,7 +881,7 @@ BEHAVIOUR & TONE:
    - Give a clear, structured answer (short bullets or 2–4 crisp sentences) that actually explains their issue.
    - End with a helpful next step or a gentle offer of further help.
 3. BANGLISH & INTENT: Bangladeshi shoppers often type Banglish, typos, or use-cases (e.g. "gaming er jonno 2000 takar moddhe valo earbuds", "brother ke gift korar moto gadget", "travel gadget"). Understand the intent, budget, and use-case directly from the catalog snapshot.
-4. LANGUAGE: Reply in Bengali ONLY if the user writes in Bengali script (বাংলা অক্ষর). For English or Latin-script Banglish, reply in crisp, friendly English.
+4. LANGUAGE: Detect the user's language preference. If the user writes in Bengali script (বাংলা অক্ষর) OR types in Banglish (e.g. "lagbe", "koto taka", "valo"), reply in warm, natural Bengali. If the conversation history contains Bengali script, continue replying in Bengali unless the user explicitly asks to switch to English. Otherwise, reply in crisp, friendly English.
 5. TOOL USE & PRODUCT LINKS:
    - Answer directly WITHOUT calling any tool for recommendations, gift ideas, budget picks, best sellers, store policies, or questions about the current product page whenever the answer is already in the snapshot or \`<product_page_context>\`.
    - Whenever you recommend or mention a product from the snapshot, ALWAYS format its name as a markdown link using its exact path: \`[Product Title](/products/exact-slug)\` so product cards appear automatically. Keep each product description concise (1 short sentence per product).
@@ -936,6 +938,7 @@ export async function POST(request: Request) {
     }
 
     const history = normalizeHistory(body.history);
+    const isBn = isBengaliContext(userMessage, history);
 
     const rawKey = process.env.GEMINI_API_KEY;
     const apiKey = rawKey?.replace(/^["']|["']$/g, "").trim();
@@ -951,16 +954,19 @@ export async function POST(request: Request) {
     const assistant = await new ShoppingAssistant(getGenAIClient(apiKey), MODEL_NAME).init(body.productContext?.slug);
     const wantsStream = Boolean(body.stream) || (request.headers.get("accept") ?? "").includes("application/x-ndjson");
 
+    const fallbackReply = isBn
+      ? `আপনার জন্য যা খুঁজে পেয়েছি! আপনি [সব পণ্য](/products) ব্রাউজ করতে পারেন অথবা আমাদের সাথে ${CONTACT_PHONE} নম্বরে যোগাযোগ করতে পারেন।`
+      : `Here is what I found for you! You can also browse [All Products](/products) or message us at ${CONTACT_PHONE}.`;
+
     if (!wantsStream) {
       const { reply, products } = await assistant.reply({ message: userMessage, history });
       return NextResponse.json({
-        reply: reply || `Here is what I found for you! You can also browse [All Products](/products) or message us at ${CONTACT_PHONE}.`,
+        reply: reply || fallbackReply,
         products,
-        followUps: assistant.buildFollowUps(userMessage),
+        followUps: assistant.buildFollowUps(userMessage, history),
       });
     }
 
-    const isBn = /[\u0980-\u09FF]/.test(userMessage);
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
@@ -980,17 +986,18 @@ export async function POST(request: Request) {
 
           emit({
             type: "done",
-            reply:
-              reply ||
-              `Here is what I found for you! You can also browse [All Products](/products) or message us at ${CONTACT_PHONE}.`,
+            reply: reply || fallbackReply,
             products,
-            followUps: assistant.buildFollowUps(userMessage),
+            followUps: assistant.buildFollowUps(userMessage, history),
           });
         } catch (streamErr) {
           console.error("AI assistant stream error:", streamErr);
+          const errorMsg = isBn
+            ? `আমি এই মুহূর্তে সমস্যায় পড়ছি। অনুগ্রহ করে হোয়াটসঅ্যাপে ${CONTACT_PHONE} নম্বরে আমাদের সাথে যোগাযোগ করুন।`
+            : `I'm having trouble right now. Please contact us on WhatsApp at ${CONTACT_PHONE}.`;
           emit({
             type: "error",
-            error: `I'm having trouble right now. Please contact us on WhatsApp at ${CONTACT_PHONE}.`,
+            error: errorMsg,
           });
         } finally {
           controller.close();
